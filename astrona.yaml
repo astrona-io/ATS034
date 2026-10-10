@@ -1,0 +1,74 @@
+# Preparation scaffold. Technical pages stay draft until authoring and review.
+training:
+  id: ATS034
+  title: 'CKS: Minimize Microservice Vulnerabilities'
+  description: Preparation scaffold for Minimize Microservice Vulnerabilities. Lessons and environments
+    are planned.
+  certification:
+    name: Certified Kubernetes Security Specialist
+    code: CKS
+    provider: CNCF / Linux Foundation
+    domain: Minimize Microservice Vulnerabilities
+    weight: 20
+    competencies:
+    - Use appropriate pod security standards
+    - Manage Kubernetes secrets
+    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    - Implement Pod-to-Pod encryption (Cilium, Istio)
+modules:
+- id: module-intro
+  title: Introduction
+  description: Planned introduction and authoring status.
+  content:
+  - type: reading
+    title: Introduction
+    path: sections/intro/README.md
+  - type: reading
+    title: Welcome To The Course
+    path: sections/intro/course-01-welcome.md
+  - type: reading
+    title: Get Your Machine Ready
+    path: sections/intro/course-02-get-your-machine-ready.md
+  - type: reading
+    title: How This Course Is Made
+    path: sections/intro/course-03-how-this-course-is-made.md
+- id: module-010
+  title: Use appropriate pod security standards
+  description: Planned coverage of this curriculum objective.
+  content:
+  - type: reading
+    title: Section Overview
+    path: sections/section-010/README.md
+  - type: reading
+    title: Use appropriate pod security standards
+    path: sections/section-010/module-01/course.md
+- id: module-020
+  title: Manage Kubernetes secrets
+  description: Planned coverage of this curriculum objective.
+  content:
+  - type: reading
+    title: Section Overview
+    path: sections/section-020/README.md
+  - type: reading
+    title: Manage Kubernetes secrets
+    path: sections/section-020/module-01/course.md
+- id: module-030
+  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+  description: Planned coverage of this curriculum objective.
+  content:
+  - type: reading
+    title: Section Overview
+    path: sections/section-030/README.md
+  - type: reading
+    title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    path: sections/section-030/module-01/course.md
+- id: module-040
+  title: Implement Pod-to-Pod encryption (Cilium, Istio)
+  description: Planned coverage of this curriculum objective.
+  content:
+  - type: reading
+    title: Section Overview
+    path: sections/section-040/README.md
+  - type: reading
+    title: Implement Pod-to-Pod encryption (Cilium, Istio)
+    path: sections/section-040/module-01/course.md
