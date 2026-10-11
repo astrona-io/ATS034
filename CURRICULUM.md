@@ -1,25 +1,21 @@
-# Curriculum And Authoring Plan
+# Curriculum Coverage
 
 Exam: Certified Kubernetes Security Specialist (CKS). Domain: Minimize Microservice Vulnerabilities (20%).
-Source: [official curriculum](https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/), checked 2026-10-10.
-Objectives are attributed to The Linux Foundation and CNCF.
 
-Preparation scaffold; content authoring has not started.
+The [official objectives](https://training.linuxfoundation.org/certification/certified-kubernetes-security-specialist/) were checked on 2026-10-11. Teaching structure is independently authored and does not add official requirements.
 
-| Section | Official objective | Authoring status |
+| Section | Official objective | Modules |
 | --- | --- | --- |
-| 010 | Use appropriate pod security standards | Planned |
-| 020 | Manage Kubernetes secrets | Planned |
-| 030 | Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.) | Planned |
-| 040 | Implement Pod-to-Pod encryption (Cilium, Istio) | Planned |
+| 010 | Use appropriate pod security standards | 1 |
+| 020 | Manage Kubernetes secrets | 1 |
+| 030 | Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.) | 1 |
+| 040 | Implement Pod-to-Pod encryption (Cilium, Istio) | 1 |
 
-Before building content:
+| Section / module | Module | Teaching files |
+| --- | --- | --- |
+| 010 / 01 | Pod Security Profiles | Security Contexts And Profile Requirements; Applying Pod Security Requirements At Admission |
+| 020 / 01 | Secret Delivery And Credential Lifecycle | Secret Storage, Delivery And Rotation |
+| 030 / 01 | Choosing Isolation For Untrusted Tenants | Choosing Isolation For Untrusted Tenants |
+| 040 / 01 | Service Mesh Identity And Policy | Transport Protection And Mesh Limits; Transparent Encryption And Its Traffic Boundaries |
 
-- Recheck the curriculum and refine broad objectives into teachable modules.
-- Choose and record the environment versions and any image dependencies.
-- Write the introduction and remove placeholder notices only when it is ready.
-- Build short parts and runnable playgrounds; add graded labs where appropriate.
-- Add quizzes and a capstone when the completed domain needs them.
-- Check real outputs and reference solutions, and update `astrona.yaml`.
-- Remove `draft: true` from completed technical pages after review.
-- Publish the course only after the maintainer approves the completed content.
+AUTHORING.yaml records measurable goals and adaptation sources. Every objective retains its section ID. All technical readings remain draft. Question banks are separate from the reading manifest and follow their declared summaries. No labs, playgrounds or runtime validation are included.
