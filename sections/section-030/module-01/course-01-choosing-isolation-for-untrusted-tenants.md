@@ -6,6 +6,20 @@ exam_objectives:
 ---
 # Choosing Isolation For Untrusted Tenants
 
+Two untrusted applications use different namespaces but share the same node kernel. Namespace organization alone does not supply a separate host trust boundary.
+
+## Learning objectives
+
+- Distinguish namespaced API separation from kernel isolation.
+- Compare shared-kernel, sandboxed-runtime and dedicated-node boundaries.
+- Explain RuntimeClass prerequisites and scheduling effects.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 Multi-tenancy places workloads belonging to different users or trust levels on shared infrastructure. A security design must state which tenant actions and compromises it is intended to contain. Namespaces, network policy, resource controls and sandboxed execution contribute different boundaries. They should not be treated as interchangeable versions of the same protection.
 
 ## Identify The Shared Boundary
@@ -35,6 +49,29 @@ Consider an untrusted job that parses uploaded files. A sandbox may reduce the i
 ## Evaluate Compatibility And Failure
 
 The assessment should include normal startup, required filesystem operations, networking, observability and recovery behavior. When a sandbox blocks an unsupported operation, identify whether the application can use a safer supported path or needs a different isolation model. Broadly disabling the sandbox hides the trust decision rather than resolving it. Document residual shared dependencies and the owner of each boundary so tenant expectations match actual enforcement.
+
+## Work through the decision
+
+A namespace scopes objects and can support scoped policies. Containers commonly share the host kernel while receiving their supported process and filesystem isolation. A sandboxed runtime, dedicated node or separate cluster can offer additional boundaries under its implementation.
+
+Choose isolation from the threat model: who controls code, which data needs separation and what a node compromise would expose. API grants, network policy, admission and runtime choice contribute different protection. Dedicated nodes still share some control-plane relationships; separate clusters still need protected credentials and external services. State which attacker capability the chosen boundary reduces and which authority remains shared.
+
+```mermaid
+flowchart TB
+    N0["Tenant threat model"]
+    N1["Required separation boundary"]
+    N2["Namespace and runtime controls"]
+    N3["Remaining shared authority"]
+    N4["Verified isolation decision"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+```
+
+Isolation strength follows the actual trust boundaries rather than the presence of a namespace label.
+
+Isolation strength follows the actual trust boundaries rather than the presence of a namespace label.
 
 ## Common pitfalls
 
