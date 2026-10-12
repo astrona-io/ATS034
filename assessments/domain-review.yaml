@@ -1,0 +1,245 @@
+schema_version: 1
+kind: question_bank
+id: ats034-domain-review
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material; not official examination questions.
+scope:
+  type: domain
+  id: domain-review
+  title: Minimize Microservice Vulnerabilities
+placement:
+  position: after
+  reading: sections/section-040/module-01/course-03-summary.md
+questions:
+- id: ats034-domain-review-q01
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Distinguish compliant configuration from complete application security.
+  source_readings:
+  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  prompt: A Restricted-compliant Pod returns another customer's records. Which protection still needs
+    investigation?
+  options:
+  - id: a
+    text: Only the Pod's security profile spelling.
+    explanation: The failure concerns data permission, not title formatting.
+  - id: b
+    text: Application data authorization.
+    explanation: Profile compliance does not prove business permission logic.
+  - id: c
+    text: More permissive runtime settings as the first remedy.
+    explanation: Broad privileges do not correct unauthorized data access.
+  correct_option: b
+  explanation: Profile compliance does not prove business permission logic.
+- id: ats034-domain-review-q02
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Compare Privileged, Baseline and Restricted profiles.
+  source_readings:
+  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  prompt: Which Pod Security profile applies stronger hardening requirements than Baseline?
+  options:
+  - id: a
+    text: Restricted.
+    explanation: The profiles represent distinct levels of permitted configuration.
+  - id: b
+    text: A profile name alone that automatically proves business authorization.
+    explanation: These profiles check configuration rather than every business rule.
+  - id: c
+    text: Privileged.
+    explanation: It permits broad behavior rather than the stronger restriction described.
+  correct_option: a
+  explanation: The profiles represent distinct levels of permitted configuration.
+- id: ats034-domain-review-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Relate image users and writable paths to profile compatibility.
+  source_readings:
+  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  prompt: A non-root application cannot write a required temporary directory. What is a suitable response?
+  options:
+  - id: a
+    text: Always grant full privilege to every container.
+    explanation: That broadens authority beyond the specific file requirement.
+  - id: b
+    text: Assume read-only roots mean no filesystem design is needed.
+    explanation: Needed writes still require an appropriate path.
+  - id: c
+    text: Provide a compatible identity and narrowly appropriate writable mount.
+    explanation: The application can operate within protection rather than discarding it.
+  correct_option: c
+  explanation: The application can operate within protection rather than discarding it.
+- id: ats034-domain-review-q04
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify authorization and diagnostic exposure risks.
+  source_readings:
+  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  prompt: A debug bundle prints the application's password. Which boundary was missing?
+  options:
+  - id: a
+    text: Only a larger memory request.
+    explanation: Capacity does not prevent the disclosure.
+  - id: b
+    text: Safe diagnostic handling and access to the copied value.
+    explanation: Secret resource protection does not automatically sanitize logs or exports.
+  - id: c
+    text: A different Service port.
+    explanation: Port mapping does not sanitize diagnostic content.
+  correct_option: b
+  explanation: Secret resource protection does not automatically sanitize logs or exports.
+- id: ats034-domain-review-q05
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain why Secret encoding is not encryption.
+  source_readings:
+  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  prompt: A Secret value is base64-encoded. What confidentiality guarantee follows from encoding alone?
+  options:
+  - id: a
+    text: None; encoding is reversible and distinct from encryption.
+    explanation: Access and storage protections remain necessary.
+  - id: b
+    text: It is encrypted against every API reader.
+    explanation: Authorized readers can decode the representation.
+  - id: c
+    text: It cannot be printed by application logs.
+    explanation: Process behavior can still disclose received plaintext.
+  correct_option: a
+  explanation: Access and storage protections remain necessary.
+- id: ats034-domain-review-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Describe rotation that updates consumers and revokes old authority.
+  source_readings:
+  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  prompt: A Secret source is updated, but consumers use startup environment values. What must rotation
+    account for?
+  options:
+  - id: a
+    text: A new label that automatically edits process memory.
+    explanation: Labels do not rewrite running environment variables.
+  - id: b
+    text: Only the source object's new value.
+    explanation: That does not prove consumers adopt it or old access is invalid.
+  - id: c
+    text: Consumer replacement or reconfiguration and revocation at the issuer.
+    explanation: Source delivery and old-authority removal are distinct stages.
+  correct_option: c
+  explanation: Source delivery and old-authority removal are distinct stages.
+- id: ats034-domain-review-q07
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Distinguish namespaced API separation from kernel isolation.
+  source_readings:
+  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  prompt: What does namespace separation alone fail to establish?
+  options:
+  - id: a
+    text: A way to apply separate namespaced permissions.
+    explanation: RoleBindings can grant authority within separate namespaces.
+  - id: b
+    text: Independent kernel isolation between tenants.
+    explanation: Namespaced objects can still run on shared host infrastructure.
+  - id: c
+    text: Namespaced object organization.
+    explanation: Namespaces do provide API scope for relevant resources.
+  correct_option: b
+  explanation: Namespaced objects can still run on shared host infrastructure.
+- id: ats034-domain-review-q08
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain RuntimeClass prerequisites and scheduling effects.
+  source_readings:
+  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  prompt: What must agree with a workload's RuntimeClass selection?
+  options:
+  - id: a
+    text: The runtime handler installed on eligible execution nodes.
+    explanation: The selected handler must be supported where the workload runs.
+  - id: b
+    text: Only the application's Service name.
+    explanation: Service discovery does not install a runtime handler.
+  - id: c
+    text: Only a Secret containing the RuntimeClass name.
+    explanation: A Secret does not create the required runtime implementation.
+  correct_option: a
+  explanation: The selected handler must be supported where the workload runs.
+- id: ats034-domain-review-q09
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Evaluate residual credentials, network and resource risks.
+  source_readings:
+  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  prompt: What remains necessary with a sandboxed runtime?
+  options:
+  - id: a
+    text: Unlimited cloud credentials because kernel isolation is stronger.
+    explanation: Credential authority remains exploitable from the workload.
+  - id: b
+    text: Removing all tenant quotas permanently.
+    explanation: Resource exhaustion can still affect shared infrastructure and services.
+  - id: c
+    text: Least-privilege identity and controlled network and data access.
+    explanation: The sandbox does not revoke legitimate credentials or dependency access.
+  correct_option: c
+  explanation: The sandbox does not revoke legitimate credentials or dependency access.
+- id: ats034-domain-review-q10
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Distinguish encrypted transport, peer authentication and authorization.
+  source_readings:
+  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  prompt: Mutual TLS verifies service peers. Which decision remains separate?
+  options:
+  - id: a
+    text: Whether encryption can protect a configured hop.
+    explanation: It can, subject to the actual TLS contract.
+  - id: b
+    text: Permission for the requested application or user operation.
+    explanation: Authenticated identity does not authorize every action.
+  - id: c
+    text: Whether there are any peer identities.
+    explanation: Mutual TLS supplies defined identity evidence.
+  correct_option: b
+  explanation: Authenticated identity does not authorize every action.
+- id: ats034-domain-review-q11
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain where mesh components implement communication policy.
+  source_readings:
+  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  prompt: Does public TLS termination automatically encrypt the backend hop?
+  options:
+  - id: a
+    text: No; the backend transport has a separate configuration.
+    explanation: Protection has a defined termination point.
+  - id: b
+    text: Yes; all later hops inherit the client encryption.
+    explanation: A terminated TLS connection does not continue automatically.
+  - id: c
+    text: Yes; namespace membership supplies encryption.
+    explanation: Namespace scope is not a transport mechanism.
+  correct_option: a
+  explanation: Protection has a defined termination point.
+- id: ats034-domain-review-q12
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Relate certificate rotation and hop boundaries to trust.
+  source_readings:
+  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  prompt: Does peer authentication authorize every application operation?
+  options:
+  - id: a
+    text: Yes; any certificate holder is an administrator.
+    explanation: Authenticated peers can have limited permissions.
+  - id: b
+    text: Yes; authentication removes every need for business rules.
+    explanation: Business authority remains relevant.
+  - id: c
+    text: No; authorization remains a separate decision.
+    explanation: Identity and permission answer different questions.
+  correct_option: c
+  explanation: Identity and permission answer different questions.
