@@ -5,6 +5,20 @@ exam_objectives:
 ---
 # Secret Storage, Delivery And Rotation
 
+A database stops accepting its old password before every consumer adopts the replacement. The Secret update succeeded, yet requests fail. Credential rotation must coordinate the issuer, stored value, delivery method and running consumers.
+
+## Learning objectives
+
+- Explain why Secret encoding is not encryption.
+- Compare environment and mounted-file update behavior.
+- Identify authorization and diagnostic exposure risks.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 The `scout` application uses a non-sensitive log level and a sensitive database password. A ConfigMap stores configuration data that is not intended to be secret. A Secret is a Kubernetes resource for sensitive data. Keeping both outside the image lets the same application artifact run with different deployment settings.
 
 A Pod can receive values through environment variables or files mounted from a volume. Environment variables are set when the container starts; updating the source object does not rewrite the environment of that running process. Mounted configuration files can receive updates after a delay, but the application must notice or reload them. A mount using `subPath` does not receive those automatic volume updates.
@@ -30,6 +44,25 @@ For a database password, identify the issuer, the stored Secret, the delivery me
 Environment-based consumers generally need new containers to receive new values. File-based consumers may need application reload. In both cases, readiness and representative requests should confirm that consumers can use the updated credential. Avoid logging the password as proof of adoption; verify authentication behavior without exposing the secret.
 
 A Secret also needs protections beyond its resource name. Read access can reveal the credential, container access can expose mounted files and diagnostic bundles can copy them unintentionally. Handle sensitivity through permissions, storage encryption and application behavior, while preserving a clear plan for how updates become effective.
+
+## Work through the decision
+
+A Secret is a resource for sensitive data, but its serialized base64 data is encoding rather than encryption. API permissions, storage encryption and consumer behavior protect different exposure paths. Avoid retrieving full Secret YAML simply to establish that a named object exists.
+
+Rotation is a sequence of changes across systems. The issuer must accept the replacement, consumers must receive and adopt it, and the earlier value must eventually lose authority. Updating the Kubernetes object alone does not update an existing process environment or revoke the credential at its issuer. Verification should test intended access and the planned retirement behavior without printing the value.
+
+```mermaid
+flowchart TB
+    I["Issuer accepts replacement"] --> S["Stored Secret update"]
+    S --> D["Consumer delivery"]
+    D --> A["Application adoption"]
+    A --> V["Access verification"]
+    V --> R["Earlier authority retired"]
+```
+
+Rotation becomes effective through coordinated adoption and retirement, rather than through one stored update.
+
+You can now describe safe credential verification without using disclosure as evidence. Each rotation plan must state how consumers adopt updates and when old authority is removed.
 
 ## Common pitfalls
 
