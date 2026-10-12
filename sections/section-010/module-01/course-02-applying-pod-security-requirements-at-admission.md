@@ -5,6 +5,20 @@ exam_objectives:
 ---
 # Applying Pod Security Requirements At Admission
 
+A developer may create Pods, but a proposed privileged container violates the namespace profile. Authorization passed while security admission rejected the declaration.
+
+## Learning objectives
+
+- Compare Privileged, Baseline and Restricted profiles.
+- Explain the purpose and limits of security-context fields.
+- Relate image users and writable paths to profile compatibility.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 A developer is authorized to create a Pod, but the requested privileged configuration violates the namespace's enforced policy. Pod Security Admission checks relevant Pod configuration against the selected Pod Security Standards profile. This is a distinct decision after identity and authorization, not a replacement for either.
 
 ## Three Modes With Different Effects
@@ -36,6 +50,29 @@ Suppose a platform wants Restricted workloads, but several applications write to
 The evidence should show which requirements failed and how the resulting declarations meet them. A warning disappearing is useful but does not independently prove every business behavior still works. Security migration needs both compliant configuration and application compatibility.
 
 A complete admission explanation identifies selected mode, profile, version, scope and exceptions. Those details distinguish an intended policy from the actual acceptance behavior a student must reason about.
+
+## Work through the decision
+
+Pod Security Admission evaluates the relevant requested Pod settings against the configured profile and version. Enforce can reject, warn can report, and audit can record violations. These actions are not interchangeable and do not rewrite an image into a compliant application.
+
+An existing running Pod is not proof that its next replacement will pass a newly selected policy. Review the template used for that replacement, including ordinary, init and supporting containers. A non-root identity needs compatible files; a read-only image filesystem can need narrow writable mounts. Correct those application requirements rather than granting administrative API access to bypass an unrelated admission failure.
+
+```mermaid
+flowchart TB
+    N0["Authorized Pod request"]
+    N1["Namespace profile and version"]
+    N2["Admission evaluation"]
+    N3["Accepted execution settings"]
+    N4["Runtime verification"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+```
+
+Policy acceptance and useful protected execution require different evidence and different corrections.
+
+Policy acceptance and useful protected execution require different evidence and different corrections.
 
 ## Common pitfalls
 

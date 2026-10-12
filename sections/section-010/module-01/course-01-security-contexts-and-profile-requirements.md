@@ -5,6 +5,20 @@ exam_objectives:
 ---
 # Security Contexts And Profile Requirements
 
+An application runs as a non-root user but still needs a writable temporary directory. Making its root filesystem read-only does not create that directory. Hardening must restrict unnecessary behavior while preserving the files and operations the application needs.
+
+## Learning objectives
+
+- Compare Privileged, Baseline and Restricted profiles.
+- Explain the purpose and limits of security-context fields.
+- Relate image users and writable paths to profile compatibility.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 The `scout` process serves requests without needing host administration. A security context describes execution privileges and related settings for a Pod or container. Settings can require a non-root user, prevent privilege escalation, drop Linux capabilities and make the root filesystem read-only where the application supports it.
 
 Linux capabilities divide selected privileged operations into smaller permissions. Dropping unnecessary capabilities reduces what a compromised process can do. A seccomp profile restricts permitted system calls. These controls complement ordinary file permissions and application checks; they do not repair a vulnerable application by themselves.
@@ -32,6 +46,28 @@ A namespace can enforce a Pod Security profile, warn on another selected level a
 The profile version should be deliberate because requirements can evolve with Kubernetes. A change to enforcement can affect newly admitted Pods and future replacements, so a workload that previously ran is not proof that its next Pod will pass the current policy.
 
 Admission checks validate a declared configuration; runtime controls enforce that configuration during execution. Application authorization, secret handling and vulnerability management remain necessary even for a profile-compliant Pod. Explain a protection through what it restricts, where it acts and which threat remains outside its boundary.
+
+## Work through the decision
+
+A security context configures supported process and Pod execution controls. A non-root identity limits reliance on privileged user access; capabilities grant selected Linux privileges; seccomp filters system calls; and a read-only root filesystem restricts writes to image storage. Each acts on a different behavior.
+
+The Pod can supply defaults, while supported container fields can override relevant settings for one process. Inspect both levels before deciding which value applies. A required writable path may belong on an explicit volume with suitable ownership. Removing the read-only setting changes the protection boundary, whereas supplying the needed writable mount can preserve it.
+
+```mermaid
+flowchart TB
+    P["Pod execution defaults"] --> E["Effective container settings"]
+    C["Container-specific settings"] --> E
+    E --> U["Process identity"]
+    E --> S["System-call restrictions"]
+    E --> F["Filesystem access"]
+    U --> A["Supported application operation"]
+    S --> A
+    F --> A
+```
+
+Several independent controls combine into an execution contract that must still support the application.
+
+You can now explain what a hardening field restricts and which application requirements must remain possible. Passing admission does not replace verification of actual startup and behavior under those restrictions.
 
 ## Common pitfalls
 
