@@ -5,6 +5,20 @@ exam_objectives:
 ---
 # Transport Protection And Mesh Limits
 
+A proxy encrypts a connection to another workload, but that workload still permits an unauthorized application operation. Transport authentication and application authorization answer different questions.
+
+## Learning objectives
+
+- Distinguish encrypted transport, peer authentication and authorization.
+- Explain where mesh components implement communication policy.
+- Relate certificate rotation and hop boundaries to trust.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 Two applications need encrypted communication and consistent request telemetry. A service mesh adds infrastructure for communication between services, commonly through proxies or node-level components controlled by a mesh control plane. Depending on the implementation, it can provide identity, encryption, request routing, retries and observability.
 
 A mesh and a network policy solve related but distinct problems. A policy can limit which network connections are allowed. A mesh can apply application-level behavior and authenticated service identities. Their combination can provide several layers of control, but installing either does not automatically configure every protection an application needs.
@@ -32,6 +46,29 @@ Suppose `shuttle` retries a report creation request after a timeout. The server 
 Timeouts bound how long callers wait, while retry counts and backoff bound repeated attempts. Retries can improve response to a transient failure but increase load on an overloaded dependency. A circuit breaker can limit repeated attempts when failure persists. These controls need to fit the application's semantics and capacity.
 
 A mesh supplies configurable mechanisms, not universal policy correctness. The useful design explains the authenticated peer, permitted operation, encrypted hops and safe failure behavior. NetworkPolicy can then narrow connection paths while higher layers enforce the remaining requirements.
+
+## Work through the decision
+
+A service mesh can provide identity-aware transport and policy through its installed implementation. Mutual Transport Layer Security (mTLS) authenticates peers and protects a connection using the configured trust system. The identity authenticated there may describe a workload rather than the end user who requested a report.
+
+Review the actual traffic path, including connections that bypass a proxy or reach an external destination. Enabling mesh transport does not automatically protect every hop or remove vulnerable application logic. Authorization needs a rule matched to the relevant operation and identity. Verification should test required peer identity, permitted operations and rejected ones separately.
+
+```mermaid
+flowchart TB
+    N0["Actual workload connection"]
+    N1["Configured mesh interception"]
+    N2["Authenticated protected transport"]
+    N3["Policy identity evaluation"]
+    N4["Application operation decision"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+```
+
+Transport protection establishes peer and connection properties without replacing application permission checks.
+
+Transport protection establishes peer and connection properties without replacing application permission checks.
 
 ## Common pitfalls
 

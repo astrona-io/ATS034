@@ -5,6 +5,20 @@ exam_objectives:
 ---
 # Transparent Encryption And Its Traffic Boundaries
 
+Cross-node Pod traffic is encrypted, while another path remains local or passes through an external frontend. One encryption feature does not establish protection for every connection segment.
+
+## Learning objectives
+
+- Distinguish encrypted transport, peer authentication and authorization.
+- Explain where mesh components implement communication policy.
+- Relate certificate rotation and hop boundaries to trust.
+
+## Before you start
+
+This chapter is standalone reading material; no running cluster or installed tools are required. A Pod is the Kubernetes unit for running one or more containers, and a namespace groups namespaced objects. Treat the worked configurations as teaching examples rather than recorded observations from a provisioned environment.
+
+## Responsible components and behavior
+
 Transparent encryption protects traffic without requiring each application to implement the network encryption mechanism itself. Cilium supports mechanisms such as IPsec and WireGuard under documented deployment requirements. The important question is which traffic segment is protected and under what identity and key model, not merely whether encryption is enabled somewhere.
 
 ## Identify The Mechanism And Segment
@@ -36,6 +50,29 @@ Do not weaken policy or disable certificate verification to compensate for a mis
 An encrypted Pod-to-Pod path does not automatically protect traffic to an external database or user client. Those connections can need application TLS or another supported mechanism. Likewise, an encrypted tunnel does not prevent a compromised permitted workload from reading data after decryption or using its legitimate credentials maliciously.
 
 Map the sensitive data path and all termination points. Combine transport protection with least privilege, network authorization and protected endpoints. This produces a precise security claim and a useful troubleshooting model rather than an unqualified statement that every packet or application is secure.
+
+## Work through the decision
+
+Transparent network encryption protects the traffic covered by the network implementation's configured paths. Application Transport Layer Security (TLS) protects connections under the application's or proxy's certificate contract. These mechanisms can overlap while naming different peers and termination points.
+
+Map the caller-to-frontend and frontend-to-backend segments separately. A frontend that terminates TLS may send plain traffic onward unless backend protection is configured. A node-network feature may protect cross-node transport without implementing application-user authorization. Verify the selected implementation's coverage and state excluded paths instead of treating an enabled option as universal end-to-end encryption.
+
+```mermaid
+flowchart TB
+    N0["Intended traffic segment"]
+    N1["Configured encryption coverage"]
+    N2["Actual termination boundary"]
+    N3["Peer and trust verification"]
+    N4["Remaining unprotected or separate segment"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+```
+
+Encryption claims need a named traffic segment, trust model and termination boundary.
+
+Encryption claims need a named traffic segment, trust model and termination boundary.
 
 ## Common pitfalls
 
