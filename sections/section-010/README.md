@@ -5,7 +5,9 @@ exam_objectives:
 ---
 # Use appropriate pod security standards
 
-This section covers use appropriate pod security standards. It develops pod Security Profiles through mechanisms, examples, prerequisites and failure reasoning.
+An application runs as a non-root user but still needs a writable temporary directory. Making its root filesystem read-only does not create that directory. Hardening must restrict unnecessary behavior while preserving the files and operations the application needs.
+
+The explanations identify the responsible components, compare intended and observed state, and work through the decisions needed to preserve the requirement. Read the worked examples as reasoning about a proposed system; no environment is started by this section.
 
 Read the module goals, teaching and closing summary in order. YAML checks are indexed separately and appear after designated summaries. Larger domains include an intermediate checkpoint before the final review.
 
