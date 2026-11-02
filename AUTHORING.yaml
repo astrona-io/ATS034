@@ -1,0 +1,110 @@
+version: 1
+approval: CKS requested 2026-10-11; established reading-only scope
+course:
+  id: ATS034
+  certification:
+    name: Certified Kubernetes Security Specialist
+    code: CKS
+    provider: CNCF / Linux Foundation
+    domain: Minimize Microservice Vulnerabilities
+    weight: 20
+    competencies:
+    - Use appropriate pod security standards
+    - Manage Kubernetes secrets
+    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    - Implement Pod-to-Pod encryption (Cilium, Istio)
+defaults:
+  playground: false
+  module_lab: false
+  capstone: false
+  section_quiz: false
+  final_quiz: true
+assessment_format: YAML question banks v1, registered in assessments/index.yaml
+sections:
+- id: section-010
+  title: Use appropriate pod security standards
+  curriculum_item: Use appropriate pod security standards
+  capstone: false
+  section_quiz: false
+  modules:
+  - id: module-01
+    title: Pod Security Profiles
+    objectives:
+    - Compare Privileged, Baseline and Restricted profiles.
+    - Explain the purpose and limits of security-context fields.
+    - Relate image users and writable paths to profile compatibility.
+    - Distinguish compliant configuration from complete application security.
+    outline:
+    - Security Contexts And Profile Requirements
+    - Applying Pod Security Requirements At Admission
+    playground: false
+    module_lab: false
+    sources:
+    - reading: sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+      adapted_from: ATS043/sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+    - reading: sections/section-010/module-01/course-02-applying-pod-security-requirements-at-admission.md
+      adapted_from: ATS043/sections/section-020/module-01/course-01-applying-pod-security-requirements-at-admission.md
+- id: section-020
+  title: Manage Kubernetes secrets
+  curriculum_item: Manage Kubernetes secrets
+  capstone: false
+  section_quiz: false
+  modules:
+  - id: module-01
+    title: Secret Delivery And Credential Lifecycle
+    objectives:
+    - Explain why Secret encoding is not encryption.
+    - Compare environment and mounted-file update behavior.
+    - Identify authorization and diagnostic exposure risks.
+    - Describe rotation that updates consumers and revokes old authority.
+    outline:
+    - Secret Storage, Delivery And Rotation
+    playground: false
+    module_lab: false
+    sources:
+    - reading: sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+      adapted_from: ATS043/sections/section-050/module-01/course-01-secret-storage-delivery-and-rotation.md
+- id: section-030
+  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+  curriculum_item: Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
+    etc.)
+  capstone: false
+  section_quiz: false
+  modules:
+  - id: module-01
+    title: Choosing Isolation For Untrusted Tenants
+    objectives:
+    - Distinguish namespaced API separation from kernel isolation.
+    - Compare shared-kernel, sandboxed-runtime and dedicated-node boundaries.
+    - Explain RuntimeClass prerequisites and scheduling effects.
+    - Evaluate residual credentials, network and resource risks.
+    outline:
+    - Choosing Isolation For Untrusted Tenants
+    playground: false
+    module_lab: false
+    sources:
+    - reading: sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+      adapted_from: null
+- id: section-040
+  title: Implement Pod-to-Pod encryption (Cilium, Istio)
+  curriculum_item: Implement Pod-to-Pod encryption (Cilium, Istio)
+  capstone: false
+  section_quiz: false
+  modules:
+  - id: module-01
+    title: Service Mesh Identity And Policy
+    objectives:
+    - Distinguish encrypted transport, peer authentication and authorization.
+    - Explain where mesh components implement communication policy.
+    - Relate certificate rotation and hop boundaries to trust.
+    - Identify residual application and retry requirements.
+    outline:
+    - Transport Protection And Mesh Limits
+    - Transparent Encryption And Its Traffic Boundaries
+    playground: false
+    module_lab: false
+    sources:
+    - reading: sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+      adapted_from: ATS045/sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+    - reading: sections/section-040/module-01/course-02-transparent-encryption-and-its-traffic-boundaries.md
+      adapted_from: null
