@@ -1,0 +1,8 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: namespace-strict
+  namespace: starfleet
+spec:
+  mtls:
+    mode: STRICT

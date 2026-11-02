@@ -1,0 +1,89 @@
+{
+  "context": "kind-astro-ats-034-lab-010-01-01",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "restricted",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "restricted",
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "restricted-reader",
+      "namespace": "restricted",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "restricted-reader",
+          "namespace": "restricted"
+        },
+        "spec": {
+          "restartPolicy": "Never",
+          "containers": [
+            {
+              "name": "reader",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": [
+                "sh",
+                "-c",
+                "sleep 3600"
+              ],
+              "securityContext": {
+                "allowPrivilegeEscalation": false,
+                "capabilities": {
+                  "drop": [
+                    "ALL"
+                  ]
+                },
+                "readOnlyRootFilesystem": true
+              },
+              "volumeMounts": [
+                {
+                  "name": "scratch",
+                  "mountPath": "/scratch"
+                }
+              ]
+            }
+          ],
+          "securityContext": {
+            "runAsNonRoot": true,
+            "runAsUser": 1000,
+            "runAsGroup": 1000,
+            "fsGroup": 1000,
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            }
+          },
+          "volumes": [
+            {
+              "name": "scratch",
+              "emptyDir": {}
+            }
+          ]
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "python3",
+        "-c",
+        "import json,subprocess; obj={'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': 'unsafe-reader', 'namespace': 'restricted'}, 'spec': {'containers': [{'name': 'reader', 'image': 'docker.io/library/busybox:1.37.0', 'securityContext': {'privileged': True}}]}}; result=subprocess.run(['kubectl','create','--dry-run=server','-f','-'],input=json.dumps(obj),text=True,capture_output=True,timeout=15); assert result.returncode!=0 and 'violates PodSecurity' in result.stderr; print('restricted-admission-denied')"
+      ],
+      "equals": "restricted-admission-denied"
+    }
+  ]
+}
