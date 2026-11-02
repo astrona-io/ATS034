@@ -1,9 +1,9 @@
-# Reading-only content; YAML knowledge checks have a separate index.
 training:
   id: ATS034
   title: 'CKS: Minimize Microservice Vulnerabilities'
-  description: 'Detailed reading material and reusable YAML knowledge checks for CKS: Minimize Microservice
-    Vulnerabilities. Technical content remains draft. No labs or playgrounds.'
+  description: 'Detailed reading material and reusable YAML knowledge checks for CKS:
+    Minimize Microservice Vulnerabilities. Technical content remains draft. No labs
+    or playgrounds.'
   certification:
     name: Certified Kubernetes Security Specialist
     code: CKS
@@ -13,7 +13,8 @@ training:
     competencies:
     - Use appropriate pod security standards
     - Manage Kubernetes secrets
-    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
+      etc.)
     - Implement Pod-to-Pod encryption (Cilium, Istio)
 modules:
 - id: module-intro
@@ -35,7 +36,7 @@ modules:
 - id: module-010
   title: Use appropriate pod security standards
   description: Developed reading and reasoning for Use appropriate pod security standards.
-  draft: true
+  status: alpha
   content:
   - type: reading
     title: Use appropriate pod security standards
@@ -50,12 +51,33 @@ modules:
     title: Applying Pod Security Requirements At Admission
     path: sections/section-010/module-01/course-02-applying-pod-security-requirements-at-admission.md
   - type: reading
+    title: Enforce Restricted Pod Admission — Task
+    path: sections/section-010/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Enforce Restricted Pod Admission
+    path: sections/section-010/module-01/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 25m
+    topic: pod-security-admission
+    task_kind: build
+    learning_goals:
+    - Admit a compliant Pod and reject a privileged Pod through the API server.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Enforce Restricted Pod Admission — Solution
+    path: sections/section-010/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: 'Guided Practice: Enforce Restricted Pod Admission'
+    path: sections/section-010/module-01/course-03-guided-practice.md
+  - type: reading
     title: Summary
-    path: sections/section-010/module-01/course-03-summary.md
+    path: sections/section-010/module-01/course-04-summary.md
 - id: module-020
   title: Manage Kubernetes secrets
   description: Developed reading and reasoning for Manage Kubernetes secrets.
-  draft: true
+  status: alpha
   content:
   - type: reading
     title: Manage Kubernetes secrets
@@ -67,16 +89,39 @@ modules:
     title: Secret Storage, Delivery And Rotation
     path: sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
   - type: reading
+    title: Rotate A Secret And Refresh Its Consumer — Task
+    path: sections/section-020/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Rotate A Secret And Refresh Its Consumer
+    path: sections/section-020/module-01/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 25m
+    topic: secret-rotation
+    task_kind: build
+    learning_goals:
+    - Replace a disposable credential and verify both delivery paths use the new value.
+    tags:
+    - cks
+    - secret-rotation
+  - type: reading
+    title: Rotate A Secret And Refresh Its Consumer — Solution
+    path: sections/section-020/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: 'Guided Practice: Rotate A Secret And Refresh Its Consumer'
+    path: sections/section-020/module-01/course-02-guided-practice.md
+  - type: reading
     title: Summary
-    path: sections/section-020/module-01/course-02-summary.md
+    path: sections/section-020/module-01/course-03-summary.md
 - id: module-030
-  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
-  description: Developed reading and reasoning for Understand and implement isolation techniques (multi-tenancy,
-    sandboxed containers, etc.).
-  draft: true
+  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
+    etc.)
+  description: Developed reading and reasoning for Understand and implement isolation
+    techniques (multi-tenancy, sandboxed containers, etc.).
+  status: alpha
   content:
   - type: reading
-    title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    title: Understand and implement isolation techniques (multi-tenancy, sandboxed
+      containers, etc.)
     path: sections/section-030/README.md
   - type: reading
     title: Choosing Isolation For Untrusted Tenants
@@ -85,12 +130,35 @@ modules:
     title: Choosing Isolation For Untrusted Tenants
     path: sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
   - type: reading
+    title: Compose A Tenant Namespace Boundary — Task
+    path: sections/section-030/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Compose A Tenant Namespace Boundary
+    path: sections/section-030/module-01/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 25m
+    topic: tenant-isolation
+    task_kind: build
+    learning_goals:
+    - Combine admission, a resource budget, token minimization and network isolation
+      for one tenant.
+    tags:
+    - cks
+    - tenant-isolation
+  - type: reading
+    title: Compose A Tenant Namespace Boundary — Solution
+    path: sections/section-030/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: 'Guided Practice: Compose A Tenant Namespace Boundary'
+    path: sections/section-030/module-01/course-02-guided-practice.md
+  - type: reading
     title: Summary
-    path: sections/section-030/module-01/course-02-summary.md
+    path: sections/section-030/module-01/course-03-summary.md
 - id: module-040
   title: Implement Pod-to-Pod encryption (Cilium, Istio)
-  description: Developed reading and reasoning for Implement Pod-to-Pod encryption (Cilium, Istio).
-  draft: true
+  description: Developed reading and reasoning for Implement Pod-to-Pod encryption
+    (Cilium, Istio).
+  status: alpha
   content:
   - type: reading
     title: Implement Pod-to-Pod encryption (Cilium, Istio)
@@ -105,5 +173,27 @@ modules:
     title: Transparent Encryption And Its Traffic Boundaries
     path: sections/section-040/module-01/course-02-transparent-encryption-and-its-traffic-boundaries.md
   - type: reading
+    title: Require Mutual TLS Between Workloads — Task
+    path: sections/section-040/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Require Mutual TLS Between Workloads
+    path: sections/section-040/module-01/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 25m
+    topic: workload-mtls
+    task_kind: build
+    learning_goals:
+    - Require mesh-authenticated traffic while keeping the injected client able to
+      reach the application.
+    tags:
+    - cks
+    - workload-mtls
+  - type: reading
+    title: Require Mutual TLS Between Workloads — Solution
+    path: sections/section-040/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: 'Guided Practice: Require Mutual TLS Between Workloads'
+    path: sections/section-040/module-01/course-03-guided-practice.md
+  - type: reading
     title: Summary
-    path: sections/section-040/module-01/course-03-summary.md
+    path: sections/section-040/module-01/course-04-summary.md
