@@ -1,0 +1,219 @@
+# Knowledge check for section-010. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-010-01
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-010
+  title: "Use appropriate pod security standards"
+placement:
+  position: after
+  reading: sections/section-010/module-01/course-05-summary.md
+questions:
+  - id: ats034-010-01-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the profile that places no restrictions on a Pod."
+    source_readings:
+      - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+    prompt: "Which Pod Security Standards profile places no restrictions on the settings of a Pod?"
+    options:
+      - id: a
+        text: "Privileged"
+        explanation: "Correct. Privileged allows any setting. It is meant for trusted system components."
+      - id: b
+        text: "Baseline"
+        explanation: "Baseline blocks known privilege escalations, such as privileged containers and host namespaces."
+      - id: c
+        text: "Restricted"
+        explanation: "Restricted is the strictest profile and adds hardening rules on top of Baseline."
+    correct_option: a
+    explanation: "Privileged has no restrictions, Baseline blocks known node-access settings, and Restricted adds hardening rules."
+
+  - id: ats034-010-01-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "State what applies to a namespace that has no Pod Security labels."
+    source_readings:
+      - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+    prompt: "A new namespace has no `pod-security.kubernetes.io/` labels and the cluster uses the default Pod Security Admission configuration. What happens to a Pod with `privileged: true` created there?"
+    options:
+      - id: a
+        text: "The API server rejects it, because Baseline is the default profile."
+        explanation: "The default is not Baseline. Without labels nothing is checked."
+      - id: b
+        text: "The kubelet refuses to start it, because privileged containers need a label."
+        explanation: "The kubelet does not read Pod Security labels. Admission happens in the API server."
+      - id: c
+        text: "The API server accepts it, because the default profile is Privileged."
+        explanation: "Correct. Without labels the cluster default applies, and that default is Privileged."
+    correct_option: c
+    explanation: "A namespace without labels uses the cluster default, and the built-in default is Privileged, so nothing is checked."
+
+  - id: ats034-010-01-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use a server-side dry run to test admission."
+    source_readings:
+      - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+    prompt: "An administrator runs `kubectl apply -f pod.yaml --dry-run=client` against a namespace that enforces Restricted. The command succeeds, but the real apply is rejected. Why?"
+    options:
+      - id: a
+        text: "Pod Security Admission only runs for Pods in the default namespace."
+        explanation: "Pod Security Admission runs for every namespace that has labels."
+      - id: b
+        text: "A client-side dry run never sends the request through the API server admission chain."
+        explanation: "Correct. Use `--dry-run=server` to run admission without storing the object."
+      - id: c
+        text: "Dry runs are always accepted by the scheduler."
+        explanation: "The scheduler is not involved in admission, and a dry run does not reach it."
+    correct_option: b
+    explanation: "Only a server-side dry run runs the admission chain, so only it shows a Pod Security rejection."
+
+  - id: ats034-010-01-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify which Restricted rules a Pod can leave out."
+    source_readings:
+      - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+      - sections/section-010/module-01/course-02-security-context-fields.md
+    prompt: "A Pod runs as user 1000, drops all capabilities, sets `allowPrivilegeEscalation: false` and `seccompProfile: RuntimeDefault`. Its root filesystem is writable. A namespace enforces Restricted. What happens?"
+    options:
+      - id: a
+        text: "The Pod is admitted, because Restricted does not require a read-only root filesystem."
+        explanation: "Correct. `readOnlyRootFilesystem` is good practice, but no profile requires it."
+      - id: b
+        text: "The Pod is rejected, because Restricted requires `readOnlyRootFilesystem: true`."
+        explanation: "Restricted does not require a read-only root filesystem."
+      - id: c
+        text: "The Pod is rejected, because Restricted requires `privileged: false` to be set explicitly."
+        explanation: "An unset `privileged` field already means false. Restricted checks the effective value."
+    correct_option: a
+    explanation: "The Restricted profile requires non-root, no privilege escalation, a seccomp profile, dropped capabilities and limited volume types. It does not require a read-only root filesystem."
+
+  - id: ats034-010-01-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe what the `warn` mode does."
+    source_readings:
+      - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+    prompt: "A namespace has `enforce: baseline` and `warn: restricted`. A developer applies a Pod that meets Baseline but breaks Restricted. What happens?"
+    options:
+      - id: a
+        text: "The Pod is rejected with a Forbidden error that lists the Restricted violations."
+        explanation: "Only `enforce` rejects a Pod. `warn` never blocks."
+      - id: b
+        text: "The Pod is created and nothing is shown, because only the audit log receives violations."
+        explanation: "The audit log receives annotations from `audit`. `warn` shows the warning to the user."
+      - id: c
+        text: "The Pod is created and `kubectl` prints a warning that lists the Restricted violations."
+        explanation: "Correct. `warn` accepts the Pod and sends a warning to the client."
+    correct_option: c
+    explanation: "`enforce` rejects, `warn` prints a warning in the client and `audit` annotates the audit log. The modes are independent."
+
+  - id: ats034-010-01-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the result when a container field and a Pod field disagree."
+    source_readings:
+      - sections/section-010/module-01/course-02-security-context-fields.md
+    prompt: "In a Pod, `spec.securityContext.runAsNonRoot` is `true`. One container sets `securityContext.runAsNonRoot: false`. The namespace enforces Restricted. What does Pod Security Admission do?"
+    options:
+      - id: a
+        text: "It rejects the Pod, because the container value wins and Restricted needs `true` for every container."
+        explanation: "Correct. A container-level value overrides the Pod level, and admission checks the effective value."
+      - id: b
+        text: "It admits the Pod, because the Pod-level value covers all containers."
+        explanation: "The Pod-level value is only a default for containers that do not set the field."
+      - id: c
+        text: "It admits the Pod and changes the container value to `true`."
+        explanation: "Pod Security Admission never changes a Pod. It only accepts or rejects."
+    correct_option: a
+    explanation: "The container-level setting wins for that container, and Restricted checks each container's effective settings."
+
+  - id: ats034-010-01-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Find the reason a Deployment has no Pods in a namespace that enforces a profile."
+    source_readings:
+      - sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+    prompt: "A Deployment applies without error. Minutes later `kubectl get deployment` shows `0/1` ready, and the namespace enforces Restricted. Where is the most direct evidence for the failure?"
+    options:
+      - id: a
+        text: "The `kubelet` log on the worker node."
+        explanation: "The Pod was rejected before scheduling, so no kubelet saw it."
+      - id: b
+        text: "The `FailedCreate` events of the ReplicaSet that belongs to the Deployment."
+        explanation: "Correct. The ReplicaSet controller tries to create the Pod, and the API server rejection is recorded as an event on the ReplicaSet."
+      - id: c
+        text: "The logs of the Pod, using `kubectl logs`."
+        explanation: "No Pod exists, so there are no logs."
+    correct_option: b
+    explanation: "The Deployment is accepted because enforcement checks Pods. The rejection shows up as a `FailedCreate` event on the ReplicaSet."
+
+  - id: ats034-010-01-q08
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain what changing an `enforce` label does to running Pods."
+    source_readings:
+      - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+      - sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+    prompt: "A namespace has ten running Pods that run as root. An administrator changes the label to `pod-security.kubernetes.io/enforce=restricted`. What happens to those Pods immediately?"
+    options:
+      - id: a
+        text: "The kubelet evicts all ten Pods, because they no longer meet the profile."
+        explanation: "Pod Security Admission never evicts running Pods."
+      - id: b
+        text: "The API server restarts them with `runAsNonRoot` added."
+        explanation: "Admission never changes Pods, and it does not restart them."
+      - id: c
+        text: "Nothing. They keep running, and they are checked again only when they are created or updated."
+        explanation: "Correct. Enforcement happens at admission time. A server-side dry run of the label change would have warned about these Pods in advance."
+    correct_option: c
+    explanation: "Pod Security Admission checks at create and update time only. Use `kubectl label --dry-run=server` first to list the Pods that would violate the new level."
+
+  - id: ats034-010-01-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain the effect of a version label across a cluster upgrade."
+    source_readings:
+      - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+    prompt: "A namespace has `enforce: restricted` and `enforce-version: v1.35`. The cluster is later upgraded to a newer Kubernetes version that changes a Restricted rule. How does the namespace behave?"
+    options:
+      - id: a
+        text: "It follows the new rule, because the version label is only a hint."
+        explanation: "The version label fixes which release's rules apply. It is not a hint."
+      - id: b
+        text: "It keeps using the Restricted rules of Kubernetes 1.35 until the label is changed."
+        explanation: "Correct. A pinned version keeps the rules stable. With `latest`, the rules follow the cluster."
+      - id: c
+        text: "Pod creation stops, because a version mismatch disables admission."
+        explanation: "A mismatch does not disable admission. The pinned rules are still applied."
+    correct_option: b
+    explanation: "`enforce-version` pins the profile definition. Without it, or with `latest`, the definition follows the API server."
+
+  - id: ats034-010-01-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a Pod that is admitted but does not start because of `runAsNonRoot`."
+    source_readings:
+      - sections/section-010/module-01/course-02-security-context-fields.md
+      - sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+    prompt: "A Pod passes Restricted admission with `runAsNonRoot: true` and no `runAsUser`. Its image runs as root. The Pod stays in `CreateContainerConfigError`. Who rejected it and what fixes it?"
+    options:
+      - id: a
+        text: "The scheduler rejected it; label the node with `pod-security.kubernetes.io/enforce`."
+        explanation: "Pod Security labels belong on namespaces, not nodes, and the scheduler is not involved."
+      - id: b
+        text: "The kubelet refused to start the container; set a non-zero `runAsUser` or use an image with a non-root `USER`."
+        explanation: "Correct. Admission only saw the field. The kubelet checks the real image user at start time."
+      - id: c
+        text: "Pod Security Admission rejected it late; add `privileged: true` to the container."
+        explanation: "Admission already accepted the Pod, and `privileged: true` breaks the profile."
+    correct_option: b
+    explanation: "Admission checks the spec. The kubelet checks the effective user at container start and fails with `CreateContainerConfigError` when `runAsNonRoot` meets a root image."

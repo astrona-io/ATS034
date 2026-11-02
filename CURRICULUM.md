@@ -19,3 +19,14 @@ The [official objectives](https://training.linuxfoundation.org/certification/cer
 | 040 / 01 | Service Mesh Identity And Policy | Transport Protection And Mesh Limits; Transparent Encryption And Its Traffic Boundaries |
 
 AUTHORING.yaml records measurable goals and adaptation sources. Every objective retains its section ID. All technical readings remain draft. Question banks are separate from the reading manifest and follow their declared summaries. No labs, playgrounds or runtime validation are included.
+
+## Hands-On Coverage
+
+This course has 4 ungraded module playgrounds and 4 draft independent labs. Tasks and solutions are registered around each lab immediately after its teaching reading. Static configuration, shell/Python/YAML, parser, lifecycle and offline grader checks pass. Live execution remains pending because the session cannot access Podman; installed CLI configuration validation is separately blocked by its maintenance lock.
+
+| Module | Labs in teaching order |
+| --- | --- |
+| 010/01 | Enforce Restricted Pod Admission |
+| 020/01 | Rotate A Secret And Refresh Its Consumer |
+| 030/01 | Compose A Tenant Namespace Boundary |
+| 040/01 | Require Mutual TLS Between Workloads |

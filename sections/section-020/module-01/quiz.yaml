@@ -1,0 +1,217 @@
+# Knowledge check for section-020. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-020-01
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-020
+  title: "Manage Kubernetes secrets"
+placement:
+  position: after
+  reading: sections/section-020/module-01/course-05-summary.md
+questions:
+  - id: ats034-020-01-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Explain what base64 in a Secret provides."
+    source_readings:
+      - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    prompt: "A teammate says that Secret values are safe in a Git repository because the `data` field is base64 encoded. What is wrong with that claim?"
+    options:
+      - id: a
+        text: "Base64 is only used for ConfigMaps and never for Secrets."
+        explanation: "Secrets store their values in `data` as base64."
+      - id: b
+        text: "Base64 is an encoding with no key, so anyone can decode the value in one command."
+        explanation: "Correct. Base64 only changes the representation of bytes. It does not protect them."
+      - id: c
+        text: "Base64 is a weak cipher that needs a longer key."
+        explanation: "Base64 is not a cipher and uses no key at all."
+    correct_option: b
+    explanation: "Base64 is an encoding. Protection comes from RBAC, Pod access control and encryption at rest."
+
+  - id: ats034-020-01-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Describe the purpose of `stringData`."
+    source_readings:
+      - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    prompt: "A manifest sets `stringData.key: abc` on a Secret and the Secret is applied. What does `kubectl get secret -o yaml` show for this key?"
+    options:
+      - id: a
+        text: "A `data` field with the base64 form of `abc`."
+        explanation: "Correct. The API server converts `stringData` into base64 `data` on write."
+      - id: b
+        text: "Nothing, because plain text values are dropped."
+        explanation: "Plain text in `stringData` is accepted and converted."
+      - id: c
+        text: "A `stringData` field with the value `abc`."
+        explanation: "`stringData` is write-only. The API server never stores or returns it."
+    correct_option: a
+    explanation: "`stringData` is a write-only convenience. The API server stores the value as base64 in `data`."
+
+  - id: ats034-020-01-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use `kubectl auth can-i` to check access to Secrets."
+    source_readings:
+      - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    prompt: "You need to know if the `default` ServiceAccount in namespace `starfleet` can read Secrets there. Which command answers this?"
+    options:
+      - id: a
+        text: "`kubectl get secret --as=default`"
+        explanation: "This does not check permissions and does not name a ServiceAccount identity."
+      - id: b
+        text: "`kubectl describe serviceaccount default -n starfleet`"
+        explanation: "This shows the ServiceAccount object, not what RBAC allows it to do."
+      - id: c
+        text: "`kubectl auth can-i get secrets -n starfleet --as=system:serviceaccount:starfleet:default`"
+        explanation: "Correct. It asks the API server to evaluate the request as that ServiceAccount."
+    correct_option: c
+    explanation: "`kubectl auth can-i` with `--as=system:serviceaccount:<namespace>:<name>` evaluates RBAC for the ServiceAccount."
+
+  - id: ats034-020-01-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State that `list` and `watch` on Secrets expose values."
+    source_readings:
+      - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    prompt: "A Role grants `list` on Secrets in a namespace but not `get`. A user with this Role runs `kubectl get secrets -o yaml`. What do they see?"
+    options:
+      - id: a
+        text: "An error, because `list` works only with `describe`."
+        explanation: "`list` is the verb behind `kubectl get` for many objects, and it works."
+      - id: b
+        text: "The values of all Secrets in the namespace, because `list` returns the objects."
+        explanation: "Correct. `list` and `watch` return full objects, so they expose the same data as `get`."
+      - id: c
+        text: "Only the names, because values need `get`."
+        explanation: "A list call returns complete objects, including `data`."
+    correct_option: b
+    explanation: "Treat `list` and `watch` on Secrets as sensitive as `get`."
+
+  - id: ats034-020-01-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare what a running container sees after a Secret changes."
+    source_readings:
+      - sections/section-020/module-01/course-03-rotating-a-secret.md
+    prompt: "A Pod mounts Secret `db` as a volume and also reads the same key as an environment variable. The Secret value is changed. A minute later, what does the running container see?"
+    options:
+      - id: a
+        text: "The new value in the file after the kubelet syncs, and the old value in the environment variable."
+        explanation: "Correct. The kubelet updates mounted files, and the environment stays until a restart."
+      - id: b
+        text: "The old value in both, until the Pod is deleted."
+        explanation: "A mounted Secret volume follows the Secret without a restart."
+      - id: c
+        text: "Both the file and the environment variable have the new value."
+        explanation: "The environment variable is set at start and does not change."
+    correct_option: a
+    explanation: "Volumes refresh after the kubelet sync delay. Environment variables change only when the container restarts."
+
+  - id: ats034-020-01-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify mounts that never receive Secret updates."
+    source_readings:
+      - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+      - sections/section-020/module-01/course-03-rotating-a-secret.md
+    prompt: "An application reads `/etc/app/token`, which is mounted from a Secret with `subPath: token`. The Secret is rotated, and the application never sees the new value. Why?"
+    options:
+      - id: a
+        text: "The kubelet cannot refresh Secrets on `tmpfs`."
+        explanation: "The kubelet refreshes normal Secret volumes on `tmpfs`."
+      - id: b
+        text: "A volume mounted with `subPath` is never updated after the container starts."
+        explanation: "Correct. The kubelet copies the file once for a `subPath` mount, and the swap does not reach it."
+      - id: c
+        text: "Secrets can only change after `etcd` restarts."
+        explanation: "Secret updates do not need an `etcd` restart."
+    correct_option: b
+    explanation: "Mounts with `subPath` and immutable Secrets never change. Mount the whole directory, or restart the Pod."
+
+  - id: ats034-020-01-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Order the steps of a credential rotation."
+    source_readings:
+      - sections/section-020/module-01/course-03-rotating-a-secret.md
+    prompt: "A database password must be rotated for an application that reads it from an environment variable. Which order avoids an outage and leaves no valid old password?"
+    options:
+      - id: a
+        text: "Create the new password at the database, update the Secret, restart the Pods, revoke the old password."
+        explanation: "Correct. Each consumer holds a valid password at every step, and the old one is revoked last."
+      - id: b
+        text: "Revoke the old password, create the new one, update the Secret, restart the Pods."
+        explanation: "Revoking first breaks the running Pods until they reload."
+      - id: c
+        text: "Update the Secret, revoke the old password, create the new one, restart the Pods."
+        explanation: "The new password does not exist at the source yet, so the update points at a value the database rejects."
+    correct_option: a
+    explanation: "Create at the source, update the Secret, load it into every consumer, then revoke the old credential."
+
+  - id: ats034-020-01-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Read the provider order of an EncryptionConfiguration."
+    source_readings:
+      - sections/section-020/module-01/course-04-encryption-at-rest.md
+    prompt: "An `EncryptionConfiguration` for `secrets` lists the providers `identity: {}` followed by `aescbc`. The API server is restarted. What happens to a new Secret?"
+    options:
+      - id: a
+        text: "It is encrypted with `aescbc`, because the strongest provider always wins."
+        explanation: "Providers are used in list order, not by strength."
+      - id: b
+        text: "The API server refuses to start, because `identity` must be the last provider."
+        explanation: "The configuration is valid. It simply does not encrypt writes."
+      - id: c
+        text: "It is stored unencrypted, because the first provider is used for writes and `identity` stores plain data."
+        explanation: "Correct. The first provider decides how new data is written."
+    correct_option: c
+    explanation: "The first provider encrypts writes. All providers are tried for reads. Put `identity` last."
+
+  - id: ats034-020-01-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Prove encryption at rest from `etcd`."
+    source_readings:
+      - sections/section-020/module-01/course-04-encryption-at-rest.md
+    prompt: "An administrator enabled `aescbc` encryption and wants proof that the Secret `practice-token` is encrypted in storage. Which check proves it?"
+    options:
+      - id: a
+        text: "`kubectl get secret practice-token -o yaml` shows a different `data` value."
+        explanation: "The API server decrypts for authorized users, so the output is unchanged."
+      - id: b
+        text: "Reading the key `/registry/secrets/starfleet/practice-token` with `etcdctl` and looking for the prefix `k8s:enc:aescbc:v1:`."
+        explanation: "Correct. This reads the stored bytes directly, without the API server."
+      - id: c
+        text: "`kubectl describe secret practice-token` hides the value."
+        explanation: "`describe` always hides values, with or without encryption."
+    correct_option: b
+    explanation: "Only a direct read from `etcd` shows what is stored. The prefix `k8s:enc:` names the provider and key."
+
+  - id: ats034-020-01-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Plan the rewrite after enabling encryption."
+    source_readings:
+      - sections/section-020/module-01/course-04-encryption-at-rest.md
+    prompt: "Encryption was enabled for `secrets` yesterday. A security review finds that old Secrets are still readable in a raw `etcd` snapshot. What is the cause and the fix?"
+    options:
+      - id: a
+        text: "`etcd` encrypts only after a snapshot restore."
+        explanation: "Encryption is done by the API server, not by `etcd`."
+      - id: b
+        text: "Encryption applies on write, so old Secrets must be written again with `kubectl get secrets -A -o json | kubectl replace -f -`."
+        explanation: "Correct. Existing objects are re-encrypted only when the API server writes them."
+      - id: c
+        text: "The `aescbc` key is too short; replace it with a 64 byte key."
+        explanation: "A valid key length does not cause this. The old objects were never rewritten."
+    correct_option: b
+    explanation: "Enabling encryption does not rewrite existing data. Replace every Secret once, and again after a key rotation."

@@ -1,5 +1,6 @@
 version: 1
-approval: CKS requested 2026-10-11; established reading-only scope
+approval: Maintainer requested CKA and CKS playgrounds and graded labs on 2026-10-13,
+  superseding the earlier reading-only scope.
 course:
   id: ATS034
   certification:
@@ -11,10 +12,11 @@ course:
     competencies:
     - Use appropriate pod security standards
     - Manage Kubernetes secrets
-    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
+    - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
+      etc.)
     - Implement Pod-to-Pod encryption (Cilium, Istio)
 defaults:
-  playground: false
+  playground: true
   module_lab: false
   capstone: false
   section_quiz: false
@@ -35,15 +37,29 @@ sections:
     - Relate image users and writable paths to profile compatibility.
     - Distinguish compliant configuration from complete application security.
     outline:
-    - Security Contexts And Profile Requirements
-    - Applying Pod Security Requirements At Admission
-    playground: false
-    module_lab: false
+    - The Three Pod Security Standards
+    - Security Context Fields
+    - Pod Security Admission Modes
+    - Admission For Workloads And Troubleshooting
+    playground: true
+    module_lab: true
     sources:
-    - reading: sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
-      adapted_from: ATS043/sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
-    - reading: sections/section-010/module-01/course-02-applying-pod-security-requirements-at-admission.md
-      adapted_from: ATS043/sections/section-020/module-01/course-01-applying-pod-security-requirements-at-admission.md
+    - reading: sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+      adapted_from: null
+    - reading: sections/section-010/module-01/course-02-security-context-fields.md
+      adapted_from: null
+    - reading: sections/section-010/module-01/course-03-pod-security-admission-modes.md
+      adapted_from: null
+    - reading: sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+      adapted_from: null
+    labs:
+    - id: lab-01
+      path: sections/section-010/module-01/labs/lab-01
+      after_reading: sections/section-010/module-01/course-03-pod-security-admission-modes.md
+      objective: Admit a compliant Pod and reject a privileged Pod through the API
+        server.
+      status: draft
+      runtime_verification: pending
 - id: section-020
   title: Manage Kubernetes secrets
   curriculum_item: Manage Kubernetes secrets
@@ -58,16 +74,34 @@ sections:
     - Identify authorization and diagnostic exposure risks.
     - Describe rotation that updates consumers and revokes old authority.
     outline:
-    - Secret Storage, Delivery And Rotation
-    playground: false
-    module_lab: false
+    - What A Secret Is And Who Can Read It
+    - Delivering Secrets To Pods
+    - Rotating A Secret
+    - Encryption At Rest
+    playground: true
+    module_lab: true
     sources:
-    - reading: sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
-      adapted_from: ATS043/sections/section-050/module-01/course-01-secret-storage-delivery-and-rotation.md
+    - reading: sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+      adapted_from: null
+    - reading: sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+      adapted_from: null
+    - reading: sections/section-020/module-01/course-03-rotating-a-secret.md
+      adapted_from: null
+    - reading: sections/section-020/module-01/course-04-encryption-at-rest.md
+      adapted_from: null
+    labs:
+    - id: lab-01
+      path: sections/section-020/module-01/labs/lab-01
+      after_reading: sections/section-020/module-01/course-03-rotating-a-secret.md
+      objective: Replace a disposable credential and verify both delivery paths use
+        the new value.
+      status: draft
+      runtime_verification: pending
 - id: section-030
-  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
-  curriculum_item: Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
+  title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
     etc.)
+  curriculum_item: Understand and implement isolation techniques (multi-tenancy, sandboxed
+    containers, etc.)
   capstone: false
   section_quiz: false
   modules:
@@ -79,12 +113,29 @@ sections:
     - Explain RuntimeClass prerequisites and scheduling effects.
     - Evaluate residual credentials, network and resource risks.
     outline:
-    - Choosing Isolation For Untrusted Tenants
-    playground: false
-    module_lab: false
+    - Namespaces And RBAC As A Tenant Boundary
+    - Resource Isolation With ResourceQuota And LimitRange
+    - Network Isolation And Token Minimization
+    - Sandboxed Containers With RuntimeClass
+    playground: true
+    module_lab: true
     sources:
-    - reading: sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+    - reading: sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
       adapted_from: null
+    - reading: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+      adapted_from: null
+    - reading: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+      adapted_from: null
+    - reading: sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+      adapted_from: null
+    labs:
+    - id: lab-01
+      path: sections/section-030/module-01/labs/lab-01
+      after_reading: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+      objective: Combine admission, a resource budget, token minimization and network
+        isolation for one tenant.
+      status: draft
+      runtime_verification: pending
 - id: section-040
   title: Implement Pod-to-Pod encryption (Cilium, Istio)
   curriculum_item: Implement Pod-to-Pod encryption (Cilium, Istio)
@@ -99,12 +150,26 @@ sections:
     - Relate certificate rotation and hop boundaries to trust.
     - Identify residual application and retry requirements.
     outline:
-    - Transport Protection And Mesh Limits
-    - Transparent Encryption And Its Traffic Boundaries
-    playground: false
-    module_lab: false
+    - Pod Traffic And Encryption Options
+    - Istio Mutual TLS With PeerAuthentication
+    - Authorizing Workloads With AuthorizationPolicy
+    - Cilium Transparent Encryption
+    playground: true
+    module_lab: true
     sources:
-    - reading: sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
-      adapted_from: ATS045/sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
-    - reading: sections/section-040/module-01/course-02-transparent-encryption-and-its-traffic-boundaries.md
+    - reading: sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
       adapted_from: null
+    - reading: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+      adapted_from: null
+    - reading: sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+      adapted_from: null
+    - reading: sections/section-040/module-01/course-04-cilium-transparent-encryption.md
+      adapted_from: null
+    labs:
+    - id: lab-01
+      path: sections/section-040/module-01/labs/lab-01
+      after_reading: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+      objective: Require mesh-authenticated traffic while keeping the injected client
+        able to reach the application.
+      status: draft
+      runtime_verification: pending

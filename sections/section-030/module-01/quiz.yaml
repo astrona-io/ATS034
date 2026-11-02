@@ -1,0 +1,216 @@
+# Knowledge check for section-030. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-030-01
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-030
+  title: "Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)"
+placement:
+  position: after
+  reading: sections/section-030/module-01/course-05-summary.md
+questions:
+  - id: ats034-030-01-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "State what a namespace does not isolate."
+    source_readings:
+      - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    prompt: "Two teams get one namespace each in a shared cluster. Which statement is true by default?"
+    options:
+      - id: a
+        text: "Each namespace has its own nodes and PersistentVolumes."
+        explanation: "Nodes and PersistentVolumes are cluster-scoped and have no namespace."
+      - id: b
+        text: "Pods in one namespace cannot open connections to Pods in the other."
+        explanation: "Without a NetworkPolicy, every Pod can reach every other Pod in any namespace."
+      - id: c
+        text: "Pods of both namespaces on the same node share the same Linux kernel."
+        explanation: "Correct. A namespace separates names and policy. It does not give a separate kernel."
+    correct_option: c
+    explanation: "Namespaces scope names and policy. Nodes, the kernel and, by default, the network are shared."
+
+  - id: ats034-030-01-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Choose between soft and hard multi-tenancy."
+    source_readings:
+      - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    prompt: "A company hosts customer code that it cannot review, on shared nodes. Which approach does this require?"
+    options:
+      - id: a
+        text: "Soft multi-tenancy, because namespaces and RBAC are enough for any tenant."
+        explanation: "Soft multi-tenancy assumes tenants that trust each other."
+      - id: b
+        text: "No isolation, because Pod Security Admission blocks all attacks."
+        explanation: "Pod Security Admission limits Pod settings. It does not provide a kernel boundary."
+      - id: c
+        text: "Hard multi-tenancy, with a stronger boundary such as sandboxed runtimes or dedicated nodes."
+        explanation: "Correct. Hostile code makes the shared kernel the main risk, and namespaces do not address it."
+    correct_option: c
+    explanation: "Soft multi-tenancy fits trusted teams. Untrusted code needs hard multi-tenancy."
+
+  - id: ats034-030-01-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Limit RBAC access to one namespace."
+    source_readings:
+      - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    prompt: "A user must manage Deployments in namespace `team-a` only. Which setup does this?"
+    options:
+      - id: a
+        text: "A ClusterRole bound with a ClusterRoleBinding."
+        explanation: "A ClusterRoleBinding grants the permissions in every namespace."
+      - id: b
+        text: "A Role in `team-a` with a RoleBinding in `team-a` for the user."
+        explanation: "Correct. Both objects are namespaced, so the permission applies in `team-a` only."
+      - id: c
+        text: "A RoleBinding in `kube-system` that names the user."
+        explanation: "A RoleBinding grants access only in its own namespace, so this grants nothing in `team-a`."
+    correct_option: b
+    explanation: "A Role and RoleBinding in the same namespace limit access to it. A RoleBinding may also reference a ClusterRole."
+
+  - id: ats034-030-01-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Read the failure of a quota in a Deployment."
+    source_readings:
+      - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+    prompt: "A namespace has a ResourceQuota of `pods: 2`. A Deployment with three replicas is applied. The command succeeds, and `kubectl get deployment` shows `2/3`. Where is the reason?"
+    options:
+      - id: a
+        text: "In the output of `kubectl apply`, which rejects the Deployment."
+        explanation: "The Deployment is accepted. The quota applies to the Pods it creates."
+      - id: b
+        text: "In a `FailedCreate` event of the ReplicaSet that says `exceeded quota`."
+        explanation: "Correct. The ReplicaSet controller creates Pods, and the quota rejection is recorded there."
+      - id: c
+        text: "In the logs of the third Pod."
+        explanation: "The third Pod was never created, so it has no logs."
+    correct_option: b
+    explanation: "Quotas check objects when they are created. The Deployment passes, and the ReplicaSet reports the failure."
+
+  - id: ats034-030-01-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain what a LimitRange adds."
+    source_readings:
+      - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+    prompt: "A namespace has a ResourceQuota on `requests.memory`. New Pods without memory requests are rejected. Which object lets developers omit the value in every manifest?"
+    options:
+      - id: a
+        text: "A second ResourceQuota with a higher limit."
+        explanation: "A second quota still requires the Pod to declare the value."
+      - id: b
+        text: "A NetworkPolicy that selects the Pods."
+        explanation: "NetworkPolicy controls traffic, not resources."
+      - id: c
+        text: "A LimitRange with `defaultRequest` for memory."
+        explanation: "Correct. The LimitRange admission step writes the default into the container at creation."
+    correct_option: c
+    explanation: "A LimitRange supplies default requests and limits, which a compute quota requires."
+
+  - id: ats034-030-01-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Recognize a default-deny NetworkPolicy."
+    source_readings:
+      - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    prompt: "Which NetworkPolicy blocks all incoming and outgoing traffic for every Pod in its namespace?"
+    options:
+      - id: a
+        text: "`podSelector: {}` with `policyTypes: [Ingress, Egress]` and no rules."
+        explanation: "Correct. The empty selector selects all Pods, and the listed types with no rules allow nothing."
+      - id: b
+        text: "`podSelector: {}` with `ingress: [{}]`."
+        explanation: "An empty ingress rule allows all incoming traffic."
+      - id: c
+        text: "A policy with a `deny` field set to `all`."
+        explanation: "NetworkPolicy has no deny field. Policies only add allowances."
+    correct_option: a
+    explanation: "Default deny selects all Pods and lists policy types without rules."
+
+  - id: ats034-030-01-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Match an egress rule to the Pod port."
+    source_readings:
+      - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    prompt: "A default-deny egress policy is active. A Service `probe` listens on port 80 and forwards to Pods on port 8080. An allow rule names port 80 and the request still times out. What fixes it?"
+    options:
+      - id: a
+        text: "Delete the default-deny policy, because allow rules cannot work beside it."
+        explanation: "Allow rules add to a default deny, and that is how it is used."
+      - id: b
+        text: "Change the rule to port 8080, the port the Pod listens on."
+        explanation: "Correct. The plugin checks the policy after the Service address is translated to the Pod."
+      - id: c
+        text: "Change the Service to `type: LoadBalancer`."
+        explanation: "The type of the Service does not change how the plugin matches Pod ports."
+    correct_option: b
+    explanation: "Network policies match Pod addresses and ports, not Service ports."
+
+  - id: ats034-030-01-q08
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the effect of a two-part selector."
+    source_readings:
+      - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    prompt: "An egress rule has `to` with one item that holds both `namespaceSelector` (for namespace `starfleet`) and `podSelector` (for `app: probe`). How does it differ from two separate items?"
+    options:
+      - id: a
+        text: "One item allows only Pods that match both selectors. Two items allow traffic that matches either."
+        explanation: "Correct. The indentation decides whether the selectors combine with AND or OR."
+      - id: b
+        text: "One item allows every Pod in `starfleet` and ignores `podSelector`."
+        explanation: "The `podSelector` is used and narrows the match when it is in the same item."
+      - id: c
+        text: "There is no difference. Both forms allow the same traffic."
+        explanation: "They differ: two items allow traffic that matches either selector."
+    correct_option: a
+    explanation: "A single `to` item combines its selectors with AND. Separate items combine with OR."
+
+  - id: ats034-030-01-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Remove the ServiceAccount token from a Pod."
+    source_readings:
+      - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    prompt: "A Pod never calls the Kubernetes API. Which change removes the mounted ServiceAccount token?"
+    options:
+      - id: a
+        text: "`automountServiceAccountToken: false` in the Pod spec or the ServiceAccount."
+        explanation: "Correct. The kubelet does not mount the token directory for that Pod."
+      - id: b
+        text: "`readOnlyRootFilesystem: true` in the container."
+        explanation: "This changes the root filesystem. The token is a separate projected volume."
+      - id: c
+        text: "A NetworkPolicy that blocks port 443."
+        explanation: "This limits traffic to the API server but does not remove the token from the Pod."
+    correct_option: a
+    explanation: "Set `automountServiceAccountToken: false` where the API is not used. A NetworkPolicy is a second layer."
+
+  - id: ats034-030-01-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Troubleshoot a RuntimeClass with a missing handler."
+    source_readings:
+      - sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+    prompt: "A Pod with `runtimeClassName: gvisor` is accepted, scheduled, and then stays in `ContainerCreating`. The RuntimeClass exists with handler `runsc`. What is the most likely cause?"
+    options:
+      - id: a
+        text: "The RuntimeClass is namespaced and sits in another namespace."
+        explanation: "A RuntimeClass is cluster-scoped."
+      - id: b
+        text: "The Pod Security profile of the namespace rejects `runtimeClassName`."
+        explanation: "Admission would reject the Pod, not accept it."
+      - id: c
+        text: "The node does not have the `runsc` handler configured in its container runtime."
+        explanation: "Correct. A RuntimeClass names a handler. It does not install one, and the kubelet cannot create the sandbox."
+    correct_option: c
+    explanation: "The API accepts a Pod when the RuntimeClass exists. The node must have the handler, or the sandbox creation fails."

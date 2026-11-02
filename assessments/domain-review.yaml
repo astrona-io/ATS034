@@ -11,14 +11,14 @@ scope:
   title: Minimize Microservice Vulnerabilities
 placement:
   position: after
-  reading: sections/section-040/module-01/course-03-summary.md
+  reading: sections/section-040/module-01/course-05-summary.md
 questions:
 - id: ats034-domain-review-q01
   type: single_choice
   difficulty: intermediate
   learning_objective: Distinguish compliant configuration from complete application security.
   source_readings:
-  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
   prompt: A Restricted-compliant Pod returns another customer's records. Which protection still needs
     investigation?
   options:
@@ -38,7 +38,7 @@ questions:
   difficulty: intermediate
   learning_objective: Compare Privileged, Baseline and Restricted profiles.
   source_readings:
-  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
   prompt: Which Pod Security profile applies stronger hardening requirements than Baseline?
   options:
   - id: a
@@ -57,7 +57,7 @@ questions:
   difficulty: intermediate
   learning_objective: Relate image users and writable paths to profile compatibility.
   source_readings:
-  - sections/section-010/module-01/course-01-security-contexts-and-profile-requirements.md
+  - sections/section-010/module-01/course-02-security-context-fields.md
   prompt: A non-root application cannot write a required temporary directory. What is a suitable response?
   options:
   - id: a
@@ -76,7 +76,7 @@ questions:
   difficulty: intermediate
   learning_objective: Identify authorization and diagnostic exposure risks.
   source_readings:
-  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
   prompt: A debug bundle prints the application's password. Which boundary was missing?
   options:
   - id: a
@@ -95,7 +95,7 @@ questions:
   difficulty: intermediate
   learning_objective: Explain why Secret encoding is not encryption.
   source_readings:
-  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
   prompt: A Secret value is base64-encoded. What confidentiality guarantee follows from encoding alone?
   options:
   - id: a
@@ -114,7 +114,7 @@ questions:
   difficulty: intermediate
   learning_objective: Describe rotation that updates consumers and revokes old authority.
   source_readings:
-  - sections/section-020/module-01/course-01-secret-storage-delivery-and-rotation.md
+  - sections/section-020/module-01/course-03-rotating-a-secret.md
   prompt: A Secret source is updated, but consumers use startup environment values. What must rotation
     account for?
   options:
@@ -134,7 +134,7 @@ questions:
   difficulty: intermediate
   learning_objective: Distinguish namespaced API separation from kernel isolation.
   source_readings:
-  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
   prompt: What does namespace separation alone fail to establish?
   options:
   - id: a
@@ -153,7 +153,7 @@ questions:
   difficulty: intermediate
   learning_objective: Explain RuntimeClass prerequisites and scheduling effects.
   source_readings:
-  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  - sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
   prompt: What must agree with a workload's RuntimeClass selection?
   options:
   - id: a
@@ -172,7 +172,7 @@ questions:
   difficulty: intermediate
   learning_objective: Evaluate residual credentials, network and resource risks.
   source_readings:
-  - sections/section-030/module-01/course-01-choosing-isolation-for-untrusted-tenants.md
+  - sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
   prompt: What remains necessary with a sandboxed runtime?
   options:
   - id: a
@@ -191,7 +191,7 @@ questions:
   difficulty: intermediate
   learning_objective: Distinguish encrypted transport, peer authentication and authorization.
   source_readings:
-  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  - sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
   prompt: Mutual TLS verifies service peers. Which decision remains separate?
   options:
   - id: a
@@ -210,7 +210,7 @@ questions:
   difficulty: intermediate
   learning_objective: Explain where mesh components implement communication policy.
   source_readings:
-  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
   prompt: Does public TLS termination automatically encrypt the backend hop?
   options:
   - id: a
@@ -229,7 +229,7 @@ questions:
   difficulty: intermediate
   learning_objective: Relate certificate rotation and hop boundaries to trust.
   source_readings:
-  - sections/section-040/module-01/course-01-transport-protection-and-mesh-limits.md
+  - sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
   prompt: Does peer authentication authorize every application operation?
   options:
   - id: a
