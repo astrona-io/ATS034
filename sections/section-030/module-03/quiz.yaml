@@ -1,0 +1,213 @@
+# Knowledge check for module 03. Contract: schemas/question-bank.schema.json.
+# Keep question ids stable once published.
+---
+schema_version: 1
+kind: question_bank
+id: ats034-030-03
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam
+  questions.
+scope:
+  type: module
+  id: section-030/module-03
+  title: Node And Workload Separation For Tenants
+placement:
+  position: after
+  reading: sections/section-030/module-03/course-05-summary.md
+questions:
+- id: ats034-030-03-q01
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Separate the jobs of selector, taint and toleration.
+  source_readings:
+  - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+  prompt: Which setting attracts a Pod to a dedicated node?
+  options:
+  - id: a
+    text: A toleration in the Pod spec.
+    explanation: A toleration only permits a tainted node.
+  - id: b
+    text: A node selector in the Pod spec.
+    explanation: Correct. The selector matches a node label and attracts the Pod.
+  - id: c
+    text: A taint on the node.
+    explanation: A taint repels Pods.
+  correct_option: b
+  explanation: The selector attracts, the taint repels and the toleration permits.
+- id: ats034-030-03-q02
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Choose the correct taint effect.
+  source_readings:
+  - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+  prompt: You want a taint that also removes running Pods that lack a toleration.
+    Which effect do you use?
+  options:
+  - id: a
+    text: "`NoSchedule`"
+    explanation: It blocks only new Pods.
+  - id: b
+    text: "`PreferNoSchedule`"
+    explanation: It is a soft preference.
+  - id: c
+    text: "`NoExecute`"
+    explanation: Correct. It evicts running Pods without the toleration.
+  correct_option: c
+  explanation: Only NoExecute evicts running Pods.
+- id: ats034-030-03-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify the result of a missing selector.
+  source_readings:
+  - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+  prompt: A tenant Pod has the toleration for a dedicated node but no node selector.
+    Where can it run?
+  options:
+  - id: a
+    text: Only on the dedicated node.
+    explanation: The toleration does not attract the Pod.
+  - id: b
+    text: On any node it tolerates, including untainted shared nodes.
+    explanation: Correct. Without a selector the scheduler may choose any fitting
+      node.
+  - id: c
+    text: Nowhere, because the Pod is invalid.
+    explanation: A Pod with only a toleration is valid.
+  correct_option: b
+  explanation: A toleration permits and does not place.
+- id: ats034-030-03-q04
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain an empty-key toleration.
+  source_readings:
+  - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+  prompt: 'A toleration has no key and `operator: Exists`. What does it tolerate?'
+  options:
+  - id: a
+    text: Every taint.
+    explanation: Correct. It matches all keys and values.
+  - id: b
+    text: Only taints with the effect `NoExecute`.
+    explanation: The effect is not limited without an effect field.
+  - id: c
+    text: No taint, because the key is empty.
+    explanation: An empty key with Exists matches all taints.
+  correct_option: a
+  explanation: This toleration defeats node dedication.
+- id: ats034-030-03-q05
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain why a label prefix matters.
+  source_readings:
+  - sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+  prompt: Why use a label such as `node-restriction.kubernetes.io/tenant` for isolation?
+  options:
+  - id: a
+    text: A kubelet cannot set labels with that prefix on its own Node object.
+    explanation: Correct. NodeRestriction blocks it.
+  - id: b
+    text: The scheduler gives the prefix a higher priority.
+    explanation: The scheduler treats all labels the same.
+  - id: c
+    text: The prefix encrypts the label value.
+    explanation: Labels are plain text.
+  correct_option: a
+  explanation: A compromised kubelet cannot forge protected labels.
+- id: ats034-030-03-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Name the RBAC risk for node placement.
+  source_readings:
+  - sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+  prompt: Which right must a tenant not have to keep a dedicated node separate?
+  options:
+  - id: a
+    text: "`create` on Pods in its own namespace."
+    explanation: Tenants normally need this.
+  - id: b
+    text: "`patch` on nodes."
+    explanation: Correct. The tenant could relabel or untaint the node.
+  - id: c
+    text: "`get` on its own ConfigMaps."
+    explanation: This does not affect node placement.
+  correct_option: b
+  explanation: Only administrators change node labels and taints.
+- id: ats034-030-03-q07
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: State the default status of the placement plugins.
+  source_readings:
+  - sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+  prompt: Which statement about PodNodeSelector and PodTolerationRestriction is correct?
+  options:
+  - id: a
+    text: They are on by default in every cluster.
+    explanation: They are off unless an administrator enables them.
+  - id: b
+    text: An administrator must enable them with an API server flag.
+    explanation: Correct. The flag is `--enable-admission-plugins`.
+  - id: c
+    text: They need a webhook server.
+    explanation: They are built into the API server.
+  correct_option: b
+  explanation: These plugins are built in and disabled by default.
+- id: ats034-030-03-q08
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Choose a control when API server flags cannot change.
+  source_readings:
+  - sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+  prompt: You cannot change API server flags. How can you reject Pods that lack the
+    tenant node selector?
+  options:
+  - id: a
+    text: Use a ValidatingAdmissionPolicy and a binding.
+    explanation: Correct. CEL expressions check the selector field at creation.
+  - id: b
+    text: Add a taint only.
+    explanation: A taint does not force the selector.
+  - id: c
+    text: Label the namespace.
+    explanation: A label alone changes no behavior.
+  correct_option: a
+  explanation: A policy can enforce required Pod fields without plugin flags.
+- id: ats034-030-03-q09
+  type: single_choice
+  difficulty: beginner
+  learning_objective: List what crosses a node boundary.
+  source_readings:
+  - sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
+  prompt: Which resource still reaches across tenants even on dedicated nodes?
+  options:
+  - id: a
+    text: A restricted Pod security profile.
+    explanation: This limits Pods.
+  - id: b
+    text: A DaemonSet that runs on every node.
+    explanation: Correct. It runs on dedicated nodes and often holds broad rights.
+  - id: c
+    text: A node selector.
+    explanation: A selector limits placement.
+  correct_option: b
+  explanation: DaemonSets, host paths, storage and the control plane are shared.
+- id: ats034-030-03-q10
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Choose a boundary for hostile code.
+  source_readings:
+  - sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
+  prompt: A platform runs code uploaded by customers. Which set of layers fits best?
+  options:
+  - id: a
+    text: Namespaces with quota only.
+    explanation: The kernel stays shared with hostile code.
+  - id: b
+    text: A sandboxed runtime, dedicated nodes and a policy that requires the class.
+    explanation: Correct. It covers the kernel, the node and the bypass.
+  - id: c
+    text: A separate Service for each customer.
+    explanation: A Service does not isolate Pods.
+  correct_option: b
+  explanation: Hostile code needs a kernel boundary and enforcement.

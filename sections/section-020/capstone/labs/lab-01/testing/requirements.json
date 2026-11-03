@@ -1,0 +1,227 @@
+{
+  "context": "kind-astro-ats-034-capstone-020",
+  "resources": [
+    {
+      "kind": "pod",
+      "name": "credential-reader",
+      "namespace": "starfleet",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "credential-reader",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "restartPolicy": "Never",
+          "automountServiceAccountToken": false,
+          "serviceAccountName": "reader",
+          "containers": [
+            {
+              "name": "reader",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": [
+                "sh",
+                "-c",
+                "sleep 3600"
+              ],
+              "volumeMounts": [
+                {
+                  "name": "credentials",
+                  "mountPath": "/credentials",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "credentials",
+              "secret": {
+                "secretName": "probe-credentials",
+                "defaultMode": 256
+              }
+            }
+          ]
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "secret",
+      "name": "probe-credentials",
+      "namespace": "starfleet",
+      "expected": {
+        "type": "Opaque",
+        "immutable": true,
+        "data": {
+          "token": "ZGlzcG9zYWJsZS12Mw=="
+        }
+      }
+    },
+    {
+      "kind": "secret",
+      "name": "registry-pull",
+      "namespace": "starfleet",
+      "expected": {
+        "type": "kubernetes.io/dockerconfigjson"
+      }
+    },
+    {
+      "kind": "serviceaccount",
+      "name": "reader",
+      "namespace": "starfleet",
+      "expected": {
+        "imagePullSecrets": [
+          {
+            "name": "registry-pull"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "role",
+      "name": "secret-reader",
+      "namespace": "starfleet",
+      "expected": {
+        "rules": [
+          {
+            "apiGroups": [
+              ""
+            ],
+            "resources": [
+              "secrets"
+            ],
+            "resourceNames": [
+              "probe-credentials"
+            ],
+            "verbs": [
+              "get"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "credential-reader",
+        "--",
+        "sh",
+        "-c",
+        "test \"$(cat /credentials/token)\" = disposable-v3"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "credential-reader",
+        "--",
+        "sh",
+        "-c",
+        "stat -L -c %a /credentials/token"
+      ],
+      "equals": "400"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "credential-reader",
+        "--",
+        "sh",
+        "-c",
+        "test -z \"$(env | grep disposable)\""
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "auth",
+        "can-i",
+        "get",
+        "secret/probe-credentials",
+        "--as=system:serviceaccount:starfleet:reader"
+      ],
+      "equals": "yes"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "auth",
+        "can-i",
+        "list",
+        "secrets",
+        "--as=system:serviceaccount:starfleet:reader"
+      ],
+      "equals": "no",
+      "denied": true,
+      "failure_markers": [
+        "no"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "auth",
+        "can-i",
+        "get",
+        "secret/practice-token",
+        "--as=system:serviceaccount:starfleet:reader"
+      ],
+      "equals": "no",
+      "denied": true,
+      "failure_markers": [
+        "no"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "get",
+        "configmap",
+        "legacy-credentials"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "not found"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "patch",
+        "secret",
+        "probe-credentials",
+        "--type",
+        "merge",
+        "-p",
+        "{\"stringData\":{\"token\":\"changed\"}}"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "immutable"
+      ]
+    }
+  ]
+}

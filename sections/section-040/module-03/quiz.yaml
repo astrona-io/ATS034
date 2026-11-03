@@ -1,0 +1,208 @@
+# Knowledge check for section-040. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-040-03
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-040
+  title: Implement Pod-to-Pod encryption (Cilium, Istio)
+placement:
+  position: after
+  reading: sections/section-040/module-03/course-05-summary.md
+questions:
+- id: ats034-040-03-q01
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Name an uncovered path.
+  source_readings:
+  - sections/section-040/module-03/course-01-what-cilium-encrypts.md
+  prompt: Which traffic does Cilium transparent encryption not encrypt?
+  options:
+  - id: a
+    text: Traffic between Pods on different nodes
+    explanation: That is the covered path.
+  - id: b
+    text: Traffic between two Pods on the same node
+    explanation: Correct. It does not leave the node.
+  - id: c
+    text: Traffic between a Pod and a Pod on the next node over UDP
+    explanation: That is covered as well.
+  correct_option: b
+  explanation: Same-node traffic stays inside the node.
+- id: ats034-040-03-q02
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Know what encryption does not give.
+  source_readings:
+  - sections/section-040/module-03/course-01-what-cilium-encrypts.md
+  prompt: After you enable Cilium encryption, can the receiving Pod tell which workload sent a packet?
+  options:
+  - id: a
+    text: Yes, from the WireGuard key of the Pod
+    explanation: The keys belong to nodes, not Pods.
+  - id: b
+    text: No, the encryption protects the path and does not identify the workload
+    explanation: Correct. Use a policy or a mesh for identity.
+  - id: c
+    text: Yes, from the IPsec SPI
+    explanation: The SPI identifies a key.
+  correct_option: b
+  explanation: Encryption does not give workload identity.
+- id: ats034-040-03-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Check the kernel.
+  source_readings:
+  - sections/section-040/module-03/course-01-what-cilium-encrypts.md
+  prompt: From which Linux kernel version is WireGuard part of the kernel, so that Cilium can use it without extra modules?
+  options:
+  - id: a
+    text: '4.9'
+    explanation: This version has no WireGuard in the kernel.
+  - id: b
+    text: '5.6'
+    explanation: Correct. Older kernels need a module or IPsec.
+  - id: c
+    text: '6.1'
+    explanation: WireGuard was available earlier.
+  correct_option: b
+  explanation: WireGuard is in the kernel from 5.6.
+- id: ats034-040-03-q04
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Name the network port.
+  source_readings:
+  - sections/section-040/module-03/course-02-enabling-wireguard.md
+  prompt: Which port must nodes allow between each other for Cilium WireGuard?
+  options:
+  - id: a
+    text: UDP 51871
+    explanation: Correct.
+  - id: b
+    text: TCP 443
+    explanation: This is the HTTPS port.
+  - id: c
+    text: UDP 4500
+    explanation: This port is for some IPsec modes.
+  correct_option: a
+  explanation: WireGuard uses UDP port 51871.
+- id: ats034-040-03-q05
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain node encryption.
+  source_readings:
+  - sections/section-040/module-03/course-02-enabling-wireguard.md
+  prompt: What does `encryption.nodeEncryption=true` add for WireGuard?
+  options:
+  - id: a
+    text: It encrypts traffic between the nodes and traffic of Pods on host networking
+    explanation: Correct.
+  - id: b
+    text: It encrypts traffic between Pods on the same node
+    explanation: Same-node traffic stays unencrypted.
+  - id: c
+    text: It adds workload identity
+    explanation: Encryption does not give identity.
+  correct_option: a
+  explanation: Node encryption extends the scope to node traffic.
+- id: ats034-040-03-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Diagnose a disabled agent.
+  source_readings:
+  - sections/section-040/module-03/course-02-enabling-wireguard.md
+  - sections/section-040/module-03/course-04-verifying-and-limits.md
+  prompt: 'The Helm values enable encryption, but an agent reports `Encryption: Disabled`. What is the most likely cause?'
+  options:
+  - id: a
+    text: The kernel is too new
+    explanation: A new kernel does not disable encryption.
+  - id: b
+    text: The agent was not restarted after the change
+    explanation: Correct. The agents read the settings at start.
+  - id: c
+    text: The Pods use the wrong Service
+    explanation: Services do not affect the agent state.
+  correct_option: b
+  explanation: Restart the DaemonSet after a change.
+- id: ats034-040-03-q07
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Place the key Secret.
+  source_readings:
+  - sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
+  prompt: In which namespace must the IPsec key Secret be, so the Cilium agents read it?
+  options:
+  - id: a
+    text: "`default`"
+    explanation: The agents do not read it there.
+  - id: b
+    text: "`kube-system`"
+    explanation: Correct. The agents read their Secret from `kube-system`.
+  - id: c
+    text: "`istio-system`"
+    explanation: That is the Istio namespace.
+  correct_option: b
+  explanation: The Secret belongs in kube-system.
+- id: ats034-040-03-q08
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Rotate an IPsec key.
+  source_readings:
+  - sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
+  prompt: The current key line starts with `3+`. How do you rotate it correctly?
+  options:
+  - id: a
+    text: Replace the value with a new key and a higher SPI such as `4+`
+    explanation: Correct. The agents identify keys by SPI.
+  - id: b
+    text: Replace the key and keep SPI `3+`
+    explanation: Same SPI means the agents cannot tell the keys apart.
+  - id: c
+    text: Wait, Cilium rotates IPsec keys by itself
+    explanation: Cilium does not rotate IPsec keys on its own.
+  correct_option: a
+  explanation: A rotation needs a new key and a new SPI.
+- id: ats034-040-03-q09
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Read a packet capture.
+  source_readings:
+  - sections/section-040/module-03/course-04-verifying-and-limits.md
+  prompt: A capture on a node interface while two Pods on different nodes talk with HTTP shows UDP packets on port 51871 and no readable request text. What does it prove?
+  options:
+  - id: a
+    text: The traffic between the nodes is encrypted with WireGuard
+    explanation: Correct.
+  - id: b
+    text: The traffic is encrypted end to end between applications
+    explanation: The encryption covers the node-to-node path only.
+  - id: c
+    text: The Pods are authenticated by name
+    explanation: Encryption does not authenticate Pods.
+  correct_option: a
+  explanation: It proves node-to-node encryption on the wire.
+- id: ats034-040-03-q10
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Find the gap.
+  source_readings:
+  - sections/section-040/module-03/course-04-verifying-and-limits.md
+  prompt: "`cilium-dbg encrypt status` on one node lists two peers, but the cluster has four other nodes. What does this mean?"
+  options:
+  - id: a
+    text: Traffic to the two missing nodes from this node is not encrypted
+    explanation: Correct. A missing peer leaves that path without encryption.
+  - id: b
+    text: All traffic is encrypted, the list shows only active connections
+    explanation: The list shows peers, not connections.
+  - id: c
+    text: Same-node traffic is now encrypted
+    explanation: That is not related to peers.
+  correct_option: a
+  explanation: A missing peer means an unencrypted path.

@@ -1,0 +1,17 @@
+---
+draft: true
+exam_objectives:
+- Use appropriate pod security standards
+---
+# Prerequisites
+
+Use astrona, kubectl, Python 3, Podman and a shell. Node inspection exercises use the containers in this environment, not the physical host.
+
+Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+
+```sh
+export KUBECONFIG="$(astrona kubeconfig ats-034-capstone-010)"
+test "$(kubectl config current-context)" = "kind-ats-034-capstone-010" || exit 1
+```
+
+Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.

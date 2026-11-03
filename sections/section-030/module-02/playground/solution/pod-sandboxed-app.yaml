@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sandboxed-app
+  namespace: tenant-b
+  labels:
+    app: sandboxed-app
+spec:
+  runtimeClassName: sandboxed
+  restartPolicy: Never
+  containers:
+  - name: app
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -c
+    - sleep 3600

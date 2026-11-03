@@ -1,0 +1,229 @@
+# Knowledge check for module 02. Contract: schemas/question-bank.schema.json.
+# Keep question ids stable once published.
+---
+schema_version: 1
+kind: question_bank
+id: ats034-030-02
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam
+  questions.
+scope:
+  type: module
+  id: section-030/module-02
+  title: Sandboxed Runtimes, Scheduling And Enforcement
+placement:
+  position: after
+  reading: sections/section-030/module-02/course-05-summary.md
+questions:
+- id: ats034-030-02-q01
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Name the component that reads the handler of a RuntimeClass.
+  source_readings:
+  - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+  prompt: 'A Pod sets `runtimeClassName: gvisor`. Which component reads the `handler`
+    field of that RuntimeClass and sends it to the container runtime?'
+  options:
+  - id: a
+    text: The kubelet on the node that runs the Pod.
+    explanation: Correct. The kubelet reads the class and sends the handler name in
+      the CRI request.
+  - id: b
+    text: The scheduler.
+    explanation: The scheduler uses node selectors and resources. It does not start
+      sandboxes.
+  - id: c
+    text: The API server.
+    explanation: The API server stores the class and merges fields. It does not start
+      containers.
+  correct_option: a
+  explanation: The kubelet reads the handler and asks the runtime to create the Pod
+    sandbox with it.
+- id: ats034-030-02-q02
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Tell a missing RuntimeClass from a missing handler.
+  source_readings:
+  - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+  prompt: A RuntimeClass exists with handler `runsc`, but the node has no `runsc`
+    handler. What happens to a Pod that uses it?
+  options:
+  - id: a
+    text: The API server rejects the Pod.
+    explanation: The API server rejects a Pod only when the RuntimeClass object is
+      missing.
+  - id: b
+    text: The Pod is accepted and stays in `ContainerCreating`.
+    explanation: Correct. The kubelet cannot create the sandbox, and the events name
+      the missing handler.
+  - id: c
+    text: The Pod runs on the default handler.
+    explanation: There is no fallback to another handler.
+  correct_option: b
+  explanation: A missing object is rejected at creation. A missing handler fails on
+    the node.
+- id: ats034-030-02-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify what selects the shim in containerd.
+  source_readings:
+  - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+  prompt: Which value inside a containerd handler table selects the shim, such as
+    `io.containerd.runsc.v1`?
+  options:
+  - id: a
+    text: "`runtime_type`"
+    explanation: Correct. The runtime type names the shim that containerd starts.
+  - id: b
+    text: "`nodeSelector`"
+    explanation: That is a Kubernetes scheduling field, not a containerd setting.
+  - id: c
+    text: "`overhead`"
+    explanation: Overhead is a RuntimeClass field for accounting, not a shim selector.
+  correct_option: a
+  explanation: containerd maps the handler name to a table whose runtime type names
+    the shim.
+- id: ats034-030-02-q04
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Describe where gVisor places its boundary.
+  source_readings:
+  - sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+  prompt: Where does gVisor place its extra isolation boundary?
+  options:
+  - id: a
+    text: In a user-space kernel, the Sentry, that handles the application system
+      calls.
+    explanation: Correct. The Sentry makes only a small set of calls to the host kernel.
+  - id: b
+    text: In a virtual machine with a guest kernel.
+    explanation: That describes Kata Containers.
+  - id: c
+    text: In the Linux network namespace.
+    explanation: Network namespaces exist for ordinary containers too.
+  correct_option: a
+  explanation: gVisor intercepts system calls with the Sentry, a kernel written in
+    Go.
+- id: ats034-030-02-q05
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Select a runtime for a node without virtualization.
+  source_readings:
+  - sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+  prompt: The nodes are cloud virtual machines without nested virtualization, and
+    the workload uses common system calls. Which sandbox fits?
+  options:
+  - id: a
+    text: Kata Containers, because it needs no hardware features.
+    explanation: Kata needs virtualization support on the node.
+  - id: b
+    text: gVisor, because it does not need hardware virtualization.
+    explanation: Correct. runsc runs as a process on a normal kernel.
+  - id: c
+    text: Neither, because only runc works on virtual machines.
+    explanation: Sandboxes can run on virtual machines, depending on the runtime.
+  correct_option: b
+  explanation: gVisor needs no virtualization. Kata needs it.
+- id: ats034-030-02-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Interpret the kernel release seen in a container.
+  source_readings:
+  - sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+  prompt: On a node without a sandbox, `uname -r` inside a Pod prints the same value
+    as the node. What does this show?
+  options:
+  - id: a
+    text: The container uses the host kernel directly.
+    explanation: Correct. An ordinary container shares the kernel of its node.
+  - id: b
+    text: The Pod runs in a gVisor sandbox.
+    explanation: A sandbox presents a different kernel release.
+  - id: c
+    text: The Pod runs in a Kata virtual machine.
+    explanation: Kata presents the guest kernel, which differs from the node.
+  correct_option: a
+  explanation: Equal values mean no kernel boundary.
+- id: ats034-030-02-q07
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Predict the fields a RuntimeClass adds to a Pod.
+  source_readings:
+  - sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
+  prompt: A RuntimeClass has `overhead.podFixed` and `scheduling.nodeSelector`. The
+    Pod sets neither field. What does the stored Pod contain?
+  options:
+  - id: a
+    text: Both fields, copied in by the RuntimeClass admission plugin.
+    explanation: Correct. The plugin adds overhead and merges the node selector.
+  - id: b
+    text: Neither field, because the scheduler reads the class directly.
+    explanation: The fields are written into the Pod at admission.
+  - id: c
+    text: Only the overhead.
+    explanation: The node selector and tolerations are merged too.
+  correct_option: a
+  explanation: Admission copies the overhead and merges the scheduling fields into
+    the Pod.
+- id: ats034-030-02-q08
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain a Pending sandboxed Pod.
+  source_readings:
+  - sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
+  prompt: 'A Pod with a class whose node selector is `sandbox: "true"` stays Pending,
+    and no node has that label. What is the fix?'
+  options:
+  - id: a
+    text: Add a toleration to the Pod.
+    explanation: A toleration permits tainted nodes. It does not select nodes.
+  - id: b
+    text: Label a node that has the handler with `sandbox=true`.
+    explanation: Correct. The merged selector then matches a node.
+  - id: c
+    text: Delete the RuntimeClass.
+    explanation: The Pod would then be rejected, and the sandbox would be lost.
+  correct_option: b
+  explanation: The node selector attracts the Pod only to labeled nodes.
+- id: ats034-030-02-q09
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Describe how a ValidatingAdmissionPolicy is applied.
+  source_readings:
+  - sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
+  prompt: A ValidatingAdmissionPolicy exists, but Pods without the class are still
+    accepted. What is the most likely cause?
+  options:
+  - id: a
+    text: No ValidatingAdmissionPolicyBinding applies the policy to the namespace.
+    explanation: Correct. A policy is evaluated only through a binding.
+  - id: b
+    text: The scheduler ignored the policy.
+    explanation: The scheduler is not part of admission.
+  - id: c
+    text: Policies apply only to Deployments.
+    explanation: The match rules above name Pods.
+  correct_option: a
+  explanation: A policy needs a binding with a validation action.
+- id: ats034-030-02-q10
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Name what the policy does not prove.
+  source_readings:
+  - sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
+  prompt: A policy rejects Pods whose `runtimeClassName` is not `sandboxed`. What
+    does an accepted Pod still not prove?
+  options:
+  - id: a
+    text: That the Pod requested the class `sandboxed`.
+    explanation: The policy proves exactly that.
+  - id: b
+    text: That the node has a working sandbox handler.
+    explanation: Correct. The expression checks the requested name only.
+  - id: c
+    text: That the Pod was created after the binding.
+    explanation: Enforcement applies to creation, so this holds for accepted Pods.
+  correct_option: b
+  explanation: Admission checks the request. The node must still provide the handler.

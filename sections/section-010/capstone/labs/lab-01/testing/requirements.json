@@ -1,0 +1,280 @@
+{
+  "context": "kind-ats-034-capstone-010",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "starfleet",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "starfleet",
+          "labels": {
+            "project": "ckad",
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35",
+            "pod-security.kubernetes.io/warn": "restricted",
+            "pod-security.kubernetes.io/warn-version": "v1.35",
+            "pod-security.kubernetes.io/audit": "restricted",
+            "pod-security.kubernetes.io/audit-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "namespace",
+      "name": "outpost",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "outpost",
+          "labels": {
+            "project": "outpost",
+            "pod-security.kubernetes.io/enforce": "baseline",
+            "pod-security.kubernetes.io/enforce-version": "v1.35",
+            "pod-security.kubernetes.io/warn": "restricted",
+            "pod-security.kubernetes.io/warn-version": "v1.35",
+            "pod-security.kubernetes.io/audit": "restricted",
+            "pod-security.kubernetes.io/audit-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "namespace",
+      "name": "dock",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "dock",
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "probe",
+      "namespace": "starfleet",
+      "state": "deployment",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "replicas": 2,
+          "selector": {
+            "matchLabels": {
+              "app": "probe",
+              "release": "probe"
+            }
+          },
+          "template": {
+            "spec": {
+              "securityContext": {
+                "runAsNonRoot": true,
+                "runAsUser": 1000,
+                "seccompProfile": {
+                  "type": "RuntimeDefault"
+                }
+              },
+              "containers": [
+                {
+                  "name": "probe",
+                  "image": "docker.io/library/python:3.13-alpine",
+                  "command": [
+                    "python",
+                    "/app/server.py"
+                  ],
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                      "drop": [
+                        "ALL"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "scout",
+      "namespace": "dock",
+      "state": "deployment",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scout",
+          "namespace": "dock"
+        },
+        "spec": {
+          "replicas": 1,
+          "selector": {
+            "matchLabels": {
+              "app": "scout"
+            }
+          },
+          "template": {
+            "spec": {
+              "securityContext": {
+                "runAsNonRoot": true,
+                "runAsUser": 1000,
+                "seccompProfile": {
+                  "type": "RuntimeDefault"
+                }
+              },
+              "containers": [
+                {
+                  "name": "scout",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "readOnlyRootFilesystem": true,
+                    "capabilities": {
+                      "drop": [
+                        "ALL"
+                      ]
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "scratch",
+                      "mountPath": "/scratch"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "scratch",
+                  "emptyDir": {}
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet",
+      "state": "pod",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "shuttle",
+          "namespace": "starfleet"
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "drifter",
+      "namespace": "outpost",
+      "state": "pod",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "drifter",
+          "namespace": "outpost"
+        }
+      }
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "shuttle",
+        "--",
+        "wget",
+        "-q",
+        "-T",
+        "5",
+        "-O-",
+        "http://probe"
+      ],
+      "contains": [
+        "version=v1"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "deploy/probe",
+        "--",
+        "id",
+        "-u"
+      ],
+      "equals": "1000"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "dock",
+        "exec",
+        "deploy/scout",
+        "--",
+        "id",
+        "-u"
+      ],
+      "equals": "1000"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "dock",
+        "exec",
+        "deploy/scout",
+        "--",
+        "cat",
+        "/scratch/state"
+      ],
+      "equals": "ready"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "dock",
+        "exec",
+        "deploy/scout",
+        "--",
+        "touch",
+        "/rootfile"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "read-only file system",
+        "permission denied"
+      ]
+    }
+  ]
+}

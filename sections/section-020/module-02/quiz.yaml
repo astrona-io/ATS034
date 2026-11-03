@@ -1,0 +1,217 @@
+# Knowledge check for section-020 module-02. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-020-02
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-020
+  title: "Manage Kubernetes secrets"
+placement:
+  position: after
+  reading: sections/section-020/module-02/course-05-summary.md
+questions:
+  - id: ats034-020-02-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "State the default Secret type."
+    source_readings:
+      - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    prompt: "A Secret manifest has no `type` field. Which type does the API server assign?"
+    options:
+      - id: a
+        text: "`kubernetes.io/basic-auth`"
+        explanation: "That type needs a `username` or `password` key and is never a default."
+      - id: b
+        text: "`Opaque`"
+        explanation: "Correct. `Opaque` accepts any keys."
+      - id: c
+        text: "`kubernetes.io/tls`"
+        explanation: "That type needs `tls.crt` and `tls.key` and is never a default."
+    correct_option: b
+    explanation: "The default type is `Opaque`, which accepts any keys."
+
+  - id: ats034-020-02-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Identify the keys a TLS Secret requires."
+    source_readings:
+      - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    prompt: "Which keys must a Secret of type `kubernetes.io/tls` contain?"
+    options:
+      - id: a
+        text: "`tls.crt` and `tls.key`"
+        explanation: "Correct. The API server rejects the Secret if either key is missing."
+      - id: b
+        text: "`username` and `password`"
+        explanation: "These keys belong to `kubernetes.io/basic-auth`."
+      - id: c
+        text: "`.dockerconfigjson`"
+        explanation: "This key belongs to `kubernetes.io/dockerconfigjson`."
+    correct_option: a
+    explanation: "The TLS type requires a certificate key and a private key key."
+
+  - id: ats034-020-02-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain what Secret type validation does."
+    source_readings:
+      - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    prompt: "A manifest declares type `kubernetes.io/basic-auth` and holds only the key `token`. What happens on `kubectl apply`?"
+    options:
+      - id: a
+        text: "The API server stores it and logs a warning."
+        explanation: "Typed Secrets are validated and not stored when invalid."
+      - id: b
+        text: "The API server rejects it because a required key is missing."
+        explanation: "Correct. The type check runs when the object is created."
+      - id: c
+        text: "The API server stores it and adds empty `username` and `password` keys."
+        explanation: "The API server never adds keys to a Secret."
+    correct_option: b
+    explanation: "Typed Secrets are checked at creation, and a missing required key is an error."
+
+  - id: ats034-020-02-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State that the type of a Secret cannot change."
+    source_readings:
+      - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    prompt: "You created a Secret as `Opaque` and now want it to be `kubernetes.io/tls`. What must you do?"
+    options:
+      - id: a
+        text: "Patch the `type` field."
+        explanation: "The API server rejects a change of type."
+      - id: b
+        text: "Edit the Secret with `kubectl edit` and save."
+        explanation: "The same rule applies to `kubectl edit`."
+      - id: c
+        text: "Delete the Secret and create it again with the new type."
+        explanation: "Correct. The type is fixed after creation."
+    correct_option: c
+    explanation: "The type field is immutable, so you recreate the Secret."
+
+  - id: ats034-020-02-q05
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Find where the kubelet reads a registry credential."
+    source_readings:
+      - sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
+    prompt: "Which Secret type does the kubelet read to pull an image from a private registry?"
+    options:
+      - id: a
+        text: "`kubernetes.io/dockerconfigjson`"
+        explanation: "Correct. It holds the key `.dockerconfigjson`."
+      - id: b
+        text: "`Opaque`"
+        explanation: "The kubelet looks for the registry type, not for any Opaque Secret."
+      - id: c
+        text: "`kubernetes.io/service-account-token`"
+        explanation: "That type holds a ServiceAccount token, not a registry login."
+    correct_option: a
+    explanation: "Registry credentials use `kubernetes.io/dockerconfigjson` and are named in `imagePullSecrets`."
+
+  - id: ats034-020-02-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare bound tokens with legacy token Secrets."
+    source_readings:
+      - sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
+    prompt: "Why is a bound ServiceAccount token safer than a token in a `kubernetes.io/service-account-token` Secret?"
+    options:
+      - id: a
+        text: "It is encrypted with a longer key."
+        explanation: "Both are signed tokens. Length is not the difference."
+      - id: b
+        text: "It expires and is tied to the Pod, so it stops working after the Pod is deleted."
+        explanation: "Correct. The kubelet requests it through the TokenRequest API and refreshes it."
+      - id: c
+        text: "It is stored in `etcd` instead of a Secret."
+        explanation: "A bound token is not stored as a Secret at all."
+    correct_option: b
+    explanation: "A legacy token never expires. A bound token expires and is tied to a Pod."
+
+  - id: ats034-020-02-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State what an immutable Secret prevents."
+    source_readings:
+      - sections/section-020/module-02/course-03-immutable-secrets.md
+    prompt: "A Secret has `immutable: true`. A user with update rights sends a patch that sets `immutable` to `false`. What happens?"
+    options:
+      - id: a
+        text: "The API server accepts it and unlocks the Secret."
+        explanation: "Unlocking is not allowed."
+      - id: b
+        text: "The API server rejects it, because the lock cannot be removed."
+        explanation: "Correct. You delete the Secret and create a new one."
+      - id: c
+        text: "The API server accepts it only for the Secret owner."
+        explanation: "The API server has no owner exception."
+    correct_option: b
+    explanation: "Immutability cannot be undone. The only change is delete and recreate."
+
+  - id: ats034-020-02-q08
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Plan the rotation of an immutable Secret used by a Deployment."
+    source_readings:
+      - sections/section-020/module-02/course-03-immutable-secrets.md
+    prompt: "A Deployment mounts the immutable Secret `db-v1`. You must change the password. Which procedure rolls out the new value?"
+    options:
+      - id: a
+        text: "Patch the data of `db-v1` and wait for the kubelet to sync."
+        explanation: "The API server rejects the patch."
+      - id: b
+        text: "Delete `db-v1`, create `db-v1` again and wait."
+        explanation: "The Pod template does not change, so no rollout starts."
+      - id: c
+        text: "Create `db-v2`, change the Pod template to use it and let the rolling update restart the Pods."
+        explanation: "Correct. A changed template makes the Deployment start new Pods."
+    correct_option: c
+    explanation: "Use a new name and change the Pod template so a rolling update loads the new value."
+
+  - id: ats034-020-02-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write a Role limited to one Secret."
+    source_readings:
+      - sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+    prompt: "Which Role rule lets a ServiceAccount read only the Secret `practice-token`?"
+    options:
+      - id: a
+        text: "Resource `secrets`, verb `get`, `resourceNames: [practice-token]`"
+        explanation: "Correct. `get` names the object in the request."
+      - id: b
+        text: "Resource `secrets`, verbs `list` and `watch`, `resourceNames: [practice-token]`"
+        explanation: "`list` and `watch` do not name one object and return many values."
+      - id: c
+        text: "Resource `*`, verb `get`"
+        explanation: "The wildcard includes every resource, Secrets included."
+    correct_option: a
+    explanation: "A `get` rule with `resourceNames` limits access to one named Secret."
+
+  - id: ats034-020-02-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify the Pod creation path to a Secret."
+    source_readings:
+      - sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+    prompt: "A ServiceAccount cannot `get` Secrets, but its Role allows `create` on Pods in the namespace. Why is that still a risk to the Secrets there?"
+    options:
+      - id: a
+        text: "A Pod can mount any Secret of its namespace and the process can read the file."
+        explanation: "Correct. Reading through a Pod uses the kubelet, not the Secret API."
+      - id: b
+        text: "`create` on Pods automatically grants `get` on Secrets."
+        explanation: "RBAC verbs are separate and do not imply each other."
+      - id: c
+        text: "The API server prints Secret values when a Pod is created."
+        explanation: "The API server does not print values on Pod creation."
+    correct_option: a
+    explanation: "Permission to create Pods is permission to read every Secret in the namespace."
+

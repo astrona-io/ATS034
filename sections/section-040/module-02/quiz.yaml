@@ -1,0 +1,207 @@
+# Knowledge check for section-040. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-040-02
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-040
+  title: Implement Pod-to-Pod encryption (Cilium, Istio)
+placement:
+  position: after
+  reading: sections/section-040/module-02/course-05-summary.md
+questions:
+- id: ats034-040-02-q01
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Name the strict mode.
+  source_readings:
+  - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+  prompt: Which `PeerAuthentication` mode makes the receiving sidecar close every plain-text connection?
+  options:
+  - id: a
+    text: "`PERMISSIVE`"
+    explanation: It accepts mTLS and plain text.
+  - id: b
+    text: "`STRICT`"
+    explanation: Correct. It accepts only mTLS.
+  - id: c
+    text: "`DISABLE`"
+    explanation: It accepts only plain text.
+  correct_option: b
+  explanation: "`STRICT` accepts only mTLS connections."
+- id: ats034-040-02-q02
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Choose the scope of a mesh-wide policy.
+  source_readings:
+  - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+  prompt: Where must a `PeerAuthentication` be created, and with which selector, to cover every workload in the mesh?
+  options:
+  - id: a
+    text: In `istio-system`, with no selector
+    explanation: Correct. The root namespace without a selector sets the mesh default.
+  - id: b
+    text: In `default`, with no selector
+    explanation: That covers only the namespace `default`.
+  - id: c
+    text: 'In `istio-system`, with a selector for `app: istiod`'
+    explanation: That covers only the matching Pods.
+  correct_option: a
+  explanation: The root namespace and no selector give the mesh scope.
+- id: ats034-040-02-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Predict the winning policy.
+  source_readings:
+  - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+  prompt: 'A namespace policy sets `PERMISSIVE`. A workload policy in the same namespace selects `app: ledger` and sets `STRICT`. Which mode applies to the `ledger` Pods?'
+  options:
+  - id: a
+    text: "`PERMISSIVE`, because the namespace policy is older"
+    explanation: Age decides only between policies of the same scope.
+  - id: b
+    text: A merge of both policies
+    explanation: Policies do not merge.
+  - id: c
+    text: "`STRICT`, because the narrower policy wins"
+    explanation: Correct. The workload policy replaces the namespace policy for the Pods it selects.
+  correct_option: c
+  explanation: The most specific policy applies.
+- id: ats034-040-02-q04
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify the port in `portLevelMtls`.
+  source_readings:
+  - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+  prompt: The `ledger` container listens on port 8080 and its Service exposes port 80. Which port number goes into `portLevelMtls`?
+  options:
+  - id: a
+    text: 80, the Service port
+    explanation: The Service port is not used.
+  - id: b
+    text: 8080, the port the workload listens on
+    explanation: Correct. The setting applies to the workload port.
+  - id: c
+    text: Either one, Istio maps them
+    explanation: Istio does not map them for this field.
+  correct_option: b
+  explanation: Port-level settings use the workload port.
+- id: ats034-040-02-q05
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Order the migration.
+  source_readings:
+  - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  prompt: What is the first step in moving a namespace from `PERMISSIVE` to `STRICT`?
+  options:
+  - id: a
+    text: Apply `STRICT` and fix failures later
+    explanation: That breaks plain-text clients at once.
+  - id: b
+    text: Delete `istiod` to reset the certificates
+    explanation: That does not prepare the clients.
+  - id: c
+    text: Inject sidecars into the workloads that talk to the namespace
+    explanation: Correct. Clients need a sidecar to send mTLS.
+  correct_option: c
+  explanation: Inject sidecars first, then enforce.
+- id: ats034-040-02-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Find plain-text clients.
+  source_readings:
+  - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  prompt: Which label of the metric `istio_requests_total` shows that a request arrived in plain text?
+  options:
+  - id: a
+    text: "`connection_security_policy` with the value `none`"
+    explanation: Correct. The value `mutual_tls` marks encrypted requests.
+  - id: b
+    text: "`response_code` with the value 200"
+    explanation: The response code does not show the transport.
+  - id: c
+    text: "`destination_version` with the value `v1`"
+    explanation: The version does not show the transport.
+  correct_option: a
+  explanation: The label connection_security_policy separates mTLS from plain text.
+- id: ats034-040-02-q07
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Keep one legacy path open.
+  source_readings:
+  - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  prompt: A namespace is `STRICT`. An old client without a sidecar must still reach the `legacy` workload, and nothing else. What is the narrowest change?
+  options:
+  - id: a
+    text: Set the namespace policy to `PERMISSIVE`
+    explanation: That opens every workload to plain text.
+  - id: b
+    text: Create a workload policy with `PERMISSIVE` that selects the `legacy` Pods
+    explanation: Correct. The workload policy replaces the namespace policy for those Pods only.
+  - id: c
+    text: Delete the `PeerAuthentication` of the namespace
+    explanation: That opens every workload to plain text.
+  correct_option: b
+  explanation: Use a selector-based exception.
+- id: ats034-040-02-q08
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Locate the private key.
+  source_readings:
+  - sections/section-040/module-02/course-03-certificates-and-workload-identity.md
+  prompt: Where does the private key of a workload certificate stay?
+  options:
+  - id: a
+    text: In a Secret in `istio-system`
+    explanation: "`istiod` does not store workload keys."
+  - id: b
+    text: In the Pod, created by `pilot-agent`, and it never leaves it
+    explanation: Correct. Only the signing request goes to `istiod`.
+  - id: c
+    text: On the node disk, shared by all Pods
+    explanation: Keys are not shared.
+  correct_option: b
+  explanation: The key is created in the Pod and stays there.
+- id: ats034-040-02-q09
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Write the principal.
+  source_readings:
+  - sections/section-040/module-02/course-03-certificates-and-workload-identity.md
+  prompt: Which principal in an `AuthorizationPolicy` names the ServiceAccount `shuttle` in the namespace `starfleet` with the default trust domain?
+  options:
+  - id: a
+    text: "`cluster.local/ns/starfleet/sa/shuttle`"
+    explanation: Correct. It is the SPIFFE ID without the `spiffe://` prefix.
+  - id: b
+    text: "`starfleet/shuttle`"
+    explanation: This is not the principal format.
+  - id: c
+    text: "`spiffe://starfleet/shuttle`"
+    explanation: The format has the trust domain, `ns` and `sa` parts.
+  correct_option: a
+  explanation: The principal has the trust domain, the namespace and the ServiceAccount.
+- id: ats034-040-02-q10
+  type: single_choice
+  difficulty: advanced
+  learning_objective: Diagnose a client-side conflict.
+  source_readings:
+  - sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+  prompt: 'The namespace is `STRICT`. A client with a sidecar gets HTTP 503 from `probe`. A `DestinationRule` for `probe` sets `tls.mode: DISABLE`. What is the cause?'
+  options:
+  - id: a
+    text: The client sidecar sends plain text, and the server rejects it
+    explanation: Correct. Remove the rule or set `ISTIO_MUTUAL`.
+  - id: b
+    text: The certificate of the server expired
+    explanation: Expired certificates renew automatically.
+  - id: c
+    text: "`STRICT` does not work with sidecars"
+    explanation: "`STRICT` is meant for sidecars."
+  correct_option: a
+  explanation: The DestinationRule overrides the client behaviour.

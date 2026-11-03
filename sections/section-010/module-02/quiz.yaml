@@ -1,0 +1,216 @@
+# Knowledge check for section-010 module-02. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-010-02
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-010
+  title: "Harden Container Privileges"
+placement:
+  position: after
+  reading: sections/section-010/module-02/course-05-summary.md
+questions:
+  - id: ats034-010-02-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict the result of runAsNonRoot with an image that runs as root."
+    source_readings:
+      - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
+    prompt: "A container sets `runAsNonRoot: true` but no `runAsUser`, and its image runs as user 0. What happens?"
+    options:
+      - id: a
+        text: "The kubelet refuses to start the container and the Pod shows `CreateContainerConfigError`."
+        explanation: "Correct. The kubelet checks the effective user before it starts the container."
+      - id: b
+        text: "The API server rejects the Pod when it is created."
+        explanation: "The API server cannot read the user of the image, so it admits the Pod. The kubelet makes the check."
+      - id: c
+        text: "The container starts and runs as a random non-root user."
+        explanation: "Kubernetes does not choose another user. It only refuses to run as root."
+    correct_option: a
+    explanation: "The kubelet knows the image user at start time, so it blocks the container and reports a configuration error."
+
+  - id: ats034-010-02-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "State what fsGroup does."
+    source_readings:
+      - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
+    prompt: "What does `fsGroup` in a Pod security context do?"
+    options:
+      - id: a
+        text: "It sets the user ID of the container process."
+        explanation: "The field `runAsUser` sets the user ID."
+      - id: b
+        text: "It makes volumes that support ownership use the group as their group owner, and adds it to the process groups."
+        explanation: "Correct. This lets a non-root process write to a mounted volume."
+      - id: c
+        text: "It limits which Linux capabilities the process can use."
+        explanation: "Capabilities are set with `capabilities` in the container security context."
+    correct_option: b
+    explanation: "The field `fsGroup` changes the group ownership of supported volumes so a non-root user can write to them."
+
+  - id: ats034-010-02-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe the capability rule of the Restricted profile."
+    source_readings:
+      - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+    prompt: "Which capability rule does the Restricted profile apply to containers?"
+    options:
+      - id: a
+        text: "Containers must drop ALL capabilities and may add back only NET_BIND_SERVICE."
+        explanation: "Correct. This is the Restricted rule."
+      - id: b
+        text: "Containers may keep the default capabilities but must not add any."
+        explanation: "Restricted requires dropping ALL, not just adding none."
+      - id: c
+        text: "Containers may add any capability except SYS_ADMIN."
+        explanation: "Restricted allows only NET_BIND_SERVICE to be added."
+    correct_option: a
+    explanation: "Restricted requires `drop: [\"ALL\"]` and allows only NET_BIND_SERVICE to be added back."
+
+  - id: ats034-010-02-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain what allowPrivilegeEscalation false sets."
+    source_readings:
+      - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+    prompt: "A container sets `allowPrivilegeEscalation: false`. What can an administrator see in `/proc/1/status` of the container?"
+    options:
+      - id: a
+        text: "`NoNewPrivs: 1`, which means the process cannot gain more privileges than it has."
+        explanation: "Correct. The field sets the `no_new_privs` flag."
+      - id: b
+        text: "`CapEff` set to all zeros, because capabilities are dropped."
+        explanation: "Dropping capabilities is a separate field. This field sets `no_new_privs`."
+      - id: c
+        text: "`Seccomp: 2`, because system calls are filtered."
+        explanation: "Seccomp is set with the seccompProfile field."
+    correct_option: a
+    explanation: "The field sets the no_new_privs flag, which the status file shows as NoNewPrivs 1."
+
+  - id: ats034-010-02-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify a contradiction rejected by API validation."
+    source_readings:
+      - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+    prompt: "A Pod sets `privileged: true` and `allowPrivilegeEscalation: false` in the same container. Which component rejects it?"
+    options:
+      - id: a
+        text: "Pod Security Admission, because the Pod breaks Baseline."
+        explanation: "The API server validation rejects it before the admission plugin applies profile rules."
+      - id: b
+        text: "API server validation, because the two fields contradict each other."
+        explanation: "Correct. A privileged container always can escalate, so the combination is invalid."
+      - id: c
+        text: "The kubelet, when the container starts."
+        explanation: "The Pod never reaches the kubelet."
+    correct_option: b
+    explanation: "The API server validates the Pod object and rejects the contradictory combination at creation."
+
+  - id: ats034-010-02-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State the seccomp rule of the Restricted profile."
+    source_readings:
+      - sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+    prompt: "Which `seccompProfile` types does Restricted allow?"
+    options:
+      - id: a
+        text: "RuntimeDefault and Localhost."
+        explanation: "Correct. A profile must be set, and Unconfined is not allowed."
+      - id: b
+        text: "Only Unconfined, because other types block system calls."
+        explanation: "Unconfined removes the filter and Restricted does not allow it."
+      - id: c
+        text: "Any type, or no profile at all."
+        explanation: "Restricted requires a profile to be set."
+    correct_option: a
+    explanation: "Restricted requires RuntimeDefault or Localhost and rejects Unconfined and an unset profile."
+
+  - id: ats034-010-02-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify where AppArmor and SELinux are enforced."
+    source_readings:
+      - sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+    prompt: "A Pod sets an AppArmor profile. Which component enforces the profile when the container runs?"
+    options:
+      - id: a
+        text: "The API server, when the Pod is created."
+        explanation: "The API server only checks the field values."
+      - id: b
+        text: "The Linux kernel on the node, through the container runtime."
+        explanation: "Correct. Mandatory access control is a kernel feature."
+      - id: c
+        text: "The scheduler, when it picks a node."
+        explanation: "The scheduler does not enforce access control profiles."
+    correct_option: b
+    explanation: "Pod Security Admission checks the fields, and the kernel on the node enforces AppArmor and SELinux."
+
+  - id: ats034-010-02-q08
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the host namespace settings that Baseline rejects."
+    source_readings:
+      - sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+    prompt: "Which setting does the Baseline profile reject?"
+    options:
+      - id: a
+        text: "`hostNetwork: true`"
+        explanation: "Correct. Baseline rejects host namespaces such as hostNetwork, hostPID and hostIPC."
+      - id: b
+        text: "`runAsUser: 1000`"
+        explanation: "Setting a user ID is allowed in every profile."
+      - id: c
+        text: "An `emptyDir` volume"
+        explanation: "The emptyDir volume is allowed in every profile."
+    correct_option: a
+    explanation: "Baseline blocks sharing the network, process and IPC namespaces of the node."
+
+  - id: ats034-010-02-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare volume types across profiles."
+    source_readings:
+      - sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+    prompt: "A Pod mounts a `hostPath` volume. Which profile rejects it first?"
+    options:
+      - id: a
+        text: "Only Privileged."
+        explanation: "Privileged allows every volume type."
+      - id: b
+        text: "Baseline, and therefore also Restricted."
+        explanation: "Correct. Baseline rejects hostPath volumes and Restricted is stricter."
+      - id: c
+        text: "Only Restricted."
+        explanation: "Baseline already rejects hostPath volumes."
+    correct_option: b
+    explanation: "Baseline blocks hostPath, so Restricted blocks it as well."
+
+  - id: ats034-010-02-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Solve a read-only root filesystem conflict."
+    source_readings:
+      - sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+    prompt: "An application writes to `/tmp` and must run with `readOnlyRootFilesystem: true`. What is the correct fix?"
+    options:
+      - id: a
+        text: "Remove `readOnlyRootFilesystem` and run as root."
+        explanation: "This lowers the protection and does not follow the requirement."
+      - id: b
+        text: "Mount an `emptyDir` volume at `/tmp`."
+        explanation: "Correct. The writable volume gives the path while the image filesystem stays read-only."
+      - id: c
+        text: "Mount a `hostPath` volume at `/tmp`."
+        explanation: "A hostPath volume breaks Baseline and Restricted."
+    correct_option: b
+    explanation: "An emptyDir volume provides a writable path and keeps the rest of the filesystem read-only."

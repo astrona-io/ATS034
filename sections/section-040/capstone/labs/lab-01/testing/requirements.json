@@ -1,0 +1,202 @@
+{
+  "context": "kind-astro-ats-034-capstone-040",
+  "resources": [
+    {
+      "kind": "peerauthentication",
+      "name": "namespace-strict",
+      "namespace": "starfleet",
+      "expected": {
+        "apiVersion": "security.istio.io/v1",
+        "kind": "PeerAuthentication",
+        "metadata": {
+          "name": "namespace-strict",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "mtls": {
+            "mode": "STRICT"
+          }
+        }
+      }
+    },
+    {
+      "kind": "authorizationpolicy",
+      "name": "probe-allow-shuttle",
+      "namespace": "starfleet",
+      "expected": {
+        "apiVersion": "security.istio.io/v1",
+        "kind": "AuthorizationPolicy",
+        "metadata": {
+          "name": "probe-allow-shuttle",
+          "namespace": "starfleet"
+        }
+      }
+    },
+    {
+      "kind": "configmap",
+      "name": "cilium-values",
+      "namespace": "kube-system",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "ConfigMap",
+        "metadata": {
+          "name": "cilium-values",
+          "namespace": "kube-system"
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "probe",
+      "namespace": "starfleet",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "replicas": 2,
+          "selector": {
+            "matchLabels": {
+              "app": "probe",
+              "release": "probe"
+            }
+          },
+          "template": {
+            "metadata": {
+              "labels": {
+                "app": "probe",
+                "release": "probe"
+              }
+            },
+            "spec": {
+              "containers": [
+                {
+                  "name": "probe",
+                  "image": "docker.io/library/python:3.13-alpine",
+                  "command": [
+                    "python",
+                    "/app/server.py"
+                  ],
+                  "env": [
+                    {
+                      "name": "VERSION",
+                      "value": "v1"
+                    }
+                  ],
+                  "ports": [
+                    {
+                      "name": "http",
+                      "containerPort": 8080
+                    }
+                  ],
+                  "readinessProbe": {
+                    "httpGet": {
+                      "path": "/ready",
+                      "port": "http"
+                    },
+                    "periodSeconds": 2
+                  },
+                  "resources": {
+                    "requests": {
+                      "cpu": "10m",
+                      "memory": "32Mi"
+                    },
+                    "limits": {
+                      "memory": "128Mi"
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "app",
+                      "mountPath": "/app",
+                      "readOnly": true
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "app",
+                  "configMap": {
+                    "name": "probe-code"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "state": "deployment"
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "shuttle",
+        "-c",
+        "client",
+        "--",
+        "wget",
+        "-q",
+        "-T",
+        "3",
+        "-O-",
+        "http://probe/"
+      ],
+      "contains": [
+        "version=v1"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "tender",
+        "-c",
+        "client",
+        "--",
+        "wget",
+        "-T",
+        "3",
+        "-O-",
+        "http://probe/"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "403",
+        "forbidden",
+        "rbac"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "outpost",
+        "exec",
+        "drifter",
+        "--",
+        "wget",
+        "-q",
+        "-T",
+        "3",
+        "-O-",
+        "http://probe.starfleet/"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "connection reset",
+        "error getting response"
+      ]
+    }
+  ]
+}

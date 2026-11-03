@@ -1,0 +1,134 @@
+{
+  "context": "kind-astro-ats-034-capstone-030",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "untrusted",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "resourcequota",
+      "name": "untrusted-budget",
+      "namespace": "untrusted",
+      "expected": {
+        "spec": {
+          "hard": {
+            "pods": "3"
+          }
+        }
+      }
+    },
+    {
+      "kind": "node",
+      "name": "astro-ats-034-capstone-030-worker",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "isolation": "untrusted"
+          }
+        },
+        "spec": {
+          "taints": [
+            {
+              "key": "isolation",
+              "value": "untrusted",
+              "effect": "NoSchedule"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "runtimeclass",
+      "name": "sandboxed",
+      "namespace": "",
+      "expected": {
+        "handler": "runc",
+        "scheduling": {
+          "nodeSelector": {
+            "isolation": "untrusted"
+          },
+          "tolerations": [
+            {
+              "key": "isolation",
+              "operator": "Equal",
+              "value": "untrusted",
+              "effect": "NoSchedule"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "networkpolicy",
+      "name": "untrusted-isolation",
+      "namespace": "untrusted",
+      "expected": {
+        "spec": {
+          "podSelector": {},
+          "policyTypes": [
+            "Ingress",
+            "Egress"
+          ],
+          "ingress": [],
+          "egress": []
+        }
+      }
+    },
+    {
+      "kind": "validatingadmissionpolicy",
+      "name": "require-sandbox",
+      "namespace": "",
+      "expected": {
+        "spec": {
+          "failurePolicy": "Fail"
+        }
+      }
+    },
+    {
+      "kind": "validatingadmissionpolicybinding",
+      "name": "require-sandbox-untrusted",
+      "namespace": "",
+      "expected": {
+        "spec": {
+          "policyName": "require-sandbox",
+          "validationActions": [
+            "Deny"
+          ],
+          "matchResources": {
+            "namespaceSelector": {
+              "matchLabels": {
+                "kubernetes.io/metadata.name": "untrusted"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "job-runner",
+      "namespace": "untrusted",
+      "expected": {
+        "spec": {
+          "runtimeClassName": "sandboxed",
+          "automountServiceAccountToken": false,
+          "nodeSelector": {
+            "isolation": "untrusted"
+          }
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

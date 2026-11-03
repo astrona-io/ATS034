@@ -1,0 +1,59 @@
+{
+  "context": "kind-astro-ats-034-playground-030-03",
+  "resources": [
+    {
+      "kind": "node",
+      "name": "astro-ats-034-playground-030-03-worker",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "tenant": "tenant-c"
+          }
+        },
+        "spec": {
+          "taints": [
+            {
+              "key": "tenant",
+              "value": "tenant-c",
+              "effect": "NoSchedule"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "tenant-c-app",
+      "namespace": "tenant-c",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "tenant-c-app",
+          "namespace": "tenant-c"
+        },
+        "spec": {
+          "replicas": 1,
+          "template": {
+            "spec": {
+              "nodeSelector": {
+                "tenant": "tenant-c"
+              },
+              "tolerations": [
+                {
+                  "key": "tenant",
+                  "operator": "Equal",
+                  "value": "tenant-c",
+                  "effect": "NoSchedule"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "state": "deployment"
+    }
+  ],
+  "behavior": []
+}

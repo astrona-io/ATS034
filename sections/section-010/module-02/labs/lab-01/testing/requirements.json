@@ -1,0 +1,140 @@
+{
+  "context": "kind-ats-034-lab-010-02-01",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "hardened",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "hardened",
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "scanner",
+      "namespace": "hardened",
+      "state": "deployment",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scanner",
+          "namespace": "hardened"
+        },
+        "spec": {
+          "replicas": 1,
+          "selector": {
+            "matchLabels": {
+              "app": "scanner"
+            }
+          },
+          "template": {
+            "spec": {
+              "securityContext": {
+                "runAsNonRoot": true,
+                "runAsUser": 1000,
+                "seccompProfile": {
+                  "type": "RuntimeDefault"
+                }
+              },
+              "containers": [
+                {
+                  "name": "scanner",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "readOnlyRootFilesystem": true,
+                    "capabilities": {
+                      "drop": [
+                        "ALL"
+                      ]
+                    }
+                  },
+                  "volumeMounts": [
+                    {
+                      "name": "tmp",
+                      "mountPath": "/tmp"
+                    }
+                  ]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "tmp",
+                  "emptyDir": {}
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "hardened",
+        "exec",
+        "deploy/scanner",
+        "--",
+        "id",
+        "-u"
+      ],
+      "equals": "1000"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "hardened",
+        "exec",
+        "deploy/scanner",
+        "--",
+        "sh",
+        "-c",
+        "grep NoNewPrivs /proc/1/status | tr -d '[:space:]'"
+      ],
+      "equals": "NoNewPrivs:1"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "hardened",
+        "exec",
+        "deploy/scanner",
+        "--",
+        "cat",
+        "/tmp/result"
+      ],
+      "equals": "scan"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "hardened",
+        "exec",
+        "deploy/scanner",
+        "--",
+        "touch",
+        "/rootfile"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "read-only file system",
+        "permission denied"
+      ]
+    }
+  ]
+}

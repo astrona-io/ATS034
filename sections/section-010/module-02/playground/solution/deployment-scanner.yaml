@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scanner
+  namespace: hardened
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scanner
+  template:
+    metadata:
+      labels:
+        app: scanner
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: scanner
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - echo scan > /tmp/result && sleep 3600
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}

@@ -1,0 +1,103 @@
+{
+  "context": "kind-astro-ats-034-playground-020-03",
+  "resources": [
+    {
+      "kind": "pod",
+      "name": "migrated-reader",
+      "namespace": "starfleet",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "migrated-reader",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "restartPolicy": "Never",
+          "automountServiceAccountToken": false,
+          "containers": [
+            {
+              "name": "reader",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": [
+                "sh",
+                "-c",
+                "sleep 3600"
+              ],
+              "volumeMounts": [
+                {
+                  "name": "credentials",
+                  "mountPath": "/credentials",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "credentials",
+              "secret": {
+                "secretName": "migrated-credentials",
+                "defaultMode": 256
+              }
+            }
+          ]
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "secret",
+      "name": "migrated-credentials",
+      "namespace": "starfleet",
+      "expected": {
+        "type": "Opaque",
+        "data": {
+          "token": "ZGlzcG9zYWJsZS12MQ=="
+        }
+      }
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "migrated-reader",
+        "--",
+        "sh",
+        "-c",
+        "test \"$(cat /credentials/token)\" = disposable-v1"
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "exec",
+        "migrated-reader",
+        "--",
+        "sh",
+        "-c",
+        "test -z \"$(env | grep disposable)\""
+      ]
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet",
+        "get",
+        "configmap",
+        "legacy-settings"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "not found"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-c-app
+  namespace: tenant-c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenant-c-app
+  template:
+    metadata:
+      labels:
+        app: tenant-c-app
+    spec:
+      nodeSelector:
+        tenant: tenant-c
+      tolerations:
+      - key: tenant
+        operator: Equal
+        value: tenant-c
+        effect: NoSchedule
+      containers:
+      - name: app
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - sleep 3600

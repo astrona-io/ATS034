@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scout
+  namespace: dock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scout
+  template:
+    metadata:
+      labels:
+        app: scout
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: scout
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - echo ready > /scratch/state && sleep 3600
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: scratch
+          mountPath: /scratch
+      volumes:
+      - name: scratch
+        emptyDir: {}

@@ -1,0 +1,66 @@
+{
+  "context": "kind-astro-ats-034-lab-030-02-01",
+  "resources": [
+    {
+      "kind": "runtimeclass",
+      "name": "sandboxed",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "node.k8s.io/v1",
+        "kind": "RuntimeClass",
+        "metadata": {
+          "name": "sandboxed"
+        },
+        "handler": "runc",
+        "overhead": {
+          "podFixed": {
+            "cpu": "50m",
+            "memory": "64Mi"
+          }
+        },
+        "scheduling": {
+          "nodeSelector": {
+            "sandbox": "true"
+          }
+        }
+      }
+    },
+    {
+      "kind": "node",
+      "name": "astro-ats-034-lab-030-02-01-worker",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "sandbox": "true"
+          }
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "sandboxed-app",
+      "namespace": "tenant-b",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "sandboxed-app",
+          "namespace": "tenant-b"
+        },
+        "spec": {
+          "runtimeClassName": "sandboxed",
+          "overhead": {
+            "cpu": "50m",
+            "memory": "64Mi"
+          },
+          "nodeSelector": {
+            "sandbox": "true"
+          }
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

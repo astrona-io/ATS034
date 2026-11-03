@@ -1,0 +1,216 @@
+# Knowledge check for section-010 module-03. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-010-03
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-010
+  title: "Roll Out Pod Security Labels Across Namespaces"
+placement:
+  position: after
+  reading: sections/section-010/module-03/course-05-summary.md
+questions:
+  - id: ats034-010-03-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "List the namespaces that carry Pod Security labels."
+    source_readings:
+      - sections/section-010/module-03/course-01-inventory-before-you-label.md
+    prompt: "Which command shows the value of a Pod Security label for every namespace in one table?"
+    options:
+      - id: a
+        text: "`kubectl get namespaces -L pod-security.kubernetes.io/enforce`"
+        explanation: "Correct. The `-L` flag adds a column for the label."
+      - id: b
+        text: "`kubectl describe nodes`"
+        explanation: "This shows nodes, not namespace labels."
+      - id: c
+        text: "`kubectl get pods -A --show-labels`"
+        explanation: "This shows Pod labels, not namespace labels."
+    correct_option: a
+    explanation: "The `-L` flag of `kubectl get` adds a column for each label key."
+
+  - id: ats034-010-03-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use a label dry run to find Pods that would fail."
+    source_readings:
+      - sections/section-010/module-03/course-01-inventory-before-you-label.md
+    prompt: "What does `kubectl label namespace starfleet pod-security.kubernetes.io/enforce=restricted --overwrite --dry-run=server` do?"
+    options:
+      - id: a
+        text: "It applies the label and restarts all Pods."
+        explanation: "A dry run applies nothing and no label restarts Pods."
+      - id: b
+        text: "It prints a warning for each existing Pod that would violate Restricted, and changes nothing."
+        explanation: "Correct. The API server checks existing Pods against the new profile."
+      - id: c
+        text: "It only validates the label syntax on the client."
+        explanation: "A client dry run would do that. This one runs on the API server."
+    correct_option: b
+    explanation: "The server-side dry run evaluates existing Pods and lists the violations without storing the label."
+
+  - id: ats034-010-03-q03
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Order the modes in a staged change."
+    source_readings:
+      - sections/section-010/module-03/course-02-stage-a-label-change.md
+    prompt: "Which order is safest when a namespace moves to a stricter profile?"
+    options:
+      - id: a
+        text: "Set enforce first, then warn and audit."
+        explanation: "Enforcement first causes failed Pods with no earlier warning."
+      - id: b
+        text: "Set warn and audit first, fix the workloads, then set enforce."
+        explanation: "Correct. Warnings tell people what to fix before anything is blocked."
+      - id: c
+        text: "Set only audit and never set enforce."
+        explanation: "Audit alone never blocks a Pod."
+    correct_option: b
+    explanation: "warn and audit report problems without blocking, so they come before enforce."
+
+  - id: ats034-010-03-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the effect of a new enforce label on running Pods."
+    source_readings:
+      - sections/section-010/module-03/course-02-stage-a-label-change.md
+    prompt: "A namespace has running root Pods. An administrator sets `enforce: restricted`. What happens to the running Pods?"
+    options:
+      - id: a
+        text: "They keep running, and a Pod that is created again is checked."
+        explanation: "Correct. A label never removes a running Pod."
+      - id: b
+        text: "The kubelet stops them at once."
+        explanation: "Admission runs only when a Pod is created or updated."
+      - id: c
+        text: "The API server deletes them after one minute."
+        explanation: "The API server does not delete Pods because of a label."
+    correct_option: a
+    explanation: "Admission checks only new requests, so the failure shows when a Pod is next created."
+
+  - id: ats034-010-03-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Name the label that pins a version for a mode."
+    source_readings:
+      - sections/section-010/module-03/course-02-stage-a-label-change.md
+    prompt: "Which label pins the rules used by the `warn` mode to Kubernetes 1.35?"
+    options:
+      - id: a
+        text: "`pod-security.kubernetes.io/enforce-version: v1.35`"
+        explanation: "This pins only the enforce mode."
+      - id: b
+        text: "`pod-security.kubernetes.io/warn-version: v1.35`"
+        explanation: "Correct. Each mode has its own version label."
+      - id: c
+        text: "`pod-security.kubernetes.io/version: v1.35`"
+        explanation: "This label does not exist."
+    correct_option: b
+    explanation: "The modes enforce, audit and warn each have a separate version label."
+
+  - id: ats034-010-03-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Name the flag that loads the admission configuration."
+    source_readings:
+      - sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
+    prompt: "Which API server flag points to the file with Pod Security defaults and exemptions?"
+    options:
+      - id: a
+        text: "`--admission-control-config-file`"
+        explanation: "Correct. The file is an AdmissionConfiguration."
+      - id: b
+        text: "`--pod-security-labels`"
+        explanation: "This flag does not exist."
+      - id: c
+        text: "`--authorization-config`"
+        explanation: "This flag configures authorization, not admission."
+    correct_option: a
+    explanation: "The API server reads the AdmissionConfiguration from the path given in this flag."
+
+  - id: ats034-010-03-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Order the decisions for a Pod request."
+    source_readings:
+      - sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
+    prompt: "In what order does Pod Security Admission decide for a Pod request?"
+    options:
+      - id: a
+        text: "Namespace label, then exemption, then default."
+        explanation: "Exemptions come first."
+      - id: b
+        text: "Exemption, then namespace label, then configuration default."
+        explanation: "Correct. An exempt request skips the checks."
+      - id: c
+        text: "Default, then exemption, then namespace label."
+        explanation: "The default applies only when no label is set."
+    correct_option: b
+    explanation: "An exempt user, RuntimeClass or namespace skips all checks, then labels apply, then defaults."
+
+  - id: ats034-010-03-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Place node-level workloads safely."
+    source_readings:
+      - sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+    prompt: "A log collector needs a `hostPath` volume. What is the best design?"
+    options:
+      - id: a
+        text: "Exempt the whole cluster from Pod Security Admission."
+        explanation: "This removes protection for every namespace."
+      - id: b
+        text: "Run it in its own namespace labelled privileged, with warn and audit set to a stricter profile."
+        explanation: "Correct. The exception is visible and recorded."
+      - id: c
+        text: "Remove the labels from every namespace."
+        explanation: "This leaves other workloads unprotected."
+    correct_option: b
+    explanation: "A dedicated privileged namespace keeps the exception in one place, and audit records its use."
+
+  - id: ats034-010-03-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Preview the next rules before an upgrade."
+    source_readings:
+      - sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+    prompt: "How can an administrator preview the next version rules while enforce stays stable?"
+    options:
+      - id: a
+        text: "Set `warn-version` to `latest` and keep `enforce-version` pinned."
+        explanation: "Correct. The modes are independent."
+      - id: b
+        text: "Remove `enforce-version` from the namespace."
+        explanation: "Without a pin, enforce follows latest and can change after an upgrade."
+      - id: c
+        text: "Delete the namespace and create it again."
+        explanation: "This removes the workloads and previews nothing."
+    correct_option: a
+    explanation: "The warn mode can follow latest while enforce keeps its pinned version."
+
+  - id: ats034-010-03-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain who can remove labels."
+    source_readings:
+      - sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+    prompt: "Why must application teams not have the `update` verb on namespaces?"
+    options:
+      - id: a
+        text: "They could lower or remove the Pod Security labels."
+        explanation: "Correct. The labels are fields on the namespace object."
+      - id: b
+        text: "The verb stops Pods from being scheduled."
+        explanation: "The verb has no effect on scheduling."
+      - id: c
+        text: "The verb deletes all exemptions in the admission file."
+        explanation: "Exemptions are in a file on the control plane, not in the API."
+    correct_option: a
+    explanation: "Whoever can update a namespace can change its labels, so RBAC must limit the permission."

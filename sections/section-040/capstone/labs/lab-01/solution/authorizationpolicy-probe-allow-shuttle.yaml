@@ -1,0 +1,15 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: probe-allow-shuttle
+  namespace: starfleet
+spec:
+  selector:
+    matchLabels:
+      app: probe
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/starfleet/sa/shuttle

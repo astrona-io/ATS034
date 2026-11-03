@@ -1,0 +1,217 @@
+# Knowledge check for section-020 module-03. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats034-020-03
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-020
+  title: "Manage Kubernetes secrets"
+placement:
+  position: after
+  reading: sections/section-020/module-03/course-05-summary.md
+questions:
+  - id: ats034-020-03-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Compare ConfigMap and Secret exposure."
+    source_readings:
+      - sections/section-020/module-03/course-01-where-credentials-leak.md
+    prompt: "Why is a credential in a ConfigMap weaker than the same credential in a Secret?"
+    options:
+      - id: a
+        text: "A ConfigMap is encrypted with a shorter key."
+        explanation: "A ConfigMap is not encrypted at all."
+      - id: b
+        text: "A ConfigMap has no special handling, and roles that cannot read Secrets can often read it."
+        explanation: "Correct. Access reviews for Secrets do not cover ConfigMaps."
+      - id: c
+        text: "A ConfigMap cannot be mounted into a Pod."
+        explanation: "A ConfigMap can be mounted as a volume."
+    correct_option: b
+    explanation: "A ConfigMap is for non-secret settings and is often readable by more roles."
+
+  - id: ats034-020-03-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare what describe shows for literal and referenced variables."
+    source_readings:
+      - sections/section-020/module-03/course-01-where-credentials-leak.md
+    prompt: "Which statement about `kubectl describe pod` is correct?"
+    options:
+      - id: a
+        text: "It shows a literal `value` but only the reference for `secretKeyRef`."
+        explanation: "Correct. The reference keeps the value out of the specification."
+      - id: b
+        text: "It shows the decoded value for `secretKeyRef`."
+        explanation: "Describe never decodes a Secret reference."
+      - id: c
+        text: "It shows neither."
+        explanation: "A literal value is part of the Pod specification and is shown."
+    correct_option: a
+    explanation: "Use `valueFrom.secretKeyRef`, so the value is not in the Pod specification."
+
+  - id: ats034-020-03-q03
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Find the plain text left by kubectl apply."
+    source_readings:
+      - sections/section-020/module-03/course-01-where-credentials-leak.md
+    prompt: "A Secret is applied with `kubectl apply` from a manifest that uses `stringData`. Where else does the plain value appear?"
+    options:
+      - id: a
+        text: "In the annotation `kubectl.kubernetes.io/last-applied-configuration`"
+        explanation: "Correct. The annotation stores the applied manifest."
+      - id: b
+        text: "In the node `kubelet` configuration"
+        explanation: "The kubelet does not store Secret manifests."
+      - id: c
+        text: "In the CoreDNS configuration"
+        explanation: "CoreDNS has no role here."
+    correct_option: a
+    explanation: "Client-side apply stores the manifest in an annotation, including `stringData`."
+
+  - id: ats034-020-03-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide what to do after a credential was exposed."
+    source_readings:
+      - sections/section-020/module-03/course-01-where-credentials-leak.md
+    prompt: "A credential was readable in a ConfigMap for a week. You delete the ConfigMap. What else is required?"
+    options:
+      - id: a
+        text: "Nothing, the credential is gone."
+        explanation: "Copies in backups, logs or caches may remain."
+      - id: b
+        text: "Restart the API server."
+        explanation: "Restarting does not remove copies."
+      - id: c
+        text: "Rotate the credential at its source."
+        explanation: "Correct. An exposed credential counts as known."
+    correct_option: c
+    explanation: "Deleting a copy does not make an exposed credential safe."
+
+  - id: ats034-020-03-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare syncing with mounting from a store."
+    source_readings:
+      - sections/section-020/module-03/course-02-external-secret-stores.md
+    prompt: "How does the Secrets Store CSI driver differ from the External Secrets Operator by default?"
+    options:
+      - id: a
+        text: "It mounts the value into a Pod volume without creating a Kubernetes Secret."
+        explanation: "Correct. A Secret is created only if `secretObjects` asks for it."
+      - id: b
+        text: "It creates a Secret in every namespace."
+        explanation: "The driver mounts per Pod, not per namespace."
+      - id: c
+        text: "It stores the value in a ConfigMap."
+        explanation: "It does not use ConfigMaps."
+    correct_option: a
+    explanation: "The CSI driver can avoid a Secret object. The operator creates one."
+
+  - id: ats034-020-03-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain workload identity with a store."
+    source_readings:
+      - sections/section-020/module-03/course-02-external-secret-stores.md
+    prompt: "How should a cluster prove to an external store which workload asks for a value?"
+    options:
+      - id: a
+        text: "With a ServiceAccount token that the store verifies and maps to a policy"
+        explanation: "Correct. The cluster holds no long-lived store password."
+      - id: b
+        text: "With a long-lived access key stored in a ConfigMap"
+        explanation: "That key would read everything the policy allows and sits in a weak place."
+      - id: c
+        text: "With the node IP address only"
+        explanation: "An IP address does not identify a workload."
+    correct_option: a
+    explanation: "Use short-lived tokens bound to a ServiceAccount and one policy per ServiceAccount."
+
+  - id: ats034-020-03-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State the scope default of Sealed Secrets."
+    source_readings:
+      - sections/section-020/module-03/course-03-encrypting-secrets-for-git.md
+    prompt: "What does the default `strict` scope of a SealedSecret tie the value to?"
+    options:
+      - id: a
+        text: "The cluster only"
+        explanation: "That is the `cluster-wide` scope."
+      - id: b
+        text: "The namespace and the name of the Secret"
+        explanation: "Correct. Copying it elsewhere gives a value that cannot be decrypted."
+      - id: c
+        text: "The user who ran `kubeseal`"
+        explanation: "The scope does not record a user."
+    correct_option: b
+    explanation: "Strict scope binds the ciphertext to a namespace and a name."
+
+  - id: ats034-020-03-q08
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Name the limit of encrypting a manifest."
+    source_readings:
+      - sections/section-020/module-03/course-03-encrypting-secrets-for-git.md
+    prompt: "A team encrypts Secret manifests with SOPS before committing. What does this not protect?"
+    options:
+      - id: a
+        text: "The file in the repository"
+        explanation: "The values are encrypted there."
+      - id: b
+        text: "The Secret in the cluster after it is applied"
+        explanation: "Correct. In the cluster it is an ordinary Secret, in `etcd`, with RBAC."
+      - id: c
+        text: "The values in the file diff"
+        explanation: "The diff shows ciphertext."
+    correct_option: b
+    explanation: "File encryption protects the repository, not the applied Secret."
+
+  - id: ats034-020-03-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose the audit level for Secrets."
+    source_readings:
+      - sections/section-020/module-03/course-04-auditing-secret-access.md
+    prompt: "Which audit level should the policy give requests for Secrets?"
+    options:
+      - id: a
+        text: "`RequestResponse`"
+        explanation: "It writes the response body, which holds the value."
+      - id: b
+        text: "`Request`"
+        explanation: "It writes the request body, which holds the value on create and update."
+      - id: c
+        text: "`Metadata`"
+        explanation: "Correct. It records who, what and the result, without values."
+    correct_option: c
+    explanation: "Use `Metadata` for Secrets and ConfigMaps."
+
+  - id: ats034-020-03-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the result of rule order in an audit policy."
+    source_readings:
+      - sections/section-020/module-03/course-04-auditing-secret-access.md
+    prompt: "An audit policy starts with a catch-all rule at `RequestResponse`, followed by a rule for Secrets at `Metadata`. What level do Secret requests get?"
+    options:
+      - id: a
+        text: "`Metadata`, because the specific rule wins"
+        explanation: "Specificity does not matter. Order does."
+      - id: b
+        text: "`RequestResponse`, because the first matching rule wins"
+        explanation: "Correct. The values reach the audit log."
+      - id: c
+        text: "`None`, because the rules conflict"
+        explanation: "Conflicting rules do not cancel each other."
+    correct_option: b
+    explanation: "The first matching rule decides. Put the Secret rule first."
+

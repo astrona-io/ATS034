@@ -1,0 +1,13 @@
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: sandboxed
+handler: runc
+scheduling:
+  nodeSelector:
+    isolation: untrusted
+  tolerations:
+  - key: isolation
+    operator: Equal
+    value: untrusted
+    effect: NoSchedule

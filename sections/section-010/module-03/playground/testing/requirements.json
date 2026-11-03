@@ -1,0 +1,88 @@
+{
+  "context": "kind-ats-034-playground-010-03",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "starfleet",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "starfleet",
+          "labels": {
+            "project": "ckad",
+            "pod-security.kubernetes.io/enforce": "baseline",
+            "pod-security.kubernetes.io/enforce-version": "v1.35",
+            "pod-security.kubernetes.io/warn": "restricted",
+            "pod-security.kubernetes.io/warn-version": "v1.35",
+            "pod-security.kubernetes.io/audit": "restricted",
+            "pod-security.kubernetes.io/audit-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "namespace",
+      "name": "outpost",
+      "namespace": "",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "name": "outpost",
+          "labels": {
+            "project": "outpost",
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "probe",
+      "namespace": "starfleet",
+      "state": "deployment",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet"
+        },
+        "spec": {
+          "replicas": 2
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet",
+      "state": "pod",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "shuttle",
+          "namespace": "starfleet"
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "drifter",
+      "namespace": "outpost",
+      "state": "pod",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "drifter",
+          "namespace": "outpost"
+        }
+      }
+    }
+  ]
+}

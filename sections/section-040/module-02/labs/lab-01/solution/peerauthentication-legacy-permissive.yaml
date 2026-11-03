@@ -1,0 +1,11 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: legacy-permissive
+  namespace: starfleet
+spec:
+  selector:
+    matchLabels:
+      app: legacy
+  mtls:
+    mode: PERMISSIVE
