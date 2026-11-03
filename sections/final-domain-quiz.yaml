@@ -1,0 +1,472 @@
+# Final domain knowledge check across all sections.
+schema_version: 1
+kind: question_bank
+id: ats034-final
+course_id: ATS034
+exam_code: CKS
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: domain
+  id: final
+  title: Final Domain Quiz
+questions:
+- id: ats034-final-q01
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Name the profile that places no restrictions on a Pod.
+  source_readings:
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+  prompt: Which Pod Security Standards profile places no restrictions on the settings of a Pod?
+  options:
+  - id: a
+    text: Privileged
+    explanation: Correct. Privileged allows any setting. It is meant for trusted system components.
+  - id: b
+    text: Baseline
+    explanation: Baseline blocks known privilege escalations, such as privileged containers and host namespaces.
+  - id: c
+    text: Restricted
+    explanation: Restricted is the strictest profile and adds hardening rules on top of Baseline.
+  correct_option: a
+  explanation: Privileged has no restrictions, Baseline blocks known node-access settings, and Restricted adds hardening rules.
+- id: ats034-final-q02
+  type: single_choice
+  difficulty: beginner
+  learning_objective: State what applies to a namespace that has no Pod Security labels.
+  source_readings:
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+  prompt: 'A new namespace has no `pod-security.kubernetes.io/` labels and the cluster uses the default Pod Security Admission configuration. What happens to a Pod with `privileged: true` created there?'
+  options:
+  - id: a
+    text: The API server rejects it, because Baseline is the default profile.
+    explanation: The default is not Baseline. Without labels nothing is checked.
+  - id: b
+    text: The kubelet refuses to start it, because privileged containers need a label.
+    explanation: The kubelet does not read Pod Security labels. Admission happens in the API server.
+  - id: c
+    text: The API server accepts it, because the default profile is Privileged.
+    explanation: Correct. Without labels the cluster default applies, and that default is Privileged.
+  correct_option: c
+  explanation: A namespace without labels uses the cluster default, and the built-in default is Privileged, so nothing is checked.
+- id: ats034-final-q03
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Use a server-side dry run to test admission.
+  source_readings:
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+  prompt: An administrator runs `kubectl apply -f pod.yaml --dry-run=client` against a namespace that enforces Restricted. The command succeeds, but the real apply is rejected. Why?
+  options:
+  - id: a
+    text: Pod Security Admission only runs for Pods in the default namespace.
+    explanation: Pod Security Admission runs for every namespace that has labels.
+  - id: b
+    text: A client-side dry run never sends the request through the API server admission chain.
+    explanation: Correct. Use `--dry-run=server` to run admission without storing the object.
+  - id: c
+    text: Dry runs are always accepted by the scheduler.
+    explanation: The scheduler is not involved in admission, and a dry run does not reach it.
+  correct_option: b
+  explanation: Only a server-side dry run runs the admission chain, so only it shows a Pod Security rejection.
+- id: ats034-final-q04
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify which Restricted rules a Pod can leave out.
+  source_readings:
+  - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+  - sections/section-010/module-01/course-02-security-context-fields.md
+  prompt: 'A Pod runs as user 1000, drops all capabilities, sets `allowPrivilegeEscalation: false` and `seccompProfile: RuntimeDefault`. Its root filesystem is writable. A namespace enforces Restricted. What happens?'
+  options:
+  - id: a
+    text: The Pod is admitted, because Restricted does not require a read-only root filesystem.
+    explanation: Correct. `readOnlyRootFilesystem` is good practice, but no profile requires it.
+  - id: b
+    text: 'The Pod is rejected, because Restricted requires `readOnlyRootFilesystem: true`.'
+    explanation: Restricted does not require a read-only root filesystem.
+  - id: c
+    text: 'The Pod is rejected, because Restricted requires `privileged: false` to be set explicitly.'
+    explanation: An unset `privileged` field already means false. Restricted checks the effective value.
+  correct_option: a
+  explanation: The Restricted profile requires non-root, no privilege escalation, a seccomp profile, dropped capabilities and limited volume types. It does not require a read-only root filesystem.
+- id: ats034-final-q05
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Describe what the `warn` mode does.
+  source_readings:
+  - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+  prompt: 'A namespace has `enforce: baseline` and `warn: restricted`. A developer applies a Pod that meets Baseline but breaks Restricted. What happens?'
+  options:
+  - id: a
+    text: The Pod is rejected with a Forbidden error that lists the Restricted violations.
+    explanation: Only `enforce` rejects a Pod. `warn` never blocks.
+  - id: b
+    text: The Pod is created and nothing is shown, because only the audit log receives violations.
+    explanation: The audit log receives annotations from `audit`. `warn` shows the warning to the user.
+  - id: c
+    text: The Pod is created and `kubectl` prints a warning that lists the Restricted violations.
+    explanation: Correct. `warn` accepts the Pod and sends a warning to the client.
+  correct_option: c
+  explanation: "`enforce` rejects, `warn` prints a warning in the client and `audit` annotates the audit log. The modes are independent."
+- id: ats034-final-q06
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Predict the result when a container field and a Pod field disagree.
+  source_readings:
+  - sections/section-010/module-01/course-02-security-context-fields.md
+  prompt: 'In a Pod, `spec.securityContext.runAsNonRoot` is `true`. One container sets `securityContext.runAsNonRoot: false`. The namespace enforces Restricted. What does Pod Security Admission do?'
+  options:
+  - id: a
+    text: It rejects the Pod, because the container value wins and Restricted needs `true` for every container.
+    explanation: Correct. A container-level value overrides the Pod level, and admission checks the effective value.
+  - id: b
+    text: It admits the Pod, because the Pod-level value covers all containers.
+    explanation: The Pod-level value is only a default for containers that do not set the field.
+  - id: c
+    text: It admits the Pod and changes the container value to `true`.
+    explanation: Pod Security Admission never changes a Pod. It only accepts or rejects.
+  correct_option: a
+  explanation: The container-level setting wins for that container, and Restricted checks each container's effective settings.
+- id: ats034-final-q07
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Explain what base64 in a Secret provides.
+  source_readings:
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+  prompt: A teammate says that Secret values are safe in a Git repository because the `data` field is base64 encoded. What is wrong with that claim?
+  options:
+  - id: a
+    text: Base64 is only used for ConfigMaps and never for Secrets.
+    explanation: Secrets store their values in `data` as base64.
+  - id: b
+    text: Base64 is an encoding with no key, so anyone can decode the value in one command.
+    explanation: Correct. Base64 only changes the representation of bytes. It does not protect them.
+  - id: c
+    text: Base64 is a weak cipher that needs a longer key.
+    explanation: Base64 is not a cipher and uses no key at all.
+  correct_option: b
+  explanation: Base64 is an encoding. Protection comes from RBAC, Pod access control and encryption at rest.
+- id: ats034-final-q08
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Describe the purpose of `stringData`.
+  source_readings:
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+  prompt: 'A manifest sets `stringData.key: abc` on a Secret and the Secret is applied. What does `kubectl get secret -o yaml` show for this key?'
+  options:
+  - id: a
+    text: A `data` field with the base64 form of `abc`.
+    explanation: Correct. The API server converts `stringData` into base64 `data` on write.
+  - id: b
+    text: Nothing, because plain text values are dropped.
+    explanation: Plain text in `stringData` is accepted and converted.
+  - id: c
+    text: A `stringData` field with the value `abc`.
+    explanation: "`stringData` is write-only. The API server never stores or returns it."
+  correct_option: a
+  explanation: "`stringData` is a write-only convenience. The API server stores the value as base64 in `data`."
+- id: ats034-final-q09
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Use `kubectl auth can-i` to check access to Secrets.
+  source_readings:
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+  prompt: You need to know if the `default` ServiceAccount in namespace `starfleet` can read Secrets there. Which command answers this?
+  options:
+  - id: a
+    text: "`kubectl get secret --as=default`"
+    explanation: This does not check permissions and does not name a ServiceAccount identity.
+  - id: b
+    text: "`kubectl describe serviceaccount default -n starfleet`"
+    explanation: This shows the ServiceAccount object, not what RBAC allows it to do.
+  - id: c
+    text: "`kubectl auth can-i get secrets -n starfleet --as=system:serviceaccount:starfleet:default`"
+    explanation: Correct. It asks the API server to evaluate the request as that ServiceAccount.
+  correct_option: c
+  explanation: "`kubectl auth can-i` with `--as=system:serviceaccount:<namespace>:<name>` evaluates RBAC for the ServiceAccount."
+- id: ats034-final-q10
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: State that `list` and `watch` on Secrets expose values.
+  source_readings:
+  - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+  prompt: A Role grants `list` on Secrets in a namespace but not `get`. A user with this Role runs `kubectl get secrets -o yaml`. What do they see?
+  options:
+  - id: a
+    text: An error, because `list` works only with `describe`.
+    explanation: "`list` is the verb behind `kubectl get` for many objects, and it works."
+  - id: b
+    text: The values of all Secrets in the namespace, because `list` returns the objects.
+    explanation: Correct. `list` and `watch` return full objects, so they expose the same data as `get`.
+  - id: c
+    text: Only the names, because values need `get`.
+    explanation: A list call returns complete objects, including `data`.
+  correct_option: b
+  explanation: Treat `list` and `watch` on Secrets as sensitive as `get`.
+- id: ats034-final-q11
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Compare what a running container sees after a Secret changes.
+  source_readings:
+  - sections/section-020/module-01/course-03-rotating-a-secret.md
+  prompt: A Pod mounts Secret `db` as a volume and also reads the same key as an environment variable. The Secret value is changed. A minute later, what does the running container see?
+  options:
+  - id: a
+    text: The new value in the file after the kubelet syncs, and the old value in the environment variable.
+    explanation: Correct. The kubelet updates mounted files, and the environment stays until a restart.
+  - id: b
+    text: The old value in both, until the Pod is deleted.
+    explanation: A mounted Secret volume follows the Secret without a restart.
+  - id: c
+    text: Both the file and the environment variable have the new value.
+    explanation: The environment variable is set at start and does not change.
+  correct_option: a
+  explanation: Volumes refresh after the kubelet sync delay. Environment variables change only when the container restarts.
+- id: ats034-final-q12
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Identify mounts that never receive Secret updates.
+  source_readings:
+  - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+  - sections/section-020/module-01/course-03-rotating-a-secret.md
+  prompt: 'An application reads `/etc/app/token`, which is mounted from a Secret with `subPath: token`. The Secret is rotated, and the application never sees the new value. Why?'
+  options:
+  - id: a
+    text: The kubelet cannot refresh Secrets on `tmpfs`.
+    explanation: The kubelet refreshes normal Secret volumes on `tmpfs`.
+  - id: b
+    text: A volume mounted with `subPath` is never updated after the container starts.
+    explanation: Correct. The kubelet copies the file once for a `subPath` mount, and the swap does not reach it.
+  - id: c
+    text: Secrets can only change after `etcd` restarts.
+    explanation: Secret updates do not need an `etcd` restart.
+  correct_option: b
+  explanation: Mounts with `subPath` and immutable Secrets never change. Mount the whole directory, or restart the Pod.
+- id: ats034-final-q13
+  type: single_choice
+  difficulty: beginner
+  learning_objective: State what a namespace does not isolate.
+  source_readings:
+  - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+  prompt: Two teams get one namespace each in a shared cluster. Which statement is true by default?
+  options:
+  - id: a
+    text: Each namespace has its own nodes and PersistentVolumes.
+    explanation: Nodes and PersistentVolumes are cluster-scoped and have no namespace.
+  - id: b
+    text: Pods in one namespace cannot open connections to Pods in the other.
+    explanation: Without a NetworkPolicy, every Pod can reach every other Pod in any namespace.
+  - id: c
+    text: Pods of both namespaces on the same node share the same Linux kernel.
+    explanation: Correct. A namespace separates names and policy. It does not give a separate kernel.
+  correct_option: c
+  explanation: Namespaces scope names and policy. Nodes, the kernel and, by default, the network are shared.
+- id: ats034-final-q14
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Choose between soft and hard multi-tenancy.
+  source_readings:
+  - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+  prompt: A company hosts customer code that it cannot review, on shared nodes. Which approach does this require?
+  options:
+  - id: a
+    text: Soft multi-tenancy, because namespaces and RBAC are enough for any tenant.
+    explanation: Soft multi-tenancy assumes tenants that trust each other.
+  - id: b
+    text: No isolation, because Pod Security Admission blocks all attacks.
+    explanation: Pod Security Admission limits Pod settings. It does not provide a kernel boundary.
+  - id: c
+    text: Hard multi-tenancy, with a stronger boundary such as sandboxed runtimes or dedicated nodes.
+    explanation: Correct. Hostile code makes the shared kernel the main risk, and namespaces do not address it.
+  correct_option: c
+  explanation: Soft multi-tenancy fits trusted teams. Untrusted code needs hard multi-tenancy.
+- id: ats034-final-q15
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Limit RBAC access to one namespace.
+  source_readings:
+  - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+  prompt: A user must manage Deployments in namespace `team-a` only. Which setup does this?
+  options:
+  - id: a
+    text: A ClusterRole bound with a ClusterRoleBinding.
+    explanation: A ClusterRoleBinding grants the permissions in every namespace.
+  - id: b
+    text: A Role in `team-a` with a RoleBinding in `team-a` for the user.
+    explanation: Correct. Both objects are namespaced, so the permission applies in `team-a` only.
+  - id: c
+    text: A RoleBinding in `kube-system` that names the user.
+    explanation: A RoleBinding grants access only in its own namespace, so this grants nothing in `team-a`.
+  correct_option: b
+  explanation: A Role and RoleBinding in the same namespace limit access to it. A RoleBinding may also reference a ClusterRole.
+- id: ats034-final-q16
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Read the failure of a quota in a Deployment.
+  source_readings:
+  - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+  prompt: 'A namespace has a ResourceQuota of `pods: 2`. A Deployment with three replicas is applied. The command succeeds, and `kubectl get deployment` shows `2/3`. Where is the reason?'
+  options:
+  - id: a
+    text: In the output of `kubectl apply`, which rejects the Deployment.
+    explanation: The Deployment is accepted. The quota applies to the Pods it creates.
+  - id: b
+    text: In a `FailedCreate` event of the ReplicaSet that says `exceeded quota`.
+    explanation: Correct. The ReplicaSet controller creates Pods, and the quota rejection is recorded there.
+  - id: c
+    text: In the logs of the third Pod.
+    explanation: The third Pod was never created, so it has no logs.
+  correct_option: b
+  explanation: Quotas check objects when they are created. The Deployment passes, and the ReplicaSet reports the failure.
+- id: ats034-final-q17
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Explain what a LimitRange adds.
+  source_readings:
+  - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+  prompt: A namespace has a ResourceQuota on `requests.memory`. New Pods without memory requests are rejected. Which object lets developers omit the value in every manifest?
+  options:
+  - id: a
+    text: A second ResourceQuota with a higher limit.
+    explanation: A second quota still requires the Pod to declare the value.
+  - id: b
+    text: A NetworkPolicy that selects the Pods.
+    explanation: NetworkPolicy controls traffic, not resources.
+  - id: c
+    text: A LimitRange with `defaultRequest` for memory.
+    explanation: Correct. The LimitRange admission step writes the default into the container at creation.
+  correct_option: c
+  explanation: A LimitRange supplies default requests and limits, which a compute quota requires.
+- id: ats034-final-q18
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Recognize a default-deny NetworkPolicy.
+  source_readings:
+  - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+  prompt: Which NetworkPolicy blocks all incoming and outgoing traffic for every Pod in its namespace?
+  options:
+  - id: a
+    text: "`podSelector: {}` with `policyTypes: [Ingress, Egress]` and no rules."
+    explanation: Correct. The empty selector selects all Pods, and the listed types with no rules allow nothing.
+  - id: b
+    text: "`podSelector: {}` with `ingress: [{}]`."
+    explanation: An empty ingress rule allows all incoming traffic.
+  - id: c
+    text: A policy with a `deny` field set to `all`.
+    explanation: NetworkPolicy has no deny field. Policies only add allowances.
+  correct_option: a
+  explanation: Default deny selects all Pods and lists policy types without rules.
+- id: ats034-final-q19
+  type: single_choice
+  difficulty: beginner
+  learning_objective: State the default state of Pod traffic.
+  source_readings:
+  - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
+  prompt: Two Pods on different nodes exchange HTTP requests on a default cluster with no mesh and no encryption feature. What can a packet capture on the network between the nodes show?
+  options:
+  - id: a
+    text: Only encrypted packets, because the CNI plugin encrypts by default
+    explanation: The CNI plugin moves packets and does not encrypt them by default.
+  - id: b
+    text: The HTTP requests and responses in plain text
+    explanation: Correct. Kubernetes does not encrypt Pod traffic unless you add encryption.
+  - id: c
+    text: Only the Service name, because the payload is hidden by kube-proxy
+    explanation: kube-proxy does not hide the payload.
+  correct_option: b
+  explanation: Pod-to-Pod traffic is plain text by default.
+- id: ats034-final-q20
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Define mTLS.
+  source_readings:
+  - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
+  prompt: What does mutual TLS add compared with plain TLS?
+  options:
+  - id: a
+    text: Both sides present certificates, so each side authenticates the other
+    explanation: Correct. Plain TLS authenticates only the server.
+  - id: b
+    text: A stronger cipher for the same connection
+    explanation: The cipher is not what changes.
+  - id: c
+    text: Encryption of traffic between nodes without sidecars
+    explanation: That describes node-level encryption, not mTLS.
+  correct_option: a
+  explanation: mTLS authenticates both the client and the server.
+- id: ats034-final-q21
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Compare the approaches.
+  source_readings:
+  - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
+  - sections/section-040/module-01/course-04-cilium-transparent-encryption.md
+  prompt: Which approach gives the receiver the identity of the calling workload?
+  options:
+  - id: a
+    text: Cilium WireGuard encryption
+    explanation: It protects packets between nodes and gives no workload identity.
+  - id: b
+    text: Cilium IPsec encryption
+    explanation: It also protects packets between nodes without identifying the workload.
+  - id: c
+    text: Istio mTLS between sidecars
+    explanation: Correct. The certificate carries the SPIFFE ID of the ServiceAccount.
+  correct_option: c
+  explanation: Only the mesh approach gives workload identity.
+- id: ats034-final-q22
+  type: single_choice
+  difficulty: beginner
+  learning_objective: Know the default Istio mode.
+  source_readings:
+  - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+  prompt: No PeerAuthentication exists in a namespace with injection enabled. What does the sidecar of a workload accept?
+  options:
+  - id: a
+    text: Only mTLS
+    explanation: That is STRICT mode, which must be configured.
+  - id: b
+    text: Both mTLS and plain text
+    explanation: Correct. PERMISSIVE is the default.
+  - id: c
+    text: Only plain text
+    explanation: That is DISABLE mode.
+  correct_option: b
+  explanation: The default is PERMISSIVE.
+- id: ats034-final-q23
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Predict the effect of STRICT.
+  source_readings:
+  - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+  prompt: 'A `PeerAuthentication` with `mtls.mode: STRICT` is applied to the namespace `starfleet`. A Pod in a namespace without injection sends a plain HTTP request to a Service in `starfleet`. What happens?'
+  options:
+  - id: a
+    text: The request succeeds, because the Service is reachable
+    explanation: Reachability is not enough. The receiving sidecar rejects plain text.
+  - id: b
+    text: The sidecar of the target closes the connection, and the client sees a connection error
+    explanation: Correct. STRICT accepts only mTLS.
+  - id: c
+    text: The client sidecar upgrades the connection
+    explanation: The client has no sidecar, so nothing upgrades the connection.
+  correct_option: b
+  explanation: STRICT rejects plain-text connections at the receiver.
+- id: ats034-final-q24
+  type: single_choice
+  difficulty: intermediate
+  learning_objective: Resolve policy scope.
+  source_readings:
+  - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+  prompt: 'The mesh policy in `istio-system` is `STRICT`. A policy for the Pods with label `app: legacy` in `starfleet` is `PERMISSIVE`. Which mode applies to the `legacy` Pods?'
+  options:
+  - id: a
+    text: STRICT, because the mesh policy always wins
+    explanation: The most specific policy wins.
+  - id: b
+    text: PERMISSIVE, because the workload policy is more specific
+    explanation: Correct. Workload, then namespace, then mesh.
+  - id: c
+    text: DISABLE, because the two policies conflict
+    explanation: Conflicting scopes are resolved by specificity, not disabled.
+  correct_option: b
+  explanation: The most specific scope wins.
