@@ -56,7 +56,7 @@ sections:
       path: sections/section-010/module-01/labs/lab-01
       after_reading: sections/section-010/module-01/course-03-pod-security-admission-modes.md
       objective: Admit a compliant Pod and reject a privileged Pod through the API server.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
@@ -92,7 +92,7 @@ sections:
       path: sections/section-010/module-02/labs/lab-01
       after_reading: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
       objective: Repair a Deployment so its Pod meets Restricted and runs as non-root with a read-only root filesystem.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
@@ -128,7 +128,7 @@ sections:
       path: sections/section-010/module-03/labs/lab-01
       after_reading: sections/section-010/module-03/course-02-stage-a-label-change.md
       objective: Label two namespaces with different profiles and prove the effect with server-side dry runs.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-010/module-03/course-01-inventory-before-you-label.md
@@ -140,7 +140,7 @@ sections:
     id: lab-01
     path: sections/section-010/capstone/labs/lab-01
     objective: Repair two workloads and label three namespaces so each enforces the right profile while the applications keep running.
-    status: draft
+    status: alpha
     runtime_verification: pending
 - id: section-020
   title: Manage Kubernetes secrets
@@ -176,7 +176,7 @@ sections:
       path: sections/section-020/module-01/labs/lab-01
       after_reading: sections/section-020/module-01/course-03-rotating-a-secret.md
       objective: Replace a disposable credential and verify both delivery paths use the new value.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
@@ -212,7 +212,7 @@ sections:
       path: sections/section-020/module-02/labs/lab-01
       after_reading: sections/section-020/module-02/course-03-immutable-secrets.md
       objective: Create a typed, immutable Secret, mount it read-only and show that its data cannot be changed.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
@@ -248,7 +248,7 @@ sections:
       path: sections/section-020/module-03/labs/lab-01
       after_reading: sections/section-020/module-03/course-01-where-credentials-leak.md
       objective: Replace a credential stored in a ConfigMap with a mounted Secret and remove the ConfigMap.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-020/module-03/course-01-where-credentials-leak.md
@@ -290,7 +290,7 @@ sections:
       path: sections/section-030/module-01/labs/lab-01
       after_reading: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
       objective: Combine admission, a resource budget, token minimization and network isolation for one tenant.
-      status: draft
+      status: alpha
       runtime_verification: pending
     quiz: sections/section-030/module-01/quiz.yaml
   - id: module-02
@@ -322,7 +322,7 @@ sections:
       path: sections/section-030/module-02/labs/lab-01
       after_reading: sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
       objective: Create a RuntimeClass with scheduling and overhead, and run a Pod that uses it.
-      status: draft
+      status: alpha
       runtime_verification: pending
     quiz: sections/section-030/module-02/quiz.yaml
   - id: module-03
@@ -354,7 +354,7 @@ sections:
       path: sections/section-030/module-03/labs/lab-01
       after_reading: sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
       objective: Reserve the worker node for one tenant with a label, a taint, a selector and a toleration.
-      status: draft
+      status: alpha
       runtime_verification: pending
     quiz: sections/section-030/module-03/quiz.yaml
 - id: section-040
@@ -391,7 +391,7 @@ sections:
       path: sections/section-040/module-01/labs/lab-01
       after_reading: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
       objective: Require mesh-authenticated traffic while keeping the injected client able to reach the application.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
@@ -427,7 +427,7 @@ sections:
       path: sections/section-040/module-02/labs/lab-01
       after_reading: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
       objective: Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level exception.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
@@ -463,7 +463,7 @@ sections:
       path: sections/section-040/module-03/labs/lab-01
       after_reading: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
       objective: Create the IPsec key Secret and set the Helm values that enable Cilium IPsec encryption.
-      status: draft
+      status: alpha
       runtime_verification: pending
     practice_readings:
     - sections/section-040/module-03/course-01-what-cilium-encrypts.md
