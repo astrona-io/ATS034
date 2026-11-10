@@ -1,0 +1,131 @@
+version: 1
+labs:
+  sections/section-010/module-01/labs/lab-01:
+    preparation:
+    - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+    - sections/section-010/module-01/course-02-security-context-fields.md
+    - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+  sections/section-010/module-02/labs/lab-01:
+    preparation:
+    - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
+    - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+    - sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+  sections/section-010/module-03/labs/lab-01:
+    preparation:
+    - sections/section-010/module-03/course-01-inventory-before-you-label.md
+    - sections/section-010/module-03/course-02-stage-a-label-change.md
+  sections/section-010/capstone/labs/lab-01:
+    preparation:
+    - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+    - sections/section-010/module-01/course-02-security-context-fields.md
+    - sections/section-010/module-01/course-03-pod-security-admission-modes.md
+    - sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+    - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
+    - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+    - sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+    - sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+    - sections/section-010/module-03/course-01-inventory-before-you-label.md
+    - sections/section-010/module-03/course-02-stage-a-label-change.md
+    - sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
+    - sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+  sections/section-020/module-01/labs/lab-01:
+    preparation:
+    - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+    - sections/section-020/module-01/course-03-rotating-a-secret.md
+  sections/section-020/module-02/labs/lab-01:
+    preparation:
+    - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    - sections/section-020/module-02/course-03-immutable-secrets.md
+  sections/section-020/module-03/labs/lab-01:
+    preparation:
+    - sections/section-020/module-03/course-01-where-credentials-leak.md
+  sections/section-020/capstone/labs/lab-01:
+    preparation:
+    - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
+    - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+    - sections/section-020/module-01/course-03-rotating-a-secret.md
+    - sections/section-020/module-01/course-04-encryption-at-rest.md
+    - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
+    - sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
+    - sections/section-020/module-02/course-03-immutable-secrets.md
+    - sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+    - sections/section-020/module-03/course-01-where-credentials-leak.md
+    - sections/section-020/module-03/course-02-external-secret-stores.md
+    - sections/section-020/module-03/course-03-encrypting-secrets-for-git.md
+    - sections/section-020/module-03/course-04-auditing-secret-access.md
+  sections/section-030/module-01/labs/lab-01:
+    preparation:
+    - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+    - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+  sections/section-030/module-02/labs/lab-01:
+    preparation:
+    - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+    - sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
+  sections/section-030/module-03/labs/lab-01:
+    preparation:
+    - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+  sections/section-030/capstone/labs/lab-01:
+    preparation:
+    - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+    - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    - sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+    - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+    - sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+    - sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
+    - sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
+    - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+    - sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+    - sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+    - sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
+  sections/section-040/module-01/labs/lab-01:
+    preparation:
+    - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
+    - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+  sections/section-040/module-02/labs/lab-01:
+    preparation:
+    - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+    - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  sections/section-040/module-03/labs/lab-01:
+    preparation:
+    - sections/section-040/module-03/course-01-what-cilium-encrypts.md
+    - sections/section-040/module-03/course-02-enabling-wireguard.md
+    - sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
+  sections/section-040/capstone/labs/lab-01:
+    preparation:
+    - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
+    - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
+    - sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+    - sections/section-040/module-01/course-04-cilium-transparent-encryption.md
+    - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+    - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+    - sections/section-040/module-02/course-03-certificates-and-workload-identity.md
+    - sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+    - sections/section-040/module-03/course-01-what-cilium-encrypts.md
+    - sections/section-040/module-03/course-02-enabling-wireguard.md
+    - sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
+    - sections/section-040/module-03/course-04-verifying-and-limits.md
+additional_readings:
+- sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+- sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+- sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
+- sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+- sections/section-020/module-01/course-04-encryption-at-rest.md
+- sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
+- sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+- sections/section-020/module-03/course-02-external-secret-stores.md
+- sections/section-020/module-03/course-03-encrypting-secrets-for-git.md
+- sections/section-020/module-03/course-04-auditing-secret-access.md
+- sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+- sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+- sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
+- sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+- sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+- sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
+- sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+- sections/section-040/module-01/course-04-cilium-transparent-encryption.md
+- sections/section-040/module-02/course-03-certificates-and-workload-identity.md
+- sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+- sections/section-040/module-03/course-04-verifying-and-limits.md
