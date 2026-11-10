@@ -27,3 +27,8 @@ This course has 4 ungraded module playgrounds and 4 draft independent labs. Task
 | 020/01 | Rotate A Secret And Refresh Its Consumer |
 | 030/01 | Compose A Tenant Namespace Boundary |
 | 040/01 | Require Mutual TLS Between Workloads |
+
+## Authoring and verification
+
+See [AUTHORING.md](AUTHORING.md) for the lab lifecycle and review workflow, and
+[LAB-COVERAGE.md](LAB-COVERAGE.md) for preparation lessons and graded outcomes.
