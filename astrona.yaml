@@ -101,7 +101,7 @@ modules:
     difficulty: intermediate
     estimated_duration: 25m
     topic: pod-security-context
-    task_kind: repair
+    task_kind: troubleshooting
     learning_goals:
     - Repair a Deployment so its Pod meets the Restricted profile and runs as a non-root user with a read-only root filesystem.
     tags:
