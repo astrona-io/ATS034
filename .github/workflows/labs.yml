@@ -135,9 +135,15 @@ jobs:
         if: matrix.env.kind == 'lab'
         run: astrona validate --accept-terms --headless -c "${{ matrix.env.path }}"
 
+      # Every lab script refuses any context but its own. The released astrona
+      # names the test cluster astro-test-<lab> and does not export
+      # ASTRONA_KUBE_CONTEXT yet, so name that exact context and cluster here.
       - name: Test the lab with its reference solution
         if: matrix.env.kind == 'lab'
         run: |
+          name=$(yq '.metadata.name' "${{ matrix.env.path }}/config.yaml")
+          export ASTRONA_KIND_CLUSTER="astro-test-$name"
+          export ASTRONA_KUBE_CONTEXT="kind-$ASTRONA_KIND_CLUSTER"
           astrona test --accept-terms --headless --install-version \
             -c "${{ matrix.env.path }}" \
             --junit-xml "$RUNNER_TEMP/junit.xml" \

@@ -72,7 +72,10 @@ def behavior_check(check):
 
 
 def main():
-    requirements = json.loads((DIRECTORY / 'requirements.json').read_text())
+    # Node names follow the kind cluster, which astrona test names differently.
+    cluster = os.environ.get('ASTRONA_KIND_CLUSTER') or 'astro-ats-034-capstone-030'
+    text = (DIRECTORY / 'requirements.json').read_text().replace('"astro-ats-034-capstone-030-', '"' + cluster + '-')
+    requirements = json.loads(text)
     context = os.environ.get('ASTRONA_KUBE_CONTEXT') or requirements['context']
     if kubectl('config', 'current-context') != context:
         sys.exit('Refusing to operate on another Kubernetes context')

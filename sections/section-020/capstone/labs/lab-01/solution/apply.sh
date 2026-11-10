@@ -7,7 +7,8 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 solution_directory="$lab_directory/solution"
-node_name="astro-ats-034-capstone-020-control-plane"
+cluster="${ASTRONA_KIND_CLUSTER:-astro-ats-034-capstone-020}"
+node_name="$cluster-control-plane"
 
 kubectl apply -f "$solution_directory/secret-probe-credentials.yaml"
 kubectl apply -f "$solution_directory/secret-registry-pull.yaml"

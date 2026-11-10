@@ -6,7 +6,8 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
   exit 1
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-node_name="astro-ats-034-playground-030-03-control-plane"
-worker_name="astro-ats-034-playground-030-03-worker"
+cluster="${ASTRONA_KIND_CLUSTER:-astro-ats-034-playground-030-03}"
+node_name="$cluster-control-plane"
+worker_name="$cluster-worker"
 kubectl apply -f "$lab_directory/bootstrap/manifests/start.yaml"
 kubectl wait --for=jsonpath='{.status.phase}'=Active namespace/tenant-c --timeout=60s

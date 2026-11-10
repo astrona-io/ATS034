@@ -7,8 +7,9 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 solution_directory="$lab_directory/solution"
-node_name="astro-ats-034-capstone-030-control-plane"
-worker_name="astro-ats-034-capstone-030-worker"
+cluster="${ASTRONA_KIND_CLUSTER:-astro-ats-034-capstone-030}"
+node_name="$cluster-control-plane"
+worker_name="$cluster-worker"
 
 kubectl apply -f "$solution_directory/namespace-untrusted.yaml"
 kubectl label node "$worker_name" isolation=untrusted --overwrite

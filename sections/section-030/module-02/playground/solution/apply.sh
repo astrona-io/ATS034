@@ -7,8 +7,9 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 solution_directory="$lab_directory/solution"
-node_name="astro-ats-034-playground-030-02-control-plane"
-worker_name="astro-ats-034-playground-030-02-worker"
+cluster="${ASTRONA_KIND_CLUSTER:-astro-ats-034-playground-030-02}"
+node_name="$cluster-control-plane"
+worker_name="$cluster-worker"
 
 kubectl label node "$worker_name" sandbox=true --overwrite
 kubectl apply -f "$solution_directory/runtimeclass-sandboxed.yaml"

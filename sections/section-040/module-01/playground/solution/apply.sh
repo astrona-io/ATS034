@@ -7,7 +7,8 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 solution_directory="$lab_directory/solution"
-node_name="astro-ats-034-playground-040-01-control-plane"
-worker_name="astro-ats-034-playground-040-01-worker"
+cluster="${ASTRONA_KIND_CLUSTER:-astro-ats-034-playground-040-01}"
+node_name="$cluster-control-plane"
+worker_name="$cluster-worker"
 
 kubectl apply -f "$solution_directory/peerauthentication-namespace-strict.yaml"
