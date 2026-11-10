@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: starfleet
+  name: starfleet-034-010-03-01
   labels:
     project: ckad
     pod-security.kubernetes.io/enforce: baseline
@@ -14,8 +14,8 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: outpost
+  name: outpost-034-010-03-01
   labels:
-    project: outpost
+    project: outpost-034-010-03-01
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: v1.35

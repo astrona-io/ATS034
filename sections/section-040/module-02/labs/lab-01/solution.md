@@ -17,12 +17,12 @@ test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-040-02-01" ||
 Check that every Pod has a sidecar, and that both clients reach both workloads before you change anything:
 
 ```sh
-kubectl -n starfleet get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[*].name}{"\n"}{end}'
-kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet/
-kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://legacy.starfleet/
+kubectl -n starfleet-034-040-02-01 get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[*].name}{"\n"}{end}'
+kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01/
+kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://legacy.starfleet-034-040-02-01/
 ```
 
-Each Pod in `starfleet` lists an `istio-proxy` container, and both requests return a line that starts with `version=`.
+Each Pod in `starfleet-034-040-02-01` lists an `istio-proxy` container, and both requests return a line that starts with `version=`.
 
 ## Require STRICT for the namespace
 
@@ -33,7 +33,7 @@ apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: namespace-strict
-  namespace: starfleet
+  namespace: starfleet-034-040-02-01
 spec:
   mtls:
     mode: STRICT
@@ -54,7 +54,7 @@ apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: legacy-permissive
-  namespace: starfleet
+  namespace: starfleet-034-040-02-01
 spec:
   selector:
     matchLabels:
@@ -74,10 +74,10 @@ kubectl apply -f peerauthentication-legacy-permissive.yaml
 Run the four requests. The denied one returns a nonzero status, so run it on its own:
 
 ```sh
-kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe/
-kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://legacy/
-kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://legacy.starfleet/
-kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet/
+kubectl -n starfleet-034-040-02-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe/
+kubectl -n starfleet-034-040-02-01 exec shuttle -c client -- wget -q -T 3 -O- http://legacy/
+kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://legacy.starfleet-034-040-02-01/
+kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01/
 ```
 
 The first three return a `version=` line. The fourth fails with a connection reset because the sidecar of `probe` requires mTLS and `drifter` sends plain text. If the fourth request still works, wait a few seconds and repeat it.

@@ -15,8 +15,6 @@ runtime:
     - docker.io/library/busybox:1.37.0
     nodes:
       workers: 1
-    addons:
-      cni: calico
 bootstrap:
   init:
   - name: seed-private-environment
@@ -26,11 +24,31 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: worker-label
+    description: The worker node is labelled tenant=tenant-c
+    type: file
+    source: validation/validate-worker-label.sh
+    points: 1
+  - name: worker-taint
+    description: The worker node is tainted tenant=tenant-c:NoSchedule
+    type: file
+    source: validation/validate-worker-taint.sh
+    points: 1
+  - name: tenant-deployment
+    description: Deployment tenant-c-app selects and tolerates the dedicated worker and its Pod runs there
+    type: file
+    source: validation/validate-tenant-deployment.sh
+    points: 2

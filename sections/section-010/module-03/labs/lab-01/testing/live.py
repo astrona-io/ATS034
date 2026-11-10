@@ -22,7 +22,9 @@ def assert_rejected(namespace, spec, label):
     result = dry_run(namespace, spec)
     assert result.returncode != 0 and 'violates PodSecurity' in result.stderr, label + ' must be rejected by Pod Security Admission in ' + namespace
 
-assert_admitted('starfleet', PLAIN_SPEC, 'A plain Pod')
-assert_rejected('starfleet', PRIVILEGED_SPEC, 'A privileged Pod')
-assert_rejected('outpost', PLAIN_SPEC, 'A plain Pod')
-assert_rejected('outpost', PRIVILEGED_SPEC, 'A privileged Pod')
+if wants('starfleet-baseline'):
+    assert_admitted('starfleet-034-010-03-01', PLAIN_SPEC, 'A plain Pod')
+    assert_rejected('starfleet-034-010-03-01', PRIVILEGED_SPEC, 'A privileged Pod')
+if wants('outpost-restricted'):
+    assert_rejected('outpost-034-010-03-01', PLAIN_SPEC, 'A plain Pod')
+    assert_rejected('outpost-034-010-03-01', PRIVILEGED_SPEC, 'A privileged Pod')

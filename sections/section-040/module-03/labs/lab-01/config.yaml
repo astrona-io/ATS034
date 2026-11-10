@@ -21,11 +21,26 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: ipsec-key-secret
+    description: Secret cilium-ipsec-keys in kube-system holds a valid rfc4106 IPsec key line
+    type: file
+    source: validation/validate-ipsec-key-secret.sh
+    points: 1
+  - name: helm-values
+    description: ConfigMap cilium-values enables IPsec encryption with the key Secret
+    type: file
+    source: validation/validate-helm-values.sh
+    points: 1

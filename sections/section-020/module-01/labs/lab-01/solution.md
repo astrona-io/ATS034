@@ -23,7 +23,7 @@ The isolated environment has two healthy probe replicas, an internal Service and
 Inspect the current objects before changing them:
 
 ```sh
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-020-01-01 get pods -o wide
 kubectl get nodes -o wide
 ```
 
@@ -36,7 +36,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: practice-token
-  namespace: starfleet
+  namespace: starfleet-034-020-01-01
 type: Opaque
 stringData:
   token: disposable-v2
@@ -45,7 +45,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: rotated-reader
-  namespace: starfleet
+  namespace: starfleet-034-020-01-01
 spec:
   restartPolicy: Never
   containers:
@@ -82,8 +82,8 @@ kubectl apply -f secret-practice-token.yaml
 Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
 
 ```sh
-kubectl -n starfleet wait --for=condition=Ready pod/rotated-reader --timeout=180s
-kubectl -n starfleet exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && test "$(cat /credentials/token)" = disposable-v2'
+kubectl -n starfleet-034-020-01-01 wait --for=condition=Ready pod/rotated-reader --timeout=180s
+kubectl -n starfleet-034-020-01-01 exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && test "$(cat /credentials/token)" = disposable-v2'
 ```
 
 Replace a disposable credential and verify both delivery paths use the new value. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.

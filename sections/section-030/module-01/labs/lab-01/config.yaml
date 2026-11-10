@@ -26,11 +26,36 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: namespace-restricted
+    description: Namespace tenant-a-034-030-01-01 enforces Restricted at v1.35
+    type: file
+    source: validation/validate-namespace-restricted.sh
+    points: 1
+  - name: resource-quota
+    description: ResourceQuota tenant-budget caps the namespace at three Pods
+    type: file
+    source: validation/validate-resource-quota.sh
+    points: 1
+  - name: default-deny-policy
+    description: NetworkPolicy tenant-isolation denies all ingress and egress and the tenant Pod cannot reach probe
+    type: file
+    source: validation/validate-default-deny-policy.sh
+    points: 1
+  - name: tenant-reader
+    description: Pod tenant-reader runs Ready under the restricted profile
+    type: file
+    source: validation/validate-tenant-reader.sh
+    points: 2

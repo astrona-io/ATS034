@@ -1,5 +1,7 @@
 {
   "context": "kind-astro-ats-034-lab-030-02-01",
+  "cluster": "astro-ats-034-lab-030-02-01",
+  "namespace": "tenant-b-034-030-02-01",
   "resources": [
     {
       "kind": "runtimeclass",
@@ -23,30 +25,19 @@
             "sandbox": "true"
           }
         }
-      }
-    },
-    {
-      "kind": "node",
-      "name": "astro-ats-034-lab-030-02-01-worker",
-      "namespace": "",
-      "expected": {
-        "metadata": {
-          "labels": {
-            "sandbox": "true"
-          }
-        }
-      }
+      },
+      "outcome": "runtimeclass"
     },
     {
       "kind": "pod",
       "name": "sandboxed-app",
-      "namespace": "tenant-b",
+      "namespace": "tenant-b-034-030-02-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "sandboxed-app",
-          "namespace": "tenant-b"
+          "namespace": "tenant-b-034-030-02-01"
         },
         "spec": {
           "runtimeClassName": "sandboxed",
@@ -59,7 +50,8 @@
           }
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "sandboxed-pod"
     }
   ],
   "behavior": []

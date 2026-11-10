@@ -23,11 +23,11 @@ The isolated environment has two healthy probe replicas, an internal Service and
 Inspect the current objects before changing them:
 
 ```sh
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-040-01-01 get pods -o wide
 kubectl get nodes -o wide
 ```
 
-Apply namespace-strict PeerAuthentication with STRICT mutual TLS to starfleet. Keep Istio 1.30.5 running and the application and shuttle Pods injected and Ready. Shuttle with its proxy must receive version one, while the unmeshed outpost drifter must fail its plaintext request with a connection-reset response. This verifies one service-mesh boundary, not host traffic or encryption for every possible path.
+Apply namespace-strict PeerAuthentication with STRICT mutual TLS to starfleet-034-040-01-01. Keep Istio 1.30.5 running and the application and shuttle Pods injected and Ready. Shuttle with its proxy must receive version one, while the unmeshed outpost-034-040-01-01 drifter must fail its plaintext request with a connection-reset response. This verifies one service-mesh boundary, not host traffic or encryption for every possible path.
 
 Save this as `peerauthentication-namespace-strict.yaml`:
 
@@ -36,7 +36,7 @@ apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: namespace-strict
-  namespace: starfleet
+  namespace: starfleet-034-040-01-01
 spec:
   mtls:
     mode: STRICT
@@ -53,8 +53,8 @@ kubectl apply -f peerauthentication-namespace-strict.yaml
 Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
 
 ```sh
-kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe/
-kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet/
+kubectl -n starfleet-034-040-01-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe/
+kubectl -n outpost-034-040-01-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-01-01/
 ```
 
 Require mesh-authenticated traffic while keeping the injected client able to reach the application. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.

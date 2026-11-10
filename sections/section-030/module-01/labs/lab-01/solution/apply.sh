@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
-if [[ "$(kubectl config current-context)" != "kind-astro-ats-034-lab-030-01-01" ]]; then
+context="${ASTRONA_KUBE_CONTEXT:-kind-astro-ats-034-lab-030-01-01}"
+if [[ "$(kubectl config current-context)" != "$context" ]]; then
   printf 'Refusing to operate on another Kubernetes context\n' >&2
   exit 1
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 solution_directory="$lab_directory/solution"
-node_name="astro-ats-034-lab-030-01-01-control-plane"
-worker_name="astro-ats-034-lab-030-01-01-worker"
 
 kubectl apply -f "$solution_directory/namespace-tenant-a.yaml"
-kubectl -n tenant-a wait --for=condition=Ready pod/tenant-reader --timeout=180s
+kubectl -n tenant-a-034-030-01-01 wait --for=condition=Ready pod/tenant-reader --timeout=180s

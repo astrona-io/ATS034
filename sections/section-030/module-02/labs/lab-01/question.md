@@ -6,13 +6,9 @@ exam_objectives:
 ---
 # Schedule Sandboxed Pods With A RuntimeClass
 
-Create a RuntimeClass with scheduling and overhead, and run a Pod that uses it.
+Solve this question on: `terminal`
 
-Scenario: the `tenant-b` namespace must run its code in the sandbox class on the node that has the handler.
-
-## Starting state
-
-The isolated environment has an empty namespace `tenant-b` and two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
+Sandboxed workloads must run only on a node prepared for them. The namespace `tenant-b-034-030-02-01` is empty, and the cluster has two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
 
 Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
 
@@ -25,10 +21,21 @@ worker_name="astro-ats-034-lab-030-02-01-worker"
 
 Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
 
-## Required result
+Allow about 7 minutes for the tasks. Cluster startup adds time.
 
-Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory. Label the worker node `sandbox=true`. Run the Pod `sandboxed-app` in `tenant-b` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Do not set a node selector or overhead in the Pod. The API server must add them from the class, and the scheduler must place the Pod on the labeled worker.
+## Tasks
 
-## Verify The Result
+1. Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory.
+2. Label the worker node `sandbox=true`.
+3. Run the Pod `sandboxed-app` in `tenant-b-034-030-02-01` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`.
 
-The grader checks the required object fields and actual observations. Wait for controller convergence before submitting. Preserve the task's namespace, workload names and unrelated components.
+## Constraints
+
+- Do not set a node selector or an overhead in the Pod. The API server must add them from the class.
+- Do not label or taint the control-plane node.
+
+## How the answer is checked
+
+The grader runs three checks: the handler, overhead and node selector of the RuntimeClass `sandboxed`; the `sandbox=true` label on the worker node; and that `sandboxed-app` is Ready, carries the overhead and node selector the class added, and runs on the worker node.
+
+Hint: The worker node is the node whose name ends in `-worker`: `kubectl get nodes`.

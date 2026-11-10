@@ -57,6 +57,7 @@ modules:
   - type: lab
     title: Enforce Restricted Pod Admission
     path: sections/section-010/module-01/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: pod-security-admission
@@ -98,6 +99,7 @@ modules:
   - type: lab
     title: Repair A Deployment To Meet Restricted
     path: sections/section-010/module-02/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: pod-security-context
@@ -136,6 +138,7 @@ modules:
   - type: lab
     title: Stage Pod Security Labels On Two Namespaces
     path: sections/section-010/module-03/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: pod-security-rollout
@@ -206,6 +209,7 @@ modules:
   - type: lab
     title: Rotate A Secret And Refresh Its Consumer
     path: sections/section-020/module-01/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: secret-rotation
@@ -247,6 +251,7 @@ modules:
   - type: lab
     title: Create An Immutable Basic-Auth Secret
     path: sections/section-020/module-02/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: immutable-secrets
@@ -282,6 +287,7 @@ modules:
   - type: lab
     title: Move A Credential From A ConfigMap Into A Secret
     path: sections/section-020/module-03/labs/lab-01
+    examScope: namespace
     difficulty: intermediate
     estimated_duration: 25m
     topic: credential-leaks
@@ -396,6 +402,7 @@ modules:
   - type: lab
     title: Schedule Sandboxed Pods With A RuntimeClass
     path: sections/section-030/module-02/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
     estimated_duration: 25m
     topic: sandbox-runtimeclass
@@ -431,6 +438,7 @@ modules:
   - type: lab
     title: Dedicate A Node To One Tenant
     path: sections/section-030/module-03/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
     estimated_duration: 25m
     topic: node-dedication
@@ -501,6 +509,7 @@ modules:
   - type: lab
     title: Require Mutual TLS Between Workloads
     path: sections/section-040/module-01/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
     estimated_duration: 25m
     topic: workload-mtls
@@ -542,6 +551,7 @@ modules:
   - type: lab
     title: Migrate A Namespace To Strict mTLS With One Exception
     path: sections/section-040/module-02/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
     estimated_duration: 25m
     topic: mtls-migration
@@ -586,6 +596,7 @@ modules:
   - type: lab
     title: Prepare IPsec Encryption For Cilium
     path: sections/section-040/module-03/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
     estimated_duration: 20m
     topic: cilium-ipsec

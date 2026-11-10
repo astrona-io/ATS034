@@ -23,11 +23,11 @@ The isolated environment has two healthy probe replicas, an internal Service and
 Inspect the current objects before changing them:
 
 ```sh
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-010-01-01 get pods -o wide
 kubectl get nodes -o wide
 ```
 
-Label namespace `restricted` with restricted Pod Security enforcement pinned to v1.35. Run the supplied non-root reader with RuntimeDefault seccomp, no privilege escalation and dropped capabilities. A server-side dry-run privileged Pod creation must be rejected specifically by Pod Security admission. The compliant reader must remain Ready.
+Label namespace `restricted-034-010-01-01` with restricted Pod Security enforcement pinned to v1.35. Run the supplied non-root reader with RuntimeDefault seccomp, no privilege escalation and dropped capabilities. A server-side dry-run privileged Pod creation must be rejected specifically by Pod Security admission. The compliant reader must remain Ready.
 
 Save this as `namespace-restricted.yaml`:
 
@@ -35,7 +35,7 @@ Save this as `namespace-restricted.yaml`:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: restricted
+  name: restricted-034-010-01-01
   labels:
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: v1.35
@@ -44,7 +44,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: restricted-reader
-  namespace: restricted
+  namespace: restricted-034-010-01-01
 spec:
   restartPolicy: Never
   containers:
@@ -86,8 +86,8 @@ kubectl apply -f namespace-restricted.yaml
 Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
 
 ```sh
-kubectl -n restricted wait --for=condition=Ready pod/restricted-reader --timeout=180s
-python3 -c 'import json,subprocess; obj={'"'"'apiVersion'"'"': '"'"'v1'"'"', '"'"'kind'"'"': '"'"'Pod'"'"', '"'"'metadata'"'"': {'"'"'name'"'"': '"'"'unsafe-reader'"'"', '"'"'namespace'"'"': '"'"'restricted'"'"'}, '"'"'spec'"'"': {'"'"'containers'"'"': [{'"'"'name'"'"': '"'"'reader'"'"', '"'"'image'"'"': '"'"'docker.io/library/busybox:1.37.0'"'"', '"'"'securityContext'"'"': {'"'"'privileged'"'"': True}}]}}; result=subprocess.run(['"'"'kubectl'"'"','"'"'create'"'"','"'"'--dry-run=server'"'"','"'"'-f'"'"','"'"'-'"'"'],input=json.dumps(obj),text=True,capture_output=True,timeout=15); assert result.returncode!=0 and '"'"'violates PodSecurity'"'"' in result.stderr; print('"'"'restricted-admission-denied'"'"')'
+kubectl -n restricted-034-010-01-01 wait --for=condition=Ready pod/restricted-reader --timeout=180s
+python3 -c 'import json,subprocess; obj={'"'"'apiVersion'"'"': '"'"'v1'"'"', '"'"'kind'"'"': '"'"'Pod'"'"', '"'"'metadata'"'"': {'"'"'name'"'"': '"'"'unsafe-reader'"'"', '"'"'namespace'"'"': '"'"'restricted-034-010-01-01'"'"'}, '"'"'spec'"'"': {'"'"'containers'"'"': [{'"'"'name'"'"': '"'"'reader'"'"', '"'"'image'"'"': '"'"'docker.io/library/busybox:1.37.0'"'"', '"'"'securityContext'"'"': {'"'"'privileged'"'"': True}}]}}; result=subprocess.run(['"'"'kubectl'"'"','"'"'create'"'"','"'"'--dry-run=server'"'"','"'"'-f'"'"','"'"'-'"'"'],input=json.dumps(obj),text=True,capture_output=True,timeout=15); assert result.returncode!=0 and '"'"'violates PodSecurity'"'"' in result.stderr; print('"'"'restricted-admission-denied'"'"')'
 ```
 
 Admit a compliant Pod and reject a privileged Pod through the API server. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.

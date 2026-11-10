@@ -21,8 +21,8 @@ Keep this connection selected throughout the task. Every script supplied by the 
 A ConfigMap is for settings that are not secret. It has no special protection, and many roles can read it. Look at what the ConfigMap holds, without printing the credential:
 
 ```sh
-kubectl -n starfleet get configmap legacy-settings -o jsonpath='{.data}' | grep -c credential
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-020-03-01 get configmap legacy-settings -o jsonpath='{.data}' | grep -c credential
+kubectl -n starfleet-034-020-03-01 get pods -o wide
 ```
 
 The first command prints `1` when the key `credential` is present. Create the Secret and the Pod that reads it.
@@ -34,7 +34,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: migrated-credentials
-  namespace: starfleet
+  namespace: starfleet-034-020-03-01
 type: Opaque
 stringData:
   token: disposable-v1
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: migrated-reader
-  namespace: starfleet
+  namespace: starfleet-034-020-03-01
 spec:
   restartPolicy: Never
   automountServiceAccountToken: false
@@ -74,8 +74,8 @@ kubectl apply -f secret-migrated-credentials.yaml
 Delete the ConfigMap only after the new Pod is Ready, so you know the Secret works:
 
 ```sh
-kubectl -n starfleet wait --for=condition=Ready pod/migrated-reader --timeout=180s
-kubectl -n starfleet delete configmap legacy-settings
+kubectl -n starfleet-034-020-03-01 wait --for=condition=Ready pod/migrated-reader --timeout=180s
+kubectl -n starfleet-034-020-03-01 delete configmap legacy-settings
 ```
 
 ## Verify The Result
@@ -83,14 +83,14 @@ kubectl -n starfleet delete configmap legacy-settings
 Compare the value inside the container and check that no environment variable holds it. The second command prints nothing and succeeds when no variable value contains the word `disposable`:
 
 ```sh
-kubectl -n starfleet exec migrated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v1'
-kubectl -n starfleet exec migrated-reader -- sh -c 'test -z "$(env | grep disposable)"'
+kubectl -n starfleet-034-020-03-01 exec migrated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v1'
+kubectl -n starfleet-034-020-03-01 exec migrated-reader -- sh -c 'test -z "$(env | grep disposable)"'
 ```
 
 Then confirm that the ConfigMap is gone. This command must fail with a `NotFound` error, so run it on its own:
 
 ```sh
-kubectl -n starfleet get configmap legacy-settings
+kubectl -n starfleet-034-020-03-01 get configmap legacy-settings
 ```
 
 ## Common pitfalls
