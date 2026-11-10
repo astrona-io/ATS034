@@ -36,6 +36,8 @@ Allow about 7 minutes for the tasks. Cluster startup adds time.
 
 ## How the answer is checked
 
+The name `sandboxed` is only a RuntimeClass name. Its handler is `runc`, so this exercise proves RuntimeClass admission and scheduling, not an additional gVisor or Kata isolation boundary.
+
 The grader runs three checks: the handler, overhead and node selector of the RuntimeClass `sandboxed`; the `sandbox=true` label on the worker node; and that `sandboxed-app` is Ready, carries the overhead and node selector the class added, and runs on the worker node.
 
 Hint: The worker node is the node whose name ends in `-worker`: `kubectl get nodes`.

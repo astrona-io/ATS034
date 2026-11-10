@@ -30,6 +30,8 @@ Allow about 7 minutes for the tasks. Cluster startup adds time.
 
 ## How the answer is checked
 
+This exercise checks the inputs to an IPsec installation. No Cilium agent consumes the stored values here, so a passing result is not evidence of encrypted traffic or successful key rotation.
+
 The grader runs two checks: the format of the key line in `cilium-ipsec-keys`, and the encryption fields in the JSON of `cilium-values`.
 
 Hint: `openssl rand -hex 20` prints 40 hexadecimal characters.
