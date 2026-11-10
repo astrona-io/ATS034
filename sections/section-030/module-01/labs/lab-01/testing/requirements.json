@@ -118,9 +118,7 @@
           "policyTypes": [
             "Ingress",
             "Egress"
-          ],
-          "ingress": [],
-          "egress": []
+          ]
         }
       },
       "outcome": "default-deny-policy"
