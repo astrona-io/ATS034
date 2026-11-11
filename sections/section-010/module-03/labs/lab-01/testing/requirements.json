@@ -1,15 +1,17 @@
 {
-  "context": "kind-ats-034-lab-010-03-01",
+  "context": "kind-astro-ats-034-lab-010-03-01",
+  "cluster": "astro-ats-034-lab-010-03-01",
+  "namespace": "starfleet-034-010-03-01",
   "resources": [
     {
       "kind": "namespace",
-      "name": "starfleet",
+      "name": "starfleet-034-010-03-01",
       "namespace": "",
       "expected": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
-          "name": "starfleet",
+          "name": "starfleet-034-010-03-01",
           "labels": {
             "project": "ckad",
             "pod-security.kubernetes.io/enforce": "baseline",
@@ -20,36 +22,38 @@
             "pod-security.kubernetes.io/audit-version": "v1.35"
           }
         }
-      }
+      },
+      "outcome": "starfleet-baseline"
     },
     {
       "kind": "namespace",
-      "name": "outpost",
+      "name": "outpost-034-010-03-01",
       "namespace": "",
       "expected": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
-          "name": "outpost",
+          "name": "outpost-034-010-03-01",
           "labels": {
-            "project": "outpost",
+            "project": "outpost-034-010-03-01",
             "pod-security.kubernetes.io/enforce": "restricted",
             "pod-security.kubernetes.io/enforce-version": "v1.35"
           }
         }
-      }
+      },
+      "outcome": "outpost-restricted"
     },
     {
       "kind": "deployment",
       "name": "probe",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-010-03-01",
       "state": "deployment",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "probe",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-010-03-01"
         },
         "spec": {
           "replicas": 2
@@ -59,28 +63,28 @@
     {
       "kind": "pod",
       "name": "shuttle",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-010-03-01",
       "state": "pod",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "shuttle",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-010-03-01"
         }
       }
     },
     {
       "kind": "pod",
       "name": "drifter",
-      "namespace": "outpost",
+      "namespace": "outpost-034-010-03-01",
       "state": "pod",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "drifter",
-          "namespace": "outpost"
+          "namespace": "outpost-034-010-03-01"
         }
       }
     }

@@ -113,9 +113,7 @@
           "policyTypes": [
             "Ingress",
             "Egress"
-          ],
-          "ingress": [],
-          "egress": []
+          ]
         }
       }
     }

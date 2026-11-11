@@ -11,7 +11,7 @@ Use a host shell with the private kubeconfig for this independent kind environme
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-playground-010-02)"
-test "$(kubectl config current-context)" = "kind-ats-034-playground-010-02" || exit 1
+test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-010-02" || exit 1
 node_name="astro-ats-034-playground-010-02-control-plane"
 worker_name="astro-ats-034-playground-010-02-worker"
 ```

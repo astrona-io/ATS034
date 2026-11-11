@@ -33,22 +33,7 @@
                     }
                   }
                 }
-              ],
-              "volumeMounts": [
-                {
-                  "name": "secret",
-                  "mountPath": "/credentials",
-                  "readOnly": true
-                }
               ]
-            }
-          ],
-          "volumes": [
-            {
-              "name": "secret",
-              "secret": {
-                "secretName": "practice-token"
-              }
             }
           ]
         }

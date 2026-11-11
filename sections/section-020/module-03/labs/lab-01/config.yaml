@@ -24,11 +24,31 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: credential-secret
+    description: Secret migrated-credentials holds the credential
+    type: file
+    source: validation/validate-credential-secret.sh
+    points: 1
+  - name: secret-volume-reader
+    description: Pod migrated-reader reads the credential from a Secret volume and has no credential in its environment
+    type: file
+    source: validation/validate-secret-volume-reader.sh
+    points: 2
+  - name: configmap-removed
+    description: ConfigMap legacy-settings is deleted
+    type: file
+    source: validation/validate-configmap-removed.sh
+    points: 1

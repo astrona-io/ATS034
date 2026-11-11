@@ -25,10 +25,14 @@ After this module you can:
 
 You need Pods, namespaces, labels, node labels and the commands `kubectl get`, `kubectl apply` and `kubectl describe`. You also need to know what a `RuntimeClass` is: a cluster-scoped object that maps a name to a runtime handler. You do not need an earlier module.
 
-Your playground is a `kind` cluster running Kubernetes 1.35 with one control-plane node and one worker node. Its nodes run containerd with the default `runc` handler only. No gVisor or Kata handler is installed, because both need host features that a nested playground cannot give. The module therefore uses the `runc` handler under a new class name to show every field and every admission effect, and it states plainly where a real sandbox would behave differently.
+Your playground is a `kind` cluster running Kubernetes 1.35 with one control-plane node and one worker node. Its nodes run containerd with the default `runc` handler only. No gVisor or Kata handler is installed in this fixture. Installing a real sandbox requires a compatible host, runtime configuration and separate behavior tests. The module therefore uses the `runc` handler under a new class name to show every field and every admission effect, and it states plainly where a real sandbox would behave differently.
 
 The namespace `tenant-b` exists and is empty. `kubectl` in the playground terminal already points at this cluster. Every file you save is a file on the playground machine, in the folder you are working in.
 
 Launch your playground now, and keep it running next to you while you read the parts:
 
 <!-- astrona:playground -->
+
+## Independent live assessment
+
+Prepare with [Start And Verify A Real gVisor Sandbox](course-04a-run-a-real-gvisor-sandbox.md). [Run A Workload Under gVisor](labs/lab-02/question.md) uses its own qemu environment. Docker launches a fresh container through the installed gVisor runtime; The running scout container uses gVisor and serves the expected response.

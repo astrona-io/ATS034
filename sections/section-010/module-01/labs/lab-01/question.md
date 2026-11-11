@@ -5,11 +5,9 @@ exam_objectives:
 ---
 # Enforce Restricted Pod Admission
 
-Admit a compliant Pod and reject a privileged Pod through the API server.
+Solve this question on: `terminal`
 
-## Starting state
-
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
+The namespace `restricted-034-010-01-01` must only admit Pods that meet the Restricted Pod Security Standard. It does not exist yet. The environment also runs two healthy `probe` replicas, an internal Service and two client Pods in `starfleet-034-010-01-01` and `outpost-034-010-01-01`.
 
 Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
 
@@ -22,10 +20,21 @@ worker_name="astro-ats-034-lab-010-01-01-worker"
 
 Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
 
-## Required result
+Allow about 8 minutes for the tasks. Cluster startup adds time.
 
-Label namespace `restricted` with restricted Pod Security enforcement pinned to v1.35. Run the supplied non-root reader with RuntimeDefault seccomp, no privilege escalation and dropped capabilities. A server-side dry-run privileged Pod creation must be rejected specifically by Pod Security admission. The compliant reader must remain Ready.
+## Tasks
 
-## Verify The Result
+1. Create the namespace `restricted-034-010-01-01` with the labels `pod-security.kubernetes.io/enforce: restricted` and `pod-security.kubernetes.io/enforce-version: v1.35`.
+2. Create the Pod `restricted-reader` in `restricted-034-010-01-01` with `restartPolicy: Never`, one container named `reader`, the image `docker.io/library/busybox:1.37.0` and the command `sh -c "sleep 3600"`. At Pod level set `runAsNonRoot: true`, `runAsUser: 1000`, `runAsGroup: 1000`, `fsGroup: 1000` and the `RuntimeDefault` seccomp profile. In the container set `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true` and drop `ALL` capabilities, and mount an `emptyDir` volume named `scratch` at `/scratch`.
+3. Prove the policy: a server-side dry run of a privileged Pod in `restricted-034-010-01-01` must be rejected by Pod Security admission, and `restricted-reader` must stay Ready.
 
-The grader checks the required object fields and actual observations. Wait for controller convergence before submitting. Preserve the task's namespace, workload names and unrelated components.
+## Constraints
+
+- Do not change the `starfleet-034-010-01-01` and `outpost-034-010-01-01` namespaces or their workloads.
+- Use a server-side dry run (`kubectl create --dry-run=server`) for the privileged Pod, so nothing is stored.
+
+## How the answer is checked
+
+The grader runs two checks. The first checks the two Pod Security labels on `restricted-034-010-01-01` and sends a privileged Pod as a server-side dry run, which must fail with a Pod Security violation; a rejection for another reason does not count. The second checks the fields of `restricted-reader`, its `scratch` volume and mount, and that the Pod is Running and Ready.
+
+Hint: `kubectl label` does not create a namespace. Apply a Namespace manifest that carries the labels.

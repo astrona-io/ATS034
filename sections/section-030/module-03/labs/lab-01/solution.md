@@ -19,9 +19,9 @@ Keep this connection selected. Host-level commands name only this environment's 
 
 ## Inspect And Explain
 
-The isolated environment has an empty namespace `tenant-c` and two nodes. The worker node has no tenant label and no taint.
+The isolated environment has an empty namespace `tenant-c-034-030-03-01` and two nodes. The worker node has no tenant label and no taint.
 
-Dedicate the worker node to `tenant-c`. Label it `tenant=tenant-c` and taint it `tenant=tenant-c:NoSchedule`. Create the Deployment `tenant-c-app` in `tenant-c` with one replica, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Give its Pod template the matching node selector and a toleration for the taint, so that the Pod runs on the dedicated worker.
+Dedicate the worker node to `tenant-c`. Label it `tenant=tenant-c` and taint it `tenant=tenant-c:NoSchedule`. Create the Deployment `tenant-c-app` in `tenant-c-034-030-03-01` with one replica, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Give its Pod template the matching node selector and a toleration for the taint, so that the Pod runs on the dedicated worker.
 
 Label and taint the worker node:
 
@@ -37,7 +37,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tenant-c-app
-  namespace: tenant-c
+  namespace: tenant-c-034-030-03-01
 spec:
   replicas: 1
   selector:
@@ -75,8 +75,8 @@ kubectl apply -f deployment-tenant-c-app.yaml
 Wait for the rollout and read the node of the Pod:
 
 ```sh
-kubectl -n tenant-c rollout status deployment/tenant-c-app --timeout=180s
-kubectl -n tenant-c get pods -o wide
+kubectl -n tenant-c-034-030-03-01 rollout status deployment/tenant-c-app --timeout=180s
+kubectl -n tenant-c-034-030-03-01 get pods -o wide
 ```
 
 The node column shows the dedicated worker. No example command output is presented as evidence of a completed run. The taint keeps other Pods off the node, and the selector with the toleration puts this Pod on it, so check that all four settings exist.

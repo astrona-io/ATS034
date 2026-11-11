@@ -1,32 +1,35 @@
 {
   "context": "kind-astro-ats-034-lab-010-01-01",
+  "cluster": "astro-ats-034-lab-010-01-01",
+  "namespace": "restricted-034-010-01-01",
   "resources": [
     {
       "kind": "namespace",
-      "name": "restricted",
+      "name": "restricted-034-010-01-01",
       "namespace": "",
       "expected": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
-          "name": "restricted",
+          "name": "restricted-034-010-01-01",
           "labels": {
             "pod-security.kubernetes.io/enforce": "restricted",
             "pod-security.kubernetes.io/enforce-version": "v1.35"
           }
         }
-      }
+      },
+      "outcome": "namespace-enforces-restricted"
     },
     {
       "kind": "pod",
       "name": "restricted-reader",
-      "namespace": "restricted",
+      "namespace": "restricted-034-010-01-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "restricted-reader",
-          "namespace": "restricted"
+          "namespace": "restricted-034-010-01-01"
         },
         "spec": {
           "restartPolicy": "Never",
@@ -47,13 +50,7 @@
                   ]
                 },
                 "readOnlyRootFilesystem": true
-              },
-              "volumeMounts": [
-                {
-                  "name": "scratch",
-                  "mountPath": "/scratch"
-                }
-              ]
+              }
             }
           ],
           "securityContext": {
@@ -64,16 +61,11 @@
             "seccompProfile": {
               "type": "RuntimeDefault"
             }
-          },
-          "volumes": [
-            {
-              "name": "scratch",
-              "emptyDir": {}
-            }
-          ]
+          }
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "restricted-reader"
     }
   ],
   "behavior": [
@@ -81,9 +73,10 @@
       "args": [
         "python3",
         "-c",
-        "import json,subprocess; obj={'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': 'unsafe-reader', 'namespace': 'restricted'}, 'spec': {'containers': [{'name': 'reader', 'image': 'docker.io/library/busybox:1.37.0', 'securityContext': {'privileged': True}}]}}; result=subprocess.run(['kubectl','create','--dry-run=server','-f','-'],input=json.dumps(obj),text=True,capture_output=True,timeout=15); assert result.returncode!=0 and 'violates PodSecurity' in result.stderr; print('restricted-admission-denied')"
+        "import json,subprocess; obj={'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': 'unsafe-reader', 'namespace': 'restricted-034-010-01-01'}, 'spec': {'containers': [{'name': 'reader', 'image': 'docker.io/library/busybox:1.37.0', 'securityContext': {'privileged': True}}]}}; result=subprocess.run(['kubectl','create','--dry-run=server','-f','-'],input=json.dumps(obj),text=True,capture_output=True,timeout=15); assert result.returncode!=0 and 'violates PodSecurity' in result.stderr; print('restricted-admission-denied')"
       ],
-      "equals": "restricted-admission-denied"
+      "equals": "restricted-admission-denied",
+      "outcome": "namespace-enforces-restricted"
     }
   ]
 }

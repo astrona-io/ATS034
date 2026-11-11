@@ -1,16 +1,18 @@
 {
   "context": "kind-astro-ats-034-lab-020-03-01",
+  "cluster": "astro-ats-034-lab-020-03-01",
+  "namespace": "starfleet-034-020-03-01",
   "resources": [
     {
       "kind": "pod",
       "name": "migrated-reader",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-03-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "migrated-reader",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-020-03-01"
         },
         "spec": {
           "restartPolicy": "Never",
@@ -44,18 +46,20 @@
           ]
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "secret-volume-reader"
     },
     {
       "kind": "secret",
       "name": "migrated-credentials",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-03-01",
       "expected": {
         "type": "Opaque",
         "data": {
           "token": "ZGlzcG9zYWJsZS12MQ=="
         }
-      }
+      },
+      "outcome": "credential-secret"
     }
   ],
   "behavior": [
@@ -63,41 +67,29 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-020-03-01",
         "exec",
         "migrated-reader",
         "--",
         "sh",
         "-c",
         "test \"$(cat /credentials/token)\" = disposable-v1"
-      ]
+      ],
+      "outcome": "secret-volume-reader"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-020-03-01",
         "exec",
         "migrated-reader",
         "--",
         "sh",
         "-c",
         "test -z \"$(env | grep disposable)\""
-      ]
-    },
-    {
-      "args": [
-        "kubectl",
-        "-n",
-        "starfleet",
-        "get",
-        "configmap",
-        "legacy-settings"
       ],
-      "denied": true,
-      "failure_markers": [
-        "not found"
-      ]
+      "outcome": "secret-volume-reader"
     }
   ]
 }

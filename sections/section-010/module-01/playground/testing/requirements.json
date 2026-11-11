@@ -47,13 +47,7 @@
                   ]
                 },
                 "readOnlyRootFilesystem": true
-              },
-              "volumeMounts": [
-                {
-                  "name": "scratch",
-                  "mountPath": "/scratch"
-                }
-              ]
+              }
             }
           ],
           "securityContext": {
@@ -64,13 +58,7 @@
             "seccompProfile": {
               "type": "RuntimeDefault"
             }
-          },
-          "volumes": [
-            {
-              "name": "scratch",
-              "emptyDir": {}
-            }
-          ]
+          }
         }
       },
       "state": "pod"

@@ -2,7 +2,7 @@ apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
   name: legacy-permissive
-  namespace: starfleet
+  namespace: starfleet-034-040-02-01
 spec:
   selector:
     matchLabels:

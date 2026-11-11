@@ -24,11 +24,26 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: namespace-strict
+    description: PeerAuthentication namespace-strict covers the whole namespace and the plaintext client cannot reach probe
+    type: file
+    source: validation/validate-namespace-strict.sh
+    points: 1
+  - name: legacy-exception
+    description: PeerAuthentication legacy-permissive lets the plaintext client reach legacy
+    type: file
+    source: validation/validate-legacy-exception.sh
+    points: 1

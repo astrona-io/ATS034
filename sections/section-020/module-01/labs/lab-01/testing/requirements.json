@@ -1,16 +1,18 @@
 {
   "context": "kind-astro-ats-034-lab-020-01-01",
+  "cluster": "astro-ats-034-lab-020-01-01",
+  "namespace": "starfleet-034-020-01-01",
   "resources": [
     {
       "kind": "pod",
       "name": "rotated-reader",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-01-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "rotated-reader",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-020-01-01"
         },
         "spec": {
           "restartPolicy": "Never",
@@ -33,38 +35,25 @@
                     }
                   }
                 }
-              ],
-              "volumeMounts": [
-                {
-                  "name": "secret",
-                  "mountPath": "/credentials",
-                  "readOnly": true
-                }
               ]
-            }
-          ],
-          "volumes": [
-            {
-              "name": "secret",
-              "secret": {
-                "secretName": "practice-token"
-              }
             }
           ]
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "rotated-reader"
     },
     {
       "kind": "secret",
       "name": "practice-token",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-01-01",
       "expected": {
         "type": "Opaque",
         "data": {
           "token": "ZGlzcG9zYWJsZS12Mg=="
         }
-      }
+      },
+      "outcome": "secret-rotated"
     }
   ],
   "behavior": [
@@ -72,14 +61,15 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-020-01-01",
         "exec",
         "rotated-reader",
         "--",
         "sh",
         "-c",
         "test \"$PRACTICE_TOKEN\" = disposable-v2 && test \"$(cat /credentials/token)\" = disposable-v2"
-      ]
+      ],
+      "outcome": "rotated-reader"
     }
   ]
 }
