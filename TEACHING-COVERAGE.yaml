@@ -107,6 +107,12 @@ labs:
     - sections/section-040/module-03/course-02-enabling-wireguard.md
     - sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
     - sections/section-040/module-03/course-04-verifying-and-limits.md
+  sections/section-030/module-02/labs/lab-02:
+    preparation:
+    - sections/section-030/module-02/course-04a-run-a-real-gvisor-sandbox.md
+  sections/section-040/module-03/labs/lab-02:
+    preparation:
+    - sections/section-040/module-03/course-03a-observe-encrypted-cross-node-traffic.md
 additional_readings:
 - sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
 - sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md

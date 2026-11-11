@@ -13,4 +13,10 @@ The Helm values select the protocol: `encryption.enabled`, `encryption.type`, an
 
 Verification goes from the agent to the wire. `cilium-dbg status` and `cilium-dbg encrypt status` show the state of each agent, the node shows the WireGuard interface or the IPsec security associations, and a packet capture shows UDP packets on port 51871 or ESP packets without readable text. A report names what is not covered, and it combines Cilium for coverage of all nodes with Istio for identity and authorization.
 
+
+
+## Independent live assessment
+
+Prepare with [Prove Cilium Encrypts A Cross-Node Request](course-03a-observe-encrypted-cross-node-traffic.md). [Encrypt And Observe Cross-Node Traffic](labs/lab-02/question.md) uses its own qemu environment. Both real Cilium agents have active WireGuard peers; Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the node interface.
+
 <!-- astrona:playground:destroy -->

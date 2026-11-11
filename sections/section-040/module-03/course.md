@@ -27,3 +27,7 @@ Your playground is a `kind` cluster running Kubernetes 1.35 with one control-pla
 The playground has one ConfigMap, `cilium-values` in `kube-system`. It stands for the Helm values file of a cluster and holds the starting values, with encryption turned off. Launch your playground now and keep it running while you read:
 
 <!-- astrona:playground -->
+
+## Independent live assessment
+
+Prepare with [Prove Cilium Encrypts A Cross-Node Request](course-03a-observe-encrypted-cross-node-traffic.md). [Encrypt And Observe Cross-Node Traffic](labs/lab-02/question.md) uses its own qemu environment. Both real Cilium agents have active WireGuard peers; Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the node interface.
