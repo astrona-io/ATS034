@@ -120,6 +120,7 @@ jobs:
       # Docker on a hosted runner sometimes answers slowly right after the job
       # starts, and `astrona check` then fails with "context deadline exceeded".
       - name: Wait for Docker
+        if: matrix.env.runtime == 'kind'
         run: |
           timeout 180 bash -c 'until docker info >/dev/null 2>&1; do echo "waiting for Docker..."; sleep 5; done'
           docker version --format 'Docker {{.Server.Version}}'
@@ -130,7 +131,19 @@ jobs:
       # MetadataLookupWarning). Reject it for containers, as on a laptop where
       # the address does not answer.
       - name: Block the cloud metadata address for containers
+        if: matrix.env.runtime == 'kind'
         run: sudo iptables -I DOCKER-USER -d 169.254.169.254 -j REJECT
+
+      - name: Install QEMU and enable native acceleration
+        if: matrix.env.runtime == 'qemu'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-x86 qemu-utils genisoimage acl
+          test -c /dev/kvm
+          sudo setfacl -m "u:$(id -un):rw" /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
+          # QEMU user-mode networking originates traffic from the runner.
+          sudo iptables -I OUTPUT -d 169.254.169.254 -j REJECT
 
       - name: Check the runner
         run: |
@@ -161,8 +174,8 @@ jobs:
           DIAGNOSTICS_DIR: ${{ runner.temp }}/diagnostics
         run: scripts/ci/test-playground.sh "${{ matrix.env.path }}"
 
-      - name: Upload diagnostics
-        if: failure()
+      - name: Upload test evidence
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: diagnostics-${{ strategy.job-index }}
