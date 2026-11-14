@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://astrona.io/courses/certified-kubernetes-security-specialist">
+    <img src="https://astrona.io/courses/certified-kubernetes-security-specialist/domains/ATS034.svg" alt="ATS034: Minimize Microservice Vulnerabilities, part of the Certified Kubernetes Security Specialist course on Astrona" width="100%">
+  </a>
+</p>
+
 # Minimize Microservice Vulnerabilities (ATS034)
 
 Certified Kubernetes Security Specialist (CKS): Minimize Microservice Vulnerabilities, worth 20% of the official curriculum. This course belongs to ATP007.
