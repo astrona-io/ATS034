@@ -9,7 +9,7 @@ Use a host shell with the private kubeconfig for this independent kind environme
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-010-03-01)"
-test "$(kubectl config current-context)" = "kind-ats-034-lab-010-03-01" || exit 1
+test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-010-03-01" || exit 1
 node_name="astro-ats-034-lab-010-03-01-control-plane"
 worker_name="astro-ats-034-lab-010-03-01-worker"
 ```
@@ -22,11 +22,11 @@ Neither namespace has Pod Security labels, so nothing is checked. The `probe` an
 
 ```sh
 kubectl get namespaces -L pod-security.kubernetes.io/enforce,pod-security.kubernetes.io/warn
-kubectl label namespace starfleet pod-security.kubernetes.io/enforce=baseline --overwrite --dry-run=server
-kubectl label namespace starfleet pod-security.kubernetes.io/enforce=restricted --overwrite --dry-run=server
+kubectl label namespace starfleet-034-010-03-01 pod-security.kubernetes.io/enforce=baseline --overwrite --dry-run=server
+kubectl label namespace starfleet-034-010-03-01 pod-security.kubernetes.io/enforce=restricted --overwrite --dry-run=server
 ```
 
-The Baseline dry run gives no Pod warning. The Restricted dry run names the existing Pods and lists the rules they break. So `starfleet` can enforce Baseline now and only warn and audit on Restricted. The `outpost` namespace must enforce Restricted; the existing `drifter` Pod keeps running, because a label never removes a running Pod.
+The Baseline dry run gives no Pod warning. The Restricted dry run names the existing Pods and lists the rules they break. So `starfleet-034-010-03-01` can enforce Baseline now and only warn and audit on Restricted. The `outpost-034-010-03-01` namespace must enforce Restricted; the existing `drifter` Pod keeps running, because a label never removes a running Pod.
 
 Save this as `namespaces-pod-security.yaml`. Both namespaces keep their `project` label, because an apply replaces the label set it manages:
 
@@ -34,7 +34,7 @@ Save this as `namespaces-pod-security.yaml`. Both namespaces keep their `project
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: starfleet
+  name: starfleet-034-010-03-01
   labels:
     project: ckad
     pod-security.kubernetes.io/enforce: baseline
@@ -47,9 +47,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: outpost
+  name: outpost-034-010-03-01
   labels:
-    project: outpost
+    project: outpost-034-010-03-01
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: v1.35
 ```
@@ -60,17 +60,17 @@ Apply it:
 kubectl apply -f namespaces-pod-security.yaml
 ```
 
-The command may print a warning that names the Pods in `starfleet` that would not meet Restricted. That warning is the `warn` mode working.
+The command may print a warning that names the Pods in `starfleet-034-010-03-01` that would not meet Restricted. That warning is the `warn` mode working.
 
 ## Verify The Result
 
-Check the labels, then test both namespaces with server-side dry runs. A dry run goes through admission and stores nothing. A Pod with no security settings must be admitted in `starfleet` and rejected in `outpost`.
+Check the labels, then test both namespaces with server-side dry runs. A dry run goes through admission and stores nothing. A Pod with no security settings must be admitted in `starfleet-034-010-03-01` and rejected in `outpost-034-010-03-01`.
 
 ```sh
-kubectl get namespaces starfleet outpost --show-labels
-kubectl -n starfleet run plain-check --image=docker.io/library/busybox:1.37.0 --dry-run=server -- sleep 3600
-kubectl -n outpost run plain-check --image=docker.io/library/busybox:1.37.0 --dry-run=server -- sleep 3600
-kubectl -n starfleet get pods
+kubectl get namespaces starfleet-034-010-03-01 outpost-034-010-03-01 --show-labels
+kubectl -n starfleet-034-010-03-01 run plain-check --image=docker.io/library/busybox:1.37.0 --dry-run=server -- sleep 3600
+kubectl -n outpost-034-010-03-01 run plain-check --image=docker.io/library/busybox:1.37.0 --dry-run=server -- sleep 3600
+kubectl -n starfleet-034-010-03-01 get pods
 ```
 
 The first dry run ends with `created (server dry run)`. The second fails with a `Forbidden` error that says the Pod violates `restricted:v1.35`. The `probe` Pods and the client Pods stay Ready.

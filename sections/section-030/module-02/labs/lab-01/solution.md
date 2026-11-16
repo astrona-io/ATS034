@@ -19,9 +19,9 @@ Keep this connection selected. Host-level commands name only this environment's 
 
 ## Inspect And Explain
 
-The isolated environment has an empty namespace `tenant-b` and two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
+The isolated environment has an empty namespace `tenant-b-034-030-02-01` and two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
 
-Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory. Label the worker node `sandbox=true`. Run the Pod `sandboxed-app` in `tenant-b` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Do not set a node selector or overhead in the Pod. The API server must add them from the class, and the scheduler must place the Pod on the labeled worker.
+Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory. Label the worker node `sandbox=true`. Run the Pod `sandboxed-app` in `tenant-b-034-030-02-01` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Do not set a node selector or overhead in the Pod. The API server must add them from the class, and the scheduler must place the Pod on the labeled worker.
 
 Save this as `runtimeclass-sandboxed.yaml`:
 
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: sandboxed-app
-  namespace: tenant-b
+  namespace: tenant-b-034-030-02-01
   labels:
     app: sandboxed-app
 spec:
@@ -80,8 +80,8 @@ kubectl apply -f pod-sandboxed-app.yaml
 Wait for the Pod and read the fields that the API server added:
 
 ```sh
-kubectl -n tenant-b wait --for=condition=Ready pod/sandboxed-app --timeout=180s
-kubectl -n tenant-b get pod sandboxed-app -o jsonpath='{.spec.overhead}{"\n"}{.spec.nodeSelector}{"\n"}{.spec.nodeName}{"\n"}'
+kubectl -n tenant-b-034-030-02-01 wait --for=condition=Ready pod/sandboxed-app --timeout=180s
+kubectl -n tenant-b-034-030-02-01 get pod sandboxed-app -o jsonpath='{.spec.overhead}{"\n"}{.spec.nodeSelector}{"\n"}{.spec.nodeName}{"\n"}'
 ```
 
 The first line shows the class overhead, the second the merged node selector and the third the labeled worker. No example command output is presented as evidence of a completed run. A matching field alone does not show that the scheduler used it, so read the node name as well.

@@ -18,4 +18,10 @@ Using the class is optional unless admission requires it. A `ValidatingAdmission
 - Label nodes and install handlers together.
 - A policy needs a binding, and enforcement can lag by seconds.
 
+
+
+## Independent live assessment
+
+Prepare with [Start And Verify A Real gVisor Sandbox](course-04a-run-a-real-gvisor-sandbox.md). [Run A Workload Under gVisor](labs/lab-02/question.md) uses its own qemu environment. Docker launches a fresh container through the installed gVisor runtime; The running scout container uses gVisor and serves the expected response.
+
 <!-- astrona:playground:destroy -->

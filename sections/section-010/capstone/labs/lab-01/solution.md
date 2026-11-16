@@ -9,7 +9,7 @@ Use a host shell with the private kubeconfig for this independent kind environme
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-capstone-010)"
-test "$(kubectl config current-context)" = "kind-ats-034-capstone-010" || exit 1
+test "$(kubectl config current-context)" = "kind-astro-ats-034-capstone-010" || exit 1
 ```
 
 Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.

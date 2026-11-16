@@ -6,6 +6,6 @@ exam_objectives:
 ---
 # Starting Environment
 
-The isolated environment has an empty namespace `tenant-c` and two nodes. The worker node has no tenant label and no taint.
+The isolated environment has an empty namespace `tenant-c-034-030-03-01` and two nodes. The worker node has no tenant label and no taint.
 
 Reserve the worker node for one tenant with a label, a taint, a selector and a toleration.

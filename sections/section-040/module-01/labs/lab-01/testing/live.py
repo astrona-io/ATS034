@@ -1,4 +1,11 @@
-pods=json.loads(kubectl('-n','starfleet','get','pods','-l','app=probe','-o','json'))['items']
-assert len(pods)==2 and all(any(container['name']=='istio-proxy' for container in pod['spec']['containers']) for pod in pods), 'Require actual injected application proxies'
-assert any(container['name']=='istio-proxy' for container in get('pod','shuttle')['spec']['containers']), 'Require an injected client'
-assert not any(container['name']=='istio-proxy' for container in get('pod','drifter',namespace='outpost')['spec']['containers']), 'Preserve the plaintext negative client'
+def proxied(pod):
+    """Istio injects istio-proxy as a native sidecar (an init container that restarts always) on newer Kubernetes."""
+    spec = pod['spec']
+    return any(c['name'] == 'istio-proxy' for c in spec.get('containers', [])) or any(
+        c['name'] == 'istio-proxy' and c.get('restartPolicy') == 'Always' for c in spec.get('initContainers', []))
+
+
+pods=json.loads(kubectl('-n','starfleet-034-040-01-01','get','pods','-l','app=probe','-o','json'))['items']
+assert len(pods)==2 and all(proxied(pod) for pod in pods), 'Require actual injected application proxies'
+assert proxied(get('pod','shuttle')), 'Require an injected client'
+assert not proxied(get('pod','drifter',namespace='outpost-034-040-01-01')), 'Preserve the plaintext negative client'

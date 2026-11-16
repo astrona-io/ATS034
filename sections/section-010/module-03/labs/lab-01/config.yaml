@@ -24,11 +24,26 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: starfleet-baseline
+    description: Namespace starfleet-034-010-03-01 enforces Baseline and warns and audits on Restricted, all at v1.35
+    type: file
+    source: validation/validate-starfleet-baseline.sh
+    points: 1
+  - name: outpost-restricted
+    description: Namespace outpost-034-010-03-01 enforces Restricted at v1.35
+    type: file
+    source: validation/validate-outpost-restricted.sh
+    points: 1

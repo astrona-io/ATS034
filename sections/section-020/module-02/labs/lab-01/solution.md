@@ -21,7 +21,7 @@ Keep this connection selected throughout the task. Every script supplied by the 
 Start with the objects that exist. The Secret type decides which keys the API server requires, so read the type rules before you write the manifest.
 
 ```sh
-kubectl -n starfleet get secrets
+kubectl -n starfleet-034-020-02-01 get secrets
 kubectl get nodes -o wide
 ```
 
@@ -34,7 +34,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: probe-login
-  namespace: starfleet
+  namespace: starfleet-034-020-02-01
 type: kubernetes.io/basic-auth
 immutable: true
 stringData:
@@ -45,7 +45,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: login-reader
-  namespace: starfleet
+  namespace: starfleet-034-020-02-01
 spec:
   restartPolicy: Never
   automountServiceAccountToken: false
@@ -78,14 +78,14 @@ kubectl apply -f secret-probe-login.yaml
 Wait for the Pod, then compare the values inside the container. These commands print nothing when the values match, and fail when they differ.
 
 ```sh
-kubectl -n starfleet wait --for=condition=Ready pod/login-reader --timeout=180s
-kubectl -n starfleet exec login-reader -- sh -c 'test "$(cat /login/username)" = scout && test "$(cat /login/password)" = disposable-login'
+kubectl -n starfleet-034-020-02-01 wait --for=condition=Ready pod/login-reader --timeout=180s
+kubectl -n starfleet-034-020-02-01 exec login-reader -- sh -c 'test "$(cat /login/username)" = scout && test "$(cat /login/password)" = disposable-login'
 ```
 
 Now try to change the password. This command must fail, so run it on its own, not in a shell sequence that stops on the first error:
 
 ```sh
-kubectl -n starfleet patch secret probe-login --type merge -p '{"stringData":{"password":"changed"}}'
+kubectl -n starfleet-034-020-02-01 patch secret probe-login --type merge -p '{"stringData":{"password":"changed"}}'
 ```
 
 The API server rejects the request with a `Forbidden` error that says the field is immutable. The only way to change an immutable Secret is to delete it and create a new one.

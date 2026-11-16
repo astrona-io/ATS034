@@ -28,3 +28,10 @@ Applied the local astrona-course-expand-material skill with CLAUDE.md plain-Engl
 - https://kubernetes.io/docs/tutorials/security/seccomp/
 - https://kubernetes.io/docs/tutorials/security/apparmor/
 - https://falco.org/docs/concepts/
+
+## Live assessment review — 2026-11-11
+
+gVisor release-20261102.0; Cilium 1.20.4; Helm 4.3.1. QEMU fixtures pin the Ubuntu image and verify architecture-specific downloads where supplied. Package repositories and vulnerability data remain time-dependent.
+
+- [gVisor Docker quick start](https://gvisor.dev/docs/user_guide/quick_start/docker/)
+- [Cilium WireGuard](https://docs.cilium.io/en/stable/security/network/encryption-wireguard/)

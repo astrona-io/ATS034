@@ -9,7 +9,7 @@ Use a host shell with the private kubeconfig for this independent kind environme
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-010-02-01)"
-test "$(kubectl config current-context)" = "kind-ats-034-lab-010-02-01" || exit 1
+test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-010-02-01" || exit 1
 node_name="astro-ats-034-lab-010-02-01-control-plane"
 worker_name="astro-ats-034-lab-010-02-01-worker"
 ```
@@ -18,14 +18,14 @@ Keep this connection selected. Host-level commands name only this environment's 
 
 ## Inspect And Explain
 
-The namespace `hardened` enforces Restricted. The `scanner` Deployment was accepted, but it has no Ready Pod. Pod Security Admission checks Pods and not Deployments, so the reason is in the events of the ReplicaSet.
+The namespace `hardened-034-010-02-01` enforces Restricted. The `scanner` Deployment was accepted, but it has no Ready Pod. Pod Security Admission checks Pods and not Deployments, so the reason is in the events of the ReplicaSet.
 
 Inspect the current objects before changing them:
 
 ```sh
-kubectl -n hardened get deployment scanner
-kubectl -n hardened get replicaset
-kubectl -n hardened get events --field-selector reason=FailedCreate
+kubectl -n hardened-034-010-02-01 get deployment scanner
+kubectl -n hardened-034-010-02-01 get replicaset
+kubectl -n hardened-034-010-02-01 get events --field-selector reason=FailedCreate
 ```
 
 The `FailedCreate` event says the Pod violates `restricted:v1.35` and lists the rules the Pod template breaks: privilege escalation, capabilities, the user and the seccomp profile. Fix all of them in the Pod template. The container also writes to `/tmp`, so a read-only root filesystem needs a writable volume at that path.
@@ -37,7 +37,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scanner
-  namespace: hardened
+  namespace: hardened-034-010-02-01
 spec:
   replicas: 1
   selector:
@@ -87,11 +87,11 @@ The template changed, so the Deployment creates a new ReplicaSet. The new Pod pa
 Wait for the rollout, then read the facts from the running process. The kernel and the container runtime, not the Pod spec, decide what the process really has.
 
 ```sh
-kubectl -n hardened rollout status deployment/scanner --timeout=180s
-kubectl -n hardened exec deploy/scanner -- id -u
-kubectl -n hardened exec deploy/scanner -- grep NoNewPrivs /proc/1/status
-kubectl -n hardened exec deploy/scanner -- cat /tmp/result
-kubectl -n hardened exec deploy/scanner -- touch /rootfile
+kubectl -n hardened-034-010-02-01 rollout status deployment/scanner --timeout=180s
+kubectl -n hardened-034-010-02-01 exec deploy/scanner -- id -u
+kubectl -n hardened-034-010-02-01 exec deploy/scanner -- grep NoNewPrivs /proc/1/status
+kubectl -n hardened-034-010-02-01 exec deploy/scanner -- cat /tmp/result
+kubectl -n hardened-034-010-02-01 exec deploy/scanner -- touch /rootfile
 ```
 
 The user ID is 1000, `NoNewPrivs` is 1 and `/tmp/result` holds `scan`. The last command must fail because the root filesystem is read-only, and it returns a nonzero status when the restriction works.

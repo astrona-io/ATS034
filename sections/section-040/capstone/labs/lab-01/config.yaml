@@ -27,6 +27,9 @@ testing:
   - name: reference-result
     type: file
     source: solution/apply.sh
+  - name: wait-solved
+    type: file
+    source: testing/wait-solved.sh
 validation:
   script:
     name: verify-fields-and-live-evidence

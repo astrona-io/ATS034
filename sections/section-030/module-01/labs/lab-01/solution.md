@@ -24,11 +24,11 @@ The isolated environment has two healthy probe replicas, an internal Service and
 Inspect the current objects before changing them:
 
 ```sh
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-030-01-01 get pods -o wide
 kubectl get nodes -o wide
 ```
 
-Create tenant-a enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
+Create tenant-a-034-030-01-01 enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
 
 Save this as `namespace-tenant-a.yaml`:
 
@@ -36,7 +36,7 @@ Save this as `namespace-tenant-a.yaml`:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: tenant-a
+  name: tenant-a-034-030-01-01
   labels:
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: v1.35
@@ -45,7 +45,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: tenant-budget
-  namespace: tenant-a
+  namespace: tenant-a-034-030-01-01
 spec:
   hard:
     pods: '3'
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: tenant-reader
-  namespace: tenant-a
+  namespace: tenant-a-034-030-01-01
   labels:
     app: tenant-reader
 spec:
@@ -91,7 +91,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: tenant-isolation
-  namespace: tenant-a
+  namespace: tenant-a-034-030-01-01
 spec:
   podSelector: {}
   policyTypes:
@@ -112,7 +112,7 @@ kubectl apply -f namespace-tenant-a.yaml
 Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
 
 ```sh
-kubectl -n tenant-a wait --for=condition=Ready pod/tenant-reader --timeout=180s
+kubectl -n tenant-a-034-030-01-01 wait --for=condition=Ready pod/tenant-reader --timeout=180s
 ```
 
 Combine admission, a resource budget, token minimization and network isolation for one tenant. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.

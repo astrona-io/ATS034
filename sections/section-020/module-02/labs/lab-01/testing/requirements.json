@@ -1,16 +1,18 @@
 {
   "context": "kind-astro-ats-034-lab-020-02-01",
+  "cluster": "astro-ats-034-lab-020-02-01",
+  "namespace": "starfleet-034-020-02-01",
   "resources": [
     {
       "kind": "pod",
       "name": "login-reader",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-02-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "login-reader",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-020-02-01"
         },
         "spec": {
           "restartPolicy": "Never",
@@ -44,12 +46,13 @@
           ]
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "login-reader"
     },
     {
       "kind": "secret",
       "name": "probe-login",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-020-02-01",
       "expected": {
         "type": "kubernetes.io/basic-auth",
         "immutable": true,
@@ -57,7 +60,8 @@
           "username": "c2NvdXQ=",
           "password": "ZGlzcG9zYWJsZS1sb2dpbg=="
         }
-      }
+      },
+      "outcome": "immutable-secret"
     }
   ],
   "behavior": [
@@ -65,20 +69,21 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-020-02-01",
         "exec",
         "login-reader",
         "--",
         "sh",
         "-c",
         "test \"$(cat /login/username)\" = scout && test \"$(cat /login/password)\" = disposable-login"
-      ]
+      ],
+      "outcome": "login-reader"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-020-02-01",
         "patch",
         "secret",
         "probe-login",
@@ -90,7 +95,8 @@
       "denied": true,
       "failure_markers": [
         "immutable"
-      ]
+      ],
+      "outcome": "immutable-secret"
     }
   ]
 }

@@ -6,11 +6,9 @@ exam_objectives:
 ---
 # Compose A Tenant Namespace Boundary
 
-Combine admission, a resource budget, token minimization and network isolation for one tenant.
+Solve this question on: `terminal`
 
-## Starting state
-
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
+A new tenant gets its own namespace with layered controls: Pod Security, a quota and a default-deny network policy. The environment runs two healthy `probe` replicas and the `probe` Service in `starfleet-034-030-01-01`, and client Pods in `starfleet-034-030-01-01` and `outpost-034-030-01-01`. Namespace policies are layered controls, not a claim of separate-kernel isolation.
 
 Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
 
@@ -23,10 +21,22 @@ worker_name="astro-ats-034-lab-030-01-01-worker"
 
 Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
 
-## Required result
+Allow about 10 minutes for the tasks. Cluster startup adds time.
 
-Create tenant-a enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
+## Tasks
 
-## Verify The Result
+1. Create the namespace `tenant-a-034-030-01-01` with the labels `pod-security.kubernetes.io/enforce: restricted` and `pod-security.kubernetes.io/enforce-version: v1.35`, and the ResourceQuota `tenant-budget` in it that allows at most three Pods.
+2. Create the NetworkPolicy `tenant-isolation` in `tenant-a-034-030-01-01` that selects every Pod and denies all ingress and all egress.
+3. Run the Pod `tenant-reader` (label `app: tenant-reader`) in `tenant-a-034-030-01-01` with `restartPolicy: Never`, `automountServiceAccountToken: false`, one container named `reader`, the image `docker.io/library/busybox:1.37.0` and the command `sh -c "sleep 3600"`. At Pod level set `runAsNonRoot: true`, `runAsUser: 1000`, `runAsGroup: 1000`, `fsGroup: 1000` and the `RuntimeDefault` seccomp profile. In the container set `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true` and drop `ALL` capabilities, and mount an `emptyDir` volume named `scratch` at `/scratch`.
+4. Prove the isolation: a request from `tenant-reader` to the ClusterIP of the `probe` Service must time out, while `shuttle` still reaches it.
 
-The grader checks the required object fields and actual observations. Wait for controller convergence before submitting. Preserve the task's namespace, workload names and unrelated components.
+## Constraints
+
+- Do not change the `probe` Deployment, its Service or the client Pods.
+- Do not add any NetworkPolicy outside `tenant-a-034-030-01-01`.
+
+## How the answer is checked
+
+The grader runs four checks: the Pod Security labels of the namespace; the quota of three Pods; the NetworkPolicy, together with a request from `tenant-reader` to the `probe` ClusterIP that must time out; and the fields of `tenant-reader` and that it is Ready. Every check also needs `shuttle` to reach `probe`, so the denied target is healthy.
+
+Hint: An empty `ingress` and `egress` list with both policy types denies all traffic, including DNS, so use the ClusterIP rather than the Service name.
