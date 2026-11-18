@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-d-034-030-03-02
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-d-app
+  namespace: tenant-d-034-030-03-02
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenant-d-app
+  template:
+    metadata:
+      labels:
+        app: tenant-d-app
+    spec:
+      nodeSelector:
+        tenant: tenant-d
+      containers:
+      - name: app
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - sleep infinity

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: untrusted-034-030-02-03
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trusted-034-030-02-03
+---
+# The only runtime handler of a kind node is runc. The class name says
+# "sandboxed", but the lab grades the admission rule, not a real sandbox.
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: sandboxed
+handler: runc
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: job-runner
+  namespace: untrusted-034-030-02-03
+  labels:
+    app: job-runner
+spec:
+  containers:
+  - name: runner
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -c
+    - sleep infinity

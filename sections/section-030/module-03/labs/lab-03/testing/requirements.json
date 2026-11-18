@@ -1,0 +1,18 @@
+{
+  "context": "kind-astro-ats-034-lab-030-03-03",
+  "cluster": "astro-ats-034-lab-030-03-03",
+  "namespace": "tenant-e-034-030-03-03",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "starfleet-034-030-03-03",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "name": "starfleet-034-030-03-03"
+        }
+      }
+    }
+  ],
+  "behavior": []
+}

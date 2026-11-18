@@ -353,29 +353,68 @@ modules:
     title: Namespaces And RBAC As A Tenant Boundary
     path: sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
   - type: reading
-    title: Resource Isolation With ResourceQuota And LimitRange
-    path: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
-  - type: reading
-    title: Network Isolation And Token Minimization
-    path: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
-  - type: reading
-    title: "Compose A Tenant Namespace Boundary \u2014 Task"
+    title: "Limit A Tenant User To One Namespace With RBAC \u2014 Task"
     path: sections/section-030/module-01/labs/lab-01/question.md
   - type: lab
-    title: Compose A Tenant Namespace Boundary
+    title: Limit A Tenant User To One Namespace With RBAC
     path: sections/section-030/module-01/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: tenant-isolation
     task_kind: build
     learning_goals:
-    - Combine admission, a resource budget, token minimization and network isolation for one tenant.
+    - Bind a namespaced Role to a tenant user and prove its access with kubectl auth can-i.
     tags:
     - cks
     - tenant-isolation
   - type: reading
-    title: "Compose A Tenant Namespace Boundary \u2014 Solution"
+    title: "Limit A Tenant User To One Namespace With RBAC \u2014 Solution"
     path: sections/section-030/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: Resource Isolation With ResourceQuota And LimitRange
+    path: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+  - type: reading
+    title: "Cap A Tenant With ResourceQuota And LimitRange \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Cap A Tenant With ResourceQuota And LimitRange
+    path: sections/section-030/module-01/labs/lab-02
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: tenant-resource-isolation
+    task_kind: build
+    learning_goals:
+    - Cap a tenant namespace with a ResourceQuota and give containers default requests and limits with a LimitRange.
+    tags:
+    - cks
+    - tenant-isolation
+  - type: reading
+    title: "Cap A Tenant With ResourceQuota And LimitRange \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-02/solution.md
+  - type: reading
+    title: Network Isolation And Token Minimization
+    path: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+  - type: reading
+    title: "Isolate A Tenant Namespace And Remove Its Token \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Isolate A Tenant Namespace And Remove Its Token
+    path: sections/section-030/module-01/labs/lab-03
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: tenant-network-isolation
+    task_kind: build
+    learning_goals:
+    - Isolate a tenant namespace with NetworkPolicy and stop the API token mount for its workload.
+    tags:
+    - cks
+    - tenant-isolation
+  - type: reading
+    title: "Isolate A Tenant Namespace And Remove Its Token \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-03/solution.md
   - type: reading
     title: Sandboxed Containers With RuntimeClass
     path: sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
@@ -400,14 +439,14 @@ modules:
     title: RuntimeClass Scheduling And Overhead
     path: sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
   - type: reading
-    title: "Schedule Sandboxed Pods With A RuntimeClass \u2014 Task"
-    path: sections/section-030/module-02/labs/lab-01/question.md
+    title: "Schedule Pods With A RuntimeClass Overhead And Node Selector \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-02/question.md
   - type: lab
-    title: Schedule Sandboxed Pods With A RuntimeClass
-    path: sections/section-030/module-02/labs/lab-01
+    title: Schedule Pods With A RuntimeClass Overhead And Node Selector
+    path: sections/section-030/module-02/labs/lab-02
     examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: sandbox-runtimeclass
     task_kind: build
     learning_goals:
@@ -416,28 +455,30 @@ modules:
     - cks
     - sandbox-runtimeclass
   - type: reading
-    title: "Schedule Sandboxed Pods With A RuntimeClass \u2014 Solution"
-    path: sections/section-030/module-02/labs/lab-01/solution.md
+    title: "Schedule Pods With A RuntimeClass Overhead And Node Selector \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-02/solution.md
   - type: reading
     title: Requiring The Sandbox With Admission Policy
     path: sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
   - type: reading
-    title: Start And Verify A Real gVisor Sandbox
-    path: sections/section-030/module-02/course-04a-run-a-real-gvisor-sandbox.md
-  - type: reading
-    title: "Run A Workload Under gVisor \u2014 Task"
-    path: sections/section-030/module-02/labs/lab-02/question.md
+    title: "Require A RuntimeClass With A ValidatingAdmissionPolicy \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-03/question.md
   - type: lab
-    title: Run A Workload Under gVisor
-    path: sections/section-030/module-02/labs/lab-02
+    title: Require A RuntimeClass With A ValidatingAdmissionPolicy
+    path: sections/section-030/module-02/labs/lab-03
+    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 15m
+    estimated_duration: 10m
+    topic: sandbox-admission
+    task_kind: build
     learning_goals:
-    - Docker launches a fresh container through the installed gVisor runtime
-    - The running scout container uses gVisor and serves the expected response
+    - Reject Pods without the sandbox RuntimeClass in one namespace with a ValidatingAdmissionPolicy.
+    tags:
+    - cks
+    - sandbox-runtimeclass
   - type: reading
-    title: "Run A Workload Under gVisor \u2014 Solution"
-    path: sections/section-030/module-02/labs/lab-02/solution.md
+    title: "Require A RuntimeClass With A ValidatingAdmissionPolicy \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-030/module-02/course-05-summary.md
@@ -453,14 +494,14 @@ modules:
     title: Dedicated Nodes With Taints And Tolerations
     path: sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
   - type: reading
-    title: "Dedicate A Node To One Tenant \u2014 Task"
+    title: "Dedicate A Node To One Tenant With Taints And Tolerations \u2014 Task"
     path: sections/section-030/module-03/labs/lab-01/question.md
   - type: lab
-    title: Dedicate A Node To One Tenant
+    title: Dedicate A Node To One Tenant With Taints And Tolerations
     path: sections/section-030/module-03/labs/lab-01
     examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: node-dedication
     task_kind: build
     learning_goals:
@@ -469,14 +510,52 @@ modules:
     - cks
     - node-dedication
   - type: reading
-    title: "Dedicate A Node To One Tenant \u2014 Solution"
+    title: "Dedicate A Node To One Tenant With Taints And Tolerations \u2014 Solution"
     path: sections/section-030/module-03/labs/lab-01/solution.md
   - type: reading
     title: Node Labels You Can Trust
     path: sections/section-030/module-03/course-02-node-labels-you-can-trust.md
   - type: reading
+    title: "Use A NodeRestriction Label For Tenant Placement \u2014 Task"
+    path: sections/section-030/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Use A NodeRestriction Label For Tenant Placement
+    path: sections/section-030/module-03/labs/lab-02
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: node-restriction
+    task_kind: build
+    learning_goals:
+    - Place tenant Pods with a node-restriction.kubernetes.io label that the kubelet cannot change.
+    tags:
+    - cks
+    - node-dedication
+  - type: reading
+    title: "Use A NodeRestriction Label For Tenant Placement \u2014 Solution"
+    path: sections/section-030/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Forcing Placement At Admission
     path: sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+  - type: reading
+    title: "Require A Tenant Node Selector With A ValidatingAdmissionPolicy \u2014 Task"
+    path: sections/section-030/module-03/labs/lab-03/question.md
+  - type: lab
+    title: Require A Tenant Node Selector With A ValidatingAdmissionPolicy
+    path: sections/section-030/module-03/labs/lab-03
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: placement-admission
+    task_kind: build
+    learning_goals:
+    - Reject tenant Pods without the protected node selector with a ValidatingAdmissionPolicy.
+    tags:
+    - cks
+    - node-dedication
+  - type: reading
+    title: "Require A Tenant Node Selector With A ValidatingAdmissionPolicy \u2014 Solution"
+    path: sections/section-030/module-03/labs/lab-03/solution.md
   - type: reading
     title: Choosing A Tenant Boundary
     path: sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
@@ -488,25 +567,6 @@ modules:
     path: sections/section-030/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Isolate An Untrusted Tenant End To End \u2014 Task"
-    path: sections/section-030/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Isolate An Untrusted Tenant End To End
-    path: sections/section-030/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 45m
-    topic: tenant-isolation-capstone
-    task_kind: build
-    learning_goals:
-    - Combine namespace controls, a sandbox class, a dedicated node, a network policy and an admission
-      policy for one untrusted tenant.
-    tags:
-    - cks
-    - tenant-isolation-capstone
-  - type: reading
-    title: "Isolate An Untrusted Tenant End To End \u2014 Solution"
-    path: sections/section-030/capstone/labs/lab-01/solution.md
 - id: module-040
   title: Implement Pod-to-Pod encryption (Cilium, Istio)
   description: Developed reading and reasoning for Implement Pod-to-Pod encryption (Cilium, Istio).

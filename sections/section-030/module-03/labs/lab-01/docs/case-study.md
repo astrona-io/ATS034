@@ -1,11 +1,7 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
 # Starting Environment
 
-The isolated environment has an empty namespace `tenant-c-034-030-03-01` and two nodes. The worker node has no tenant label and no taint.
-
-Reserve the worker node for one tenant with a label, a taint, a selector and a toleration.
+The cluster has two nodes: `astro-ats-034-lab-030-03-01-control-plane` and `astro-ats-034-lab-030-03-01-worker`. The namespaces `tenant-c-034-030-03-01` and `outpost-034-030-03-01` are empty. The worker node has no `tenant` label and no `tenant` taint. The control-plane node keeps its usual `node-role.kubernetes.io/control-plane:NoSchedule` taint.

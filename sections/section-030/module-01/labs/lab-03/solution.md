@@ -1,125 +1,133 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
-# Compose A Tenant Namespace Boundary Solution
+# Isolate A Tenant Namespace And Remove Its Token Solution
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
-
-```sh
-export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-01-01)"
-test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-01-01" || exit 1
-node_name="astro-ats-034-lab-030-01-01-control-plane"
-worker_name="astro-ats-034-lab-030-01-01-worker"
-```
-
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
-
-## Inspect And Explain
-
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Inspect the current objects before changing them:
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
-kubectl -n starfleet-034-030-01-01 get pods -o wide
-kubectl get nodes -o wide
+export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-01-03)"
+test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-01-03" || exit 1
 ```
 
-Create tenant-a-034-030-01-01 enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Save this as `namespace-tenant-a.yaml`:
+A NetworkPolicy is a namespaced object that says which traffic may reach or leave the Pods it selects. The network plugin, here Calico, enforces it on each node. Without any NetworkPolicy, every Pod can open a connection to every other Pod in the cluster. Store the two target addresses first, because the policies will block DNS (Domain Name System) lookups later:
+
+```sh
+PROBE_IP=$(kubectl -n starfleet-034-030-01-03 get service probe -o jsonpath='{.spec.clusterIP}')
+BEACON_IP=$(kubectl -n starfleet-034-030-01-03 get pod beacon -o jsonpath='{.status.podIP}')
+kubectl -n tenant-a-034-030-01-03 exec worker -- wget -q -T 3 -O- http://$BEACON_IP:8080/
+```
+
+The request succeeds and prints `version=v1 app=beacon host=beacon`. The `worker` Pod reaches a Pod it has no reason to talk to.
+
+## Deny all traffic, then allow one path
+
+A policy with an empty `podSelector` selects every Pod in its namespace. When it lists both `Ingress` and `Egress` in `policyTypes` and has no rules, it allows nothing in either direction. A second policy then adds one allowed egress path. Policies only add allowed traffic, so the two together allow exactly that path. Save this as `networkpolicy-tenant-a.yaml`:
 
 ```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-a-034-030-01-01
-  labels:
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/enforce-version: v1.35
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: tenant-budget
-  namespace: tenant-a-034-030-01-01
-spec:
-  hard:
-    pods: '3'
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: tenant-reader
-  namespace: tenant-a-034-030-01-01
-  labels:
-    app: tenant-reader
-spec:
-  restartPolicy: Never
-  containers:
-  - name: reader
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      readOnlyRootFilesystem: true
-    volumeMounts:
-    - name: scratch
-      mountPath: /scratch
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  volumes:
-  - name: scratch
-    emptyDir: {}
-  automountServiceAccountToken: false
----
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: tenant-isolation
-  namespace: tenant-a-034-030-01-01
+  name: default-deny
+  namespace: tenant-a-034-030-01-03
 spec:
   podSelector: {}
   policyTypes:
   - Ingress
   - Egress
-  ingress: []
-  egress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-probe
+  namespace: tenant-a-034-030-01-03
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: starfleet-034-030-01-03
+      podSelector:
+        matchLabels:
+          app: probe
+    ports:
+    - protocol: TCP
+      port: 8080
 ```
 
-Apply the scoped correction:
+The `namespaceSelector` and the `podSelector` sit in the same list item, so a peer must match both: a Pod with `app: probe` in the `starfleet-034-030-01-03` namespace. The port is the container port `8080`, not the Service port `80`. Calico checks the policy after the Service address is translated to a Pod address. Apply it:
 
 ```sh
-kubectl apply -f namespace-tenant-a.yaml
+kubectl apply -f networkpolicy-tenant-a.yaml
 ```
 
-## Verify The Result
-
-Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
+Then check the result:
 
 ```sh
-kubectl -n tenant-a-034-030-01-01 wait --for=condition=Ready pod/tenant-reader --timeout=180s
+kubectl -n tenant-a-034-030-01-03 exec worker -- wget -q -T 3 -O- http://$PROBE_IP/
+kubectl -n tenant-a-034-030-01-03 exec worker -- wget -q -T 3 -O- http://$BEACON_IP:8080/
 ```
 
-Combine admission, a resource budget, token minimization and network isolation for one tenant. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.
+The first request prints a line such as `version=v1 app=probe host=probe-7558d4bf9f-jjmn9` (the Pod name differs on your cluster). The second request prints `wget: download timed out` and `command terminated with exit code 1`. Calico drops the packets, so the client waits until its 3-second timeout ends instead of getting a quick refusal.
 
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-030-01-01`.
+## Stop mounting the ServiceAccount token
+
+A ServiceAccount is the identity a Pod uses when it talks to the API server. By default, the kubelet mounts a token for that ServiceAccount into every container at `/var/run/secrets/kubernetes.io/serviceaccount`. Today the directory holds `ca.crt`, `namespace` and `token`. The `worker` Pod never calls the API server, so the token is only something an attacker could steal.
+
+The field `automountServiceAccountToken: false` on the ServiceAccount stops the mount for new Pods. The kubelet mounts volumes only when it starts a Pod, so the running `worker` keeps its token until you recreate it. Save this as `pod-worker.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: worker
+  namespace: tenant-a-034-030-01-03
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: worker
+  namespace: tenant-a-034-030-01-03
+  labels:
+    app: worker
+spec:
+  serviceAccountName: worker
+  containers:
+  - name: worker
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "infinity"]
+```
+
+A Pod spec cannot change its volumes after creation, so delete the old Pod first. Apply it:
+
+```sh
+kubectl -n tenant-a-034-030-01-03 delete pod worker
+kubectl apply -f pod-worker.yaml
+kubectl -n tenant-a-034-030-01-03 wait --for=condition=Ready pod/worker --timeout=120s
+```
+
+Then check the result:
+
+```sh
+kubectl -n tenant-a-034-030-01-03 exec worker -- ls /var/run/secrets/kubernetes.io/serviceaccount
+```
+
+The command prints `ls: /var/run/secrets/kubernetes.io/serviceaccount: No such file or directory` and exits with code 1. The new Pod runs with the same ServiceAccount but has no token. The NetworkPolicies still apply to it, because they select Pods by namespace and labels, not by Pod name.
+
+When you are done, remove the lab with `astrona destroy ats-034-lab-030-01-03`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Confirm the private context and exact node names before a change. Check the stated scope and live result. Do not change unrelated components to hide the original fault.
+> A default-deny egress policy also blocks DNS, so a request to `http://probe.starfleet-034-030-01-03/` fails even when the path to the Pod is allowed. Test with IP addresses, or add an egress rule for DNS when the workload needs names.
+>
+> Writing `namespaceSelector` and `podSelector` as two list items (two dashes) allows every Pod in that namespace or every `app: probe` Pod anywhere. Keep them in one item.
+>
+> Setting the field on the ServiceAccount does not remove the token from a running Pod. Recreate the Pod and check the directory again.
