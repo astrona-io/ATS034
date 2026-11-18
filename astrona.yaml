@@ -419,6 +419,24 @@ modules:
     title: Sandboxed Containers With RuntimeClass
     path: sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
   - type: reading
+    title: "Run A Pod Under gVisor With A RuntimeClass \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-04/question.md
+  - type: lab
+    title: Run A Pod Under gVisor With A RuntimeClass
+    path: sections/section-030/module-01/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: sandbox-gvisor
+    task_kind: build
+    learning_goals:
+    - Create a RuntimeClass for the runsc handler and prove that a Pod runs inside the gVisor kernel.
+    tags:
+    - cks
+    - sandbox-runtimeclass
+  - type: reading
+    title: "Run A Pod Under gVisor With A RuntimeClass \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-04/solution.md
+  - type: reading
     title: Summary
     path: sections/section-030/module-01/course-05-summary.md
   - type: quiz
@@ -432,6 +450,24 @@ modules:
   - type: reading
     title: The Runtime Handler Chain
     path: sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+  - type: reading
+    title: "Register The gVisor Handler In containerd \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-01/question.md
+  - type: lab
+    title: Register The gVisor Handler In containerd
+    path: sections/section-030/module-02/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: sandbox-handler
+    task_kind: build
+    learning_goals:
+    - Register the runsc handler in containerd, restart containerd and prove the sandbox with crictl and dmesg.
+    tags:
+    - cks
+    - sandbox-runtimeclass
+  - type: reading
+    title: "Register The gVisor Handler In containerd \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-01/solution.md
   - type: reading
     title: gVisor And Kata Compared
     path: sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
