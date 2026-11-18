@@ -6,7 +6,5 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
   exit 1
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-solution_directory="$lab_directory/solution"
-
-kubectl apply -f "$solution_directory/secret-practice-token.yaml"
-kubectl -n starfleet-034-020-01-01 wait --for=condition=Ready pod/rotated-reader --timeout=180s
+kubectl apply -f "$lab_directory/solution/pod-token-reader.yaml"
+kubectl -n starfleet-034-020-01-01 wait --for=condition=Ready pod/token-reader --timeout=180s

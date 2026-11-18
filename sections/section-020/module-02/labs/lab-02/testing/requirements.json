@@ -1,0 +1,102 @@
+{
+  "context": "kind-astro-ats-034-lab-020-02-02",
+  "cluster": "astro-ats-034-lab-020-02-02",
+  "namespace": "starfleet-034-020-02-02",
+  "resources": [
+    {
+      "kind": "pod",
+      "name": "login-reader",
+      "namespace": "starfleet-034-020-02-02",
+      "expected": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "name": "login-reader",
+          "namespace": "starfleet-034-020-02-02"
+        },
+        "spec": {
+          "restartPolicy": "Never",
+          "automountServiceAccountToken": false,
+          "containers": [
+            {
+              "name": "reader",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": [
+                "sh",
+                "-c",
+                "sleep 3600"
+              ],
+              "volumeMounts": [
+                {
+                  "name": "login",
+                  "mountPath": "/login",
+                  "readOnly": true
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "login",
+              "secret": {
+                "secretName": "probe-login",
+                "defaultMode": 256
+              }
+            }
+          ]
+        }
+      },
+      "state": "pod",
+      "outcome": "login-reader"
+    },
+    {
+      "kind": "secret",
+      "name": "probe-login",
+      "namespace": "starfleet-034-020-02-02",
+      "expected": {
+        "type": "kubernetes.io/basic-auth",
+        "immutable": true,
+        "data": {
+          "username": "c2NvdXQ=",
+          "password": "ZGlzcG9zYWJsZS1sb2dpbg=="
+        }
+      },
+      "outcome": "immutable-secret"
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet-034-020-02-02",
+        "exec",
+        "login-reader",
+        "--",
+        "sh",
+        "-c",
+        "test \"$(cat /login/username)\" = scout && test \"$(cat /login/password)\" = disposable-login"
+      ],
+      "outcome": "login-reader"
+    },
+    {
+      "args": [
+        "kubectl",
+        "-n",
+        "starfleet-034-020-02-02",
+        "patch",
+        "secret",
+        "probe-login",
+        "--type",
+        "merge",
+        "-p",
+        "{\"stringData\":{\"password\":\"changed\"}}"
+      ],
+      "denied": true,
+      "failure_markers": [
+        "immutable"
+      ],
+      "outcome": "immutable-secret"
+    }
+  ]
+}

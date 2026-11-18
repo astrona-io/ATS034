@@ -1,0 +1,53 @@
+{
+  "context": "kind-astro-ats-034-lab-020-01-02",
+  "cluster": "astro-ats-034-lab-020-01-02",
+  "namespace": "starfleet-034-020-01-02",
+  "resources": [
+    {
+      "kind": "secret",
+      "name": "practice-token",
+      "namespace": "starfleet-034-020-01-02",
+      "expected": {
+        "type": "Opaque",
+        "data": {
+          "token": "ZGlzcG9zYWJsZS12Mg=="
+        }
+      },
+      "outcome": "secret-rotated"
+    },
+    {
+      "kind": "configmap",
+      "name": "rotation-start",
+      "namespace": "starfleet-034-020-01-02",
+      "expected": {
+        "metadata": {
+          "name": "rotation-start"
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "file-reader",
+      "namespace": "starfleet-034-020-01-02",
+      "expected": {
+        "metadata": {
+          "name": "file-reader"
+        }
+      },
+      "state": "pod",
+      "outcome": "file-refreshed"
+    },
+    {
+      "kind": "pod",
+      "name": "env-reader",
+      "namespace": "starfleet-034-020-01-02",
+      "expected": {
+        "metadata": {
+          "name": "env-reader"
+        }
+      },
+      "state": "pod",
+      "outcome": "environment-refreshed"
+    }
+  ]
+}
