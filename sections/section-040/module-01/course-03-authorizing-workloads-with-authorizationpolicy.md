@@ -111,7 +111,7 @@ kubectl -n starfleet exec bridge-client -c client -- wget -q -T 3 -O- http://pro
 kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The first command returns the `version=v1` line. The second command fails with an HTTP 403 error, and the response body from the sidecar is `RBAC: access denied`. Both clients used mTLS and both were authenticated. The sidecar of `probe` authorized only one of them, because `shuttle` runs as the default ServiceAccount and its principal is not in the rule. The failure is an HTTP error from the target sidecar, so it differs from the connection reset that a plain-text client gets under strict mTLS.
+The first command returns the `version=v1` line. The second command fails with `wget: server returned error: HTTP/1.1 403 Forbidden`. The sidecar sends the body `RBAC: access denied` with that status, but BusyBox `wget` does not print it. Both clients used mTLS and both were authenticated. The sidecar of `probe` authorized only one of them, because `shuttle` runs as the default ServiceAccount and its principal is not in the rule. The failure is an HTTP error from the target sidecar, so it differs from the connection reset that a plain-text client gets under strict mTLS.
 
 ## Pick the right layer
 

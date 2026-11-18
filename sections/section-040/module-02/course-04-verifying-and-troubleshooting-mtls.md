@@ -23,17 +23,24 @@ kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.sta
 kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The first command returns the `version=v1` line. The second fails with a connection error that mentions a reset. Note which component acts: the sidecar of `probe` closes the plain-text connection, and the `probe` application never sees it.
+The first command returns the `version=v1` line. The second fails with `wget: error getting response: Connection reset by peer`. Note which component acts: the sidecar of `probe` closes the plain-text connection, and the `probe` application never sees it.
 
-## Read the handshake counters and the log
+## Read the request metric and the log
 
-Ask the sidecar of a `probe` Pod for its TLS statistics:
+Each sidecar counts the requests it handles in the metric `istio_requests_total`. On the receiving side (`reporter="destination"`), the label `connection_security_policy` says whether the request arrived over mTLS. Ask the sidecar of a `probe` Pod for this metric and keep only the three labels that matter here:
 
 ```sh
-kubectl -n starfleet exec deploy/probe -c istio-proxy -- pilot-agent request GET stats | grep ssl.handshake
+kubectl -n starfleet exec deploy/probe -c istio-proxy -- pilot-agent request GET stats/prometheus | grep '^istio_requests_total' | grep 'reporter="destination"' | grep -o 'source_workload="[^"]*"\|connection_security_policy="[^"]*"\|response_code="[^"]*"' | paste - - -
 ```
 
-The lines are counters. A value above zero shows that the sidecar completed TLS handshakes with clients. Send the allowed request again and run the command a second time: the counter for the inbound listener grows. Then read the access log of the same sidecar:
+In a test run, after one request from `drifter` without a policy and later requests from `shuttle`, the output had two lines:
+
+```text
+source_workload="shuttle"	response_code="200"	connection_security_policy="mutual_tls"
+source_workload="unknown"	response_code="200"	connection_security_policy="none"
+```
+
+The `shuttle` requests arrived over mTLS, and the sidecar knew the calling workload from its certificate. The plain-text request from `drifter` shows `none`, and the source is `unknown` because a plain-text client presents no identity. `deploy/probe` picks one of the two `probe` Pods, so a request that went to the other Pod is not in this output. The Envoy TLS counters such as `ssl.handshake` are not in the default set of statistics that Istio keeps, so this metric is the simpler proof. Then read the log of the same sidecar:
 
 ```sh
 kubectl -n starfleet logs deploy/probe -c istio-proxy --tail=20
@@ -65,7 +72,7 @@ kubectl apply -f destinationrule-probe-disable-tls.yaml
 kubectl -n starfleet exec shuttle -c client -- wget -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The request now fails, although `shuttle` has a sidecar. The `DestinationRule` tells the client sidecar to send plain text to `probe`, and the sidecar of `probe` rejects it under `STRICT`. The client sidecar usually returns an HTTP 503 error, because its upstream connection ended. The fix is to remove the rule, or to set `tls.mode: ISTIO_MUTUAL` so the client sends mTLS:
+The request now fails, although `shuttle` has a sidecar. The `DestinationRule` tells the client sidecar to send plain text to `probe`, and the sidecar of `probe` rejects it under `STRICT`. The client sidecar returns an HTTP 503 error, because its connection to the `probe` sidecar ended; in a test run `wget` printed `wget: server returned error: HTTP/1.1 503 Service Unavailable`. The fix is to remove the rule, or to set `tls.mode: ISTIO_MUTUAL` so the client sends mTLS:
 
 ```sh
 kubectl delete -f destinationrule-probe-disable-tls.yaml

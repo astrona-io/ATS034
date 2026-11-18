@@ -55,7 +55,7 @@ kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe/
 kubectl -n outpost exec drifter -c client -- wget -q -T 3 -O- http://probe.starfleet/
 ```
 
-The `shuttle` request still returns `version=v1`, because its sidecar sends mTLS. The `drifter` request fails with a connection reset: the `probe` sidecar closes a connection that does not start with a TLS handshake. `istiod` sends the new policy to the sidecars within a few seconds, so if `drifter` still gets a reply, run the request again.
+The `shuttle` request still returns `version=v1`, because its sidecar sends mTLS. The `drifter` request fails with `wget: error getting response: Connection reset by peer`: the `probe` sidecar closes a connection that does not start with a TLS handshake. `istiod` sends the new policy to the sidecars within a few seconds, so if `drifter` still gets a reply, run the request again.
 
 ## Common pitfalls
 

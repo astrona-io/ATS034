@@ -66,7 +66,7 @@ kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.sta
 kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The first command still returns the `version=v1` line, because `shuttle` has a sidecar and sends mTLS. The second command fails. The sidecar of the target Pod received a plain-text connection and closed it, so `wget` reports a connection error that mentions a reset. The application did not change, the sidecar of the receiver rejected the connection, and the failure takes effect within a few seconds after `istiod` sends the new configuration to the proxies.
+The first command still returns the `version=v1` line, because `shuttle` has a sidecar and sends mTLS. The second command fails. The sidecar of the target Pod received a plain-text connection and closed it, so `wget` prints `wget: error getting response: Connection reset by peer`. The application did not change, the sidecar of the receiver rejected the connection, and the failure takes effect within a few seconds after `istiod` sends the new configuration to the proxies.
 
 Confirm that the policy did not break the Deployment:
 

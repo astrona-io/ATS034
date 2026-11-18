@@ -107,7 +107,16 @@ kubectl -n istio-system get secret
 kubectl -n starfleet get configmap istio-ca-root-cert
 
 echo "== proxy statistics"
-kubectl -n starfleet exec deploy/probe -c istio-proxy -- pilot-agent request GET stats | grep ssl.handshake
+for request in 1 2 3 4 5 6; do
+  kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O /dev/null http://probe/
+done
+for probe_pod in $(kubectl -n starfleet get pods -l app=probe -o name); do
+  echo "-- $probe_pod"
+  kubectl -n starfleet exec "$probe_pod" -c istio-proxy -- pilot-agent request GET stats/prometheus \
+    | grep '^istio_requests_total' | grep 'reporter="destination"' \
+    | grep -o 'source_workload="[^"]*"\|connection_security_policy="[^"]*"\|response_code="[^"]*"' \
+    | paste - - - | sort | uniq -c
+done | tee /dev/stderr | grep 'connection_security_policy="mutual_tls"' >/dev/null
 kubectl -n starfleet logs deploy/probe -c istio-proxy --tail=5
 
 echo "== DestinationRule with tls.mode DISABLE"
