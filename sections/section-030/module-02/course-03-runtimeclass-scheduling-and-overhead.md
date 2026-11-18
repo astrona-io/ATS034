@@ -12,9 +12,9 @@ A **RuntimeClass admission plugin** in the API server runs when a Pod is created
 
 The scheduler then adds the overhead to the Pod's requests when it picks a node. The kubelet counts it for eviction decisions, and a `ResourceQuota` counts it for compute quota. The merge is the only way the class affects scheduling, so the node must carry the label that the class names.
 
-## Create the class, the label and a Pod
+## Create the class and a Pod before the label
 
-The playground handler is `runc`, so the example works without a sandbox install. The class below selects nodes with the label `sandbox: "true"` and adds a fixed overhead. Save this as `runtimeclass-sandboxed.yaml`:
+Run the commands in a shell on the playground VM (virtual machine), which you open with `astrona ssh astro-ats-034-playground-030-02`. The playground cluster has one node, and its containerd has the gVisor handler `runsc`. The class below uses that handler, selects nodes with the label `sandbox: "true"` and adds a fixed overhead. Save this as `runtimeclass-sandboxed.yaml`:
 
 <!-- astrona:playground:renew -->
 
@@ -23,7 +23,7 @@ apiVersion: node.k8s.io/v1
 kind: RuntimeClass
 metadata:
   name: sandboxed
-handler: runc
+handler: runsc
 overhead:
   podFixed:
     cpu: 50m
@@ -39,13 +39,7 @@ Apply it:
 kubectl apply -f runtimeclass-sandboxed.yaml
 ```
 
-Label the worker node that has the handler. This step is the administrator's job on a real cluster, and it must match the handler installation:
-
-```sh
-kubectl label node astro-ats-034-playground-030-02-worker sandbox=true
-```
-
-Save this Pod as `pod-sandboxed-app.yaml`:
+The node does not have the label yet. Create a Pod first, so you see what happens when no node matches. Save this as `pod-sandboxed-app.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -61,30 +55,68 @@ spec:
     command: ["sleep", "3600"]
 ```
 
-Apply it and wait:
+Apply it and look at the Pod and its events after a few seconds:
 
 ```sh
 kubectl apply -f pod-sandboxed-app.yaml
+kubectl -n tenant-b get pod sandboxed-app
+kubectl -n tenant-b get events --field-selector involvedObject.name=sandboxed-app
+```
+
+The Pod is `Pending`, and the scheduler reports `FailedScheduling` with this message:
+
+```text
+0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.
+```
+
+The Pod manifest has no `nodeSelector`, so the selector came from the class. The scheduler, not the kubelet, holds the Pod back.
+
+## Label the node and read the merged fields
+
+Labeling the node is the administrator's job on a real cluster. The label must go only on nodes that have the handler installed, because the scheduler trusts the label and does not check containerd. Add it to the playground node:
+
+```sh
+kubectl label node astro-ats-034-playground-030-02 sandbox=true
 kubectl -n tenant-b wait --for=condition=Ready pod/sandboxed-app --timeout=120s
 ```
 
-The manifest has no `nodeSelector` and no `overhead`. Read what the API server stored:
+The scheduler retries the Pending Pod and places it on the node. Now read the fields that the API server stored:
 
 ```sh
 kubectl -n tenant-b get pod sandboxed-app -o jsonpath='{.spec.overhead}{"\n"}{.spec.nodeSelector}{"\n"}{.spec.nodeName}{"\n"}'
 ```
 
-The first line shows the fixed CPU and memory from the class. The second shows the merged selector. The third shows that the scheduler chose the labeled worker.
+```text
+{"cpu":"50m","memory":"64Mi"}
+{"sandbox":"true"}
+astro-ats-034-playground-030-02
+```
+
+The first line is the fixed overhead from the class. The second is the merged selector. The third is the node that the scheduler chose. The node also counts the overhead as a request of the Pod, although the container itself requests nothing:
+
+```sh
+kubectl describe node astro-ats-034-playground-030-02 | grep sandboxed-app
+```
+
+The line for `sandboxed-app` shows a CPU request of `50m` and a memory request of `64Mi`. The idle gVisor processes of one Pod use about 60 MB on this node, so `64Mi` is a fair estimate for a small Pod. Measure your real workloads before you choose the values.
 
 ## When the Pod and the class disagree
 
-If the Pod sets a `nodeSelector` key that the class also sets, the values must be equal. A different value makes the API server reject the Pod, because the Pod would match no node. A Pod cannot set `spec.overhead` itself either: the plugin rejects a Pod whose overhead differs from the class. These checks prevent a tenant from hiding the cost or moving a sandboxed Pod to an unprepared node.
+The RuntimeClass admission plugin checks that the Pod does not contradict the class. If the Pod sets a `nodeSelector` key that the class also sets, the values must be equal. A server-side dry run runs all admission steps and stores nothing:
 
-If no node has the label, the Pod stays `Pending`, and the scheduler event says that no node matched the node selector. Remove the label and create a second Pod to see this case, then restore the label. A `describe` of the second Pod shows the scheduling failure.
+```sh
+kubectl -n tenant-b run sb-conflict --image=docker.io/library/busybox:1.37.0 --restart=Never --dry-run=server --overrides='{"spec":{"runtimeClassName":"sandboxed","nodeSelector":{"sandbox":"false"}}}' -- sleep 3600
+```
+
+```text
+Error from server (Forbidden): pods "sb-conflict" is forbidden: conflict: runtimeClass.scheduling.nodeSelector[sandbox] = true; pod.spec.nodeSelector[sandbox] = false
+```
+
+A Pod also cannot set its own `spec.overhead` to a different value. The same plugin rejects it with `pod rejected: Pod's Overhead doesn't match RuntimeClass's defined Overhead`. These checks stop a tenant from hiding the cost or moving a sandboxed Pod to an unprepared node.
 
 A sandbox node is often also tainted so that ordinary Pods stay away. The class `tolerations` list then lets sandboxed Pods onto the node, while the `nodeSelector` pulls them there. A taint alone repels other Pods, and a toleration alone does not attract.
 
-You can now predict the fields that a class adds to a Pod and explain a Pending sandboxed Pod. A cluster still lets users leave out `runtimeClassName`, so the next part rejects such Pods.
+You can now predict the fields that a class adds to a Pod and explain a Pending sandboxed Pod. A cluster still lets users leave out `runtimeClassName`, so the sandbox is still optional for anyone who can create Pods.
 
 ## Common pitfalls
 

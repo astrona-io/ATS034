@@ -26,53 +26,70 @@ flowchart TB
 
 The diagram shows that the Kubernetes object only supplies a string, and that containerd decides what the string means.
 
-## Show the default handler
+## Find the handlers on the node
 
-Look at the nodes first. The wide listing includes the container runtime of each node:
+The handler names live in the containerd configuration on the node, so you need a shell on the node. Open one on the playground VM (virtual machine) and check that kubectl uses the playground cluster:
 
 <!-- astrona:playground:renew -->
 
 ```sh
+astrona ssh astro-ats-034-playground-030-02
+kubectl config current-context
 kubectl get nodes -o wide
 ```
 
-The last column shows `containerd` and its version for both nodes. Now read the handler table on the worker node. The playground nodes are containers, and the commands below run inside the worker container of this playground only:
+The context is `kubernetes-admin@astro-ats-034-playground-030-02`. The last column of the node list shows `containerd://2.2.1`, which tells you which runtime the kubelet calls. Now read the runtime tables in the containerd configuration file. The file belongs to root, so use `sudo`:
 
 ```sh
-worker_name="astro-ats-034-playground-030-02-worker"
-podman exec "$worker_name" grep -n "runtimes" /etc/containerd/config.toml
+sudo grep -n "runtimes\.\|runtime_type" /etc/containerd/config.toml
 ```
 
-The lines name the registered handlers. The exact table path depends on the containerd version, and the playground node lists `runc`. A real sandbox node lists one more table for each extra handler. The `runtime_type` value inside that table selects the shim. For gVisor it is `io.containerd.runsc.v1`, and for Kata Containers it is `io.containerd.kata.v2`.
+```text
+85:        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+86:          runtime_type = 'io.containerd.runc.v2'
+100:          [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+275:[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runsc]
+276:  runtime_type = "io.containerd.runsc.v1"
+```
 
-## A class for the existing handler
+Each table whose name ends in `runtimes.<name>` registers one handler, and `<name>` is the handler name. This node has `runc` and `runsc`. The `runtime_type` value selects the shim: `io.containerd.runc.v2` for runc and `io.containerd.runsc.v1` for gVisor. Kata Containers uses `io.containerd.kata.v2`. The table path `plugins.'io.containerd.cri.v1.runtime'` belongs to the configuration format `version = 3` of containerd 2.x. containerd 1.x uses the path `plugins."io.containerd.grpc.v1.cri"` instead.
 
-A `RuntimeClass` can point at a handler that already exists. Save this as `runtimeclass-runc-explicit.yaml`:
+The file shows what is saved, but containerd reads it only when it starts. To see the handlers that the running containerd has loaded, ask it through the CRI with `crictl`, the command-line client for the CRI:
+
+```sh
+sudo crictl info | jq -r '.config.containerd.runtimes | keys[]'
+```
+
+The output lists `runc` and `runsc`. If you add a table to the file, this list changes only after `sudo systemctl restart containerd`.
+
+## Run a Pod with the gVisor handler
+
+A `RuntimeClass` maps a name that Pods use to a handler name. It is a cluster-scoped object, so it has no namespace. Save this as `runtimeclass-gvisor.yaml`:
 
 ```yaml
 apiVersion: node.k8s.io/v1
 kind: RuntimeClass
 metadata:
-  name: runc-explicit
-handler: runc
+  name: gvisor
+handler: runsc
 ```
 
 Apply it:
 
 ```sh
-kubectl apply -f runtimeclass-runc-explicit.yaml
+kubectl apply -f runtimeclass-gvisor.yaml
 ```
 
-Save this Pod as `pod-runc-explicit.yaml`. It uses the class in `tenant-b`:
+Now a Pod can ask for the class. Save this as `pod-gvisor-check.yaml`:
 
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: explicit-runtime
+  name: gvisor-check
   namespace: tenant-b
 spec:
-  runtimeClassName: runc-explicit
+  runtimeClassName: gvisor
   containers:
   - name: app
     image: docker.io/library/busybox:1.37.0
@@ -82,28 +99,45 @@ spec:
 Apply it and wait for the Pod:
 
 ```sh
-kubectl apply -f pod-runc-explicit.yaml
-kubectl -n tenant-b wait --for=condition=Ready pod/explicit-runtime --timeout=120s
+kubectl apply -f pod-gvisor-check.yaml
+kubectl -n tenant-b wait --for=condition=Ready pod/gvisor-check --timeout=120s
 ```
 
-The Pod starts, because containerd knows the handler `runc`. Ask the runtime what it created. The `crictl` tool talks to the CRI of the node:
+The Pod spec only shows what the Pod asked for. To see what really ran, ask containerd which handler created the sandbox:
 
 ```sh
-podman exec "$worker_name" crictl pods --name explicit-runtime
+sudo crictl pods --namespace tenant-b --name gvisor-check
 ```
 
-Recent `crictl` versions print a runtime column in this listing. The column shows the handler that created the sandbox. It is the node-side evidence that the field reached the runtime, and the Pod spec alone cannot give it.
+The `RUNTIME` column shows `runsc`. A Pod without a class shows `(default)` in that column, which means the `runc` handler. This column is the node-side proof that the handler name reached the runtime.
 
 ## What this means for troubleshooting
 
-The two failures look different. If the `RuntimeClass` object does not exist, the API server rejects the Pod at creation, because the RuntimeClass admission plugin checks the name. If the object exists but containerd has no matching handler, the API server accepts the Pod and the kubelet fails to create the sandbox. The Pod then stays in `ContainerCreating`, and the events name the missing handler.
+Each link of the chain fails in its own way, and the error comes from a different component. If the `RuntimeClass` object does not exist, the RuntimeClass admission plugin in the API server rejects the Pod at creation. You can see this with a class name that does not exist:
 
-You can now follow a Pod from its `runtimeClassName` to the shim and say which component fails in each case. Choosing a handler is a different question: what does each sandbox actually change about the isolation boundary, and what does it cost? The next part answers that.
+```sh
+kubectl -n tenant-b run missing --image=docker.io/library/busybox:1.37.0 --restart=Never --overrides='{"spec":{"runtimeClassName":"does-not-exist"}}' -- sleep 60
+```
+
+```text
+Error from server (Forbidden): pods "missing" is forbidden: pod rejected: RuntimeClass "does-not-exist" not found
+```
+
+If the object exists but containerd has no handler with that name, the API server accepts the Pod, because it does not know which handlers the nodes have. The scheduler places the Pod, and then the kubelet fails to create the sandbox. The Pod stays in `ContainerCreating`, and its events show `FailedCreatePodSandBox` with a message like this one, for a class whose handler is `gvisor` (the sandbox ID is shortened):
+
+```text
+Failed to create pod sandbox: rpc error: code = Unknown desc = unable to get OCI runtime for sandbox "cd030051...": no runtime for "gvisor" is configured
+```
+
+The kubelet reports the event, but the text after `desc =` comes from containerd. It names the handler that containerd could not find. The fix is on the node: add the table and restart containerd, or correct the `handler` field. After a restart with the handler in place, the kubelet retries the sandbox and the same Pod starts without any change.
+
+You can now follow a Pod from its `runtimeClassName` to the shim, find the handlers on a node, and say which component fails in each case. Choosing a handler is a different question: what does each sandbox actually change about the isolation boundary, and what does it cost?
 
 ## Common pitfalls
 
 > [!WARNING]
 > - **Assuming Kubernetes starts the sandbox.** The kubelet only sends a handler name. containerd or CRI-O and its shim do the work.
 > - **Confusing a missing class with a missing handler.** A missing `RuntimeClass` is rejected at creation. A missing handler leaves an accepted Pod in `ContainerCreating`.
-> - **Judging the runtime from the Pod spec.** The spec shows the request. Check the sandbox on the node to see what ran.
-> - **Matching handler names loosely.** The `handler` string must equal the name in the runtime configuration exactly.
+> - **Editing the containerd file without a restart.** containerd keeps the handlers it loaded at start. Check `crictl info` after the restart.
+> - **Judging the runtime from the Pod spec.** The spec shows the request. Check the `RUNTIME` column of `crictl pods` to see what ran.
+> - **Matching handler names loosely.** The `handler` string must equal the table name in the runtime configuration exactly.

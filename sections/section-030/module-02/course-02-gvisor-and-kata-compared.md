@@ -33,11 +33,27 @@ flowchart TB
 
 The diagram shows that the three runtimes differ in what stands between the application and the host kernel: nothing, a user-space kernel, or a guest kernel.
 
-## Compare the runtimes on the playground
+## Compare runc and gVisor on the playground
 
-The playground has only `runc`, which lets you see the baseline that sandboxes change. Save this as `pod-kernel-check.yaml`:
+The playground node has the `runc` and `runsc` handlers, so you can put the two boundaries side by side. Run the commands in a shell on the playground VM (virtual machine), which you open with `astrona ssh astro-ats-034-playground-030-02`. The sandboxed Pod needs a RuntimeClass that maps the name `gvisor` to the handler `runsc`. Save this as `runtimeclass-gvisor.yaml`:
 
 <!-- astrona:playground:renew -->
+
+```yaml
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+```
+
+Apply it. If the class already exists, kubectl reports `unchanged`:
+
+```sh
+kubectl apply -f runtimeclass-gvisor.yaml
+```
+
+Next, create two Pods that differ only in `runtimeClassName`. Save this as `pods-kernel-check.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -50,23 +66,59 @@ spec:
   - name: app
     image: docker.io/library/busybox:1.37.0
     command: ["sleep", "3600"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kernel-check-gvisor
+  namespace: tenant-b
+spec:
+  runtimeClassName: gvisor
+  containers:
+  - name: app
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "3600"]
 ```
 
-Apply it and wait:
+Apply it and wait for both Pods:
 
 ```sh
-kubectl apply -f pod-kernel-check.yaml
-kubectl -n tenant-b wait --for=condition=Ready pod/kernel-check --timeout=120s
+kubectl apply -f pods-kernel-check.yaml
+kubectl -n tenant-b wait --for=condition=Ready pod/kernel-check pod/kernel-check-gvisor --timeout=120s
 ```
 
-Print the kernel release seen by the container, then the release seen by the node:
+Now print the kernel release that each container sees, and the release of the node:
 
 ```sh
 kubectl -n tenant-b exec kernel-check -- uname -r
-kubectl get node -o jsonpath='{.items[*].status.nodeInfo.kernelVersion}'
+kubectl -n tenant-b exec kernel-check-gvisor -- uname -r
+uname -r
 ```
 
-The values match, because the container uses the host kernel directly. On a node with gVisor, the same `uname -r` inside a sandboxed Pod reports the version that the Sentry presents, which differs from the node. In a Kata Pod it reports the guest kernel. This difference is the simplest observation that a boundary exists.
+```text
+6.8.0-149-generic
+4.19.0-gvisor
+6.8.0-149-generic
+```
+
+The `runc` container reports the node kernel, because its system calls go straight to that kernel. The gVisor container reports `4.19.0-gvisor`, the version that the Sentry presents. The Sentry answers the system call itself, so the container never talks to the node kernel directly. In a Kata Pod, the same command reports the version of the guest kernel.
+
+The kernel log shows the same boundary. Read it in both Pods:
+
+```sh
+kubectl -n tenant-b exec kernel-check-gvisor -- dmesg
+kubectl -n tenant-b exec kernel-check -- dmesg
+```
+
+The gVisor Pod prints its own short log that starts with `Starting gVisor...` and ends with `Ready!`. The `runc` Pod fails with `dmesg: klogctl: Operation not permitted`. The node kernel blocks the request, because the container shares that kernel and may not read its log. Both results show which kernel answers the container.
+
+Isolation has a cost in memory. On the node, each gVisor Pod has three extra processes: the shim `containerd-shim-runsc-v1`, the Sentry process `runsc-sandbox` and the file proxy `runsc-gofer`. List their memory use (the resident set size, in KB):
+
+```sh
+ps -eo rss,args | grep -E 'runsc-sandbox|runsc-gofer|containerd-shim-runsc' | grep -v grep | awk '{print $1, $2}'
+```
+
+On a test run, one idle busybox Pod used about 17 MB for the shim, 11 MB for the gofer and 31 MB for the Sentry, so about 60 MB in total. Your numbers differ, and they grow with the workload. This memory belongs to no container, so the scheduler does not see it unless the RuntimeClass declares it as overhead.
 
 ## Choosing between them
 

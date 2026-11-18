@@ -8,14 +8,14 @@ A Pod asks for a sandbox with one field, `runtimeClassName`. A long chain of com
 
 This module follows that chain. It shows where the runtime handler is configured on a node, compares the two common sandboxes, controls where sandboxed Pods run and what they cost, and then makes the cluster refuse Pods that do not ask for the sandbox.
 
-The module has four parts. **The Runtime Handler Chain** follows a Pod from the kubelet to the low-level runtime. **gVisor And Kata Compared** explains how each sandbox places its boundary and what each costs. **RuntimeClass Scheduling And Overhead** merges node selectors, tolerations and fixed resources into Pods. **Requiring The Sandbox With Admission Policy** rejects Pods that omit the class. A graded task follows the scheduling part and the admission part.
+The module has four parts. **The Runtime Handler Chain** follows a Pod from the kubelet to the low-level runtime. **gVisor And Kata Compared** explains how each sandbox places its boundary and what each costs. **RuntimeClass Scheduling And Overhead** merges node selectors, tolerations and fixed resources into Pods. **Requiring The Sandbox With Admission Policy** rejects Pods that omit the class. A graded task follows the handler chain part, the scheduling part and the admission part.
 
 ## Learning objectives
 
 After this module you can:
 
 - Name each component between the `runtimeClassName` field and a running sandbox, and say which one reads the handler name.
-- Find the registered runtime handlers on a node.
+- Find the registered runtime handlers on a node, register a missing one in containerd and prove which handler ran a Pod.
 - Compare gVisor and Kata Containers by boundary, cost and node requirements.
 - Write a `RuntimeClass` with `scheduling` and `overhead`, and predict the fields the API server adds to a Pod.
 - Write a `ValidatingAdmissionPolicy` that rejects Pods without the required `runtimeClassName`.
@@ -24,9 +24,9 @@ After this module you can:
 
 You need Pods, namespaces, labels, node labels and the commands `kubectl get`, `kubectl apply` and `kubectl describe`. You also need to know what a `RuntimeClass` is: a cluster-scoped object that maps a name to a runtime handler. You do not need an earlier module.
 
-Your playground is a `kind` cluster running Kubernetes 1.35 with one control-plane node and one worker node. Its nodes run containerd with the default `runc` handler only. No gVisor or Kata handler is installed in this fixture. Installing a real sandbox requires a compatible host, runtime configuration and separate behavior tests. The module therefore uses the `runc` handler under a new class name to show every field and every admission effect, and it states plainly where a real sandbox would behave differently.
+Your playground is one virtual machine (VM) that runs a one-node Kubernetes 1.35 cluster built with kubeadm, the standard tool that installs a cluster on a Linux machine. The node is the control plane and also runs your Pods. Its container runtime is containerd 2.2, with two runtime handlers: `runc`, the default, and `runsc`, the runtime of gVisor. So every sandboxed Pod in this module runs under real gVisor. Kata Containers is not installed, because it needs hardware virtualization inside the VM, so the module explains Kata without running it.
 
-The namespace `tenant-b` exists and is empty. `kubectl` in the playground terminal already points at this cluster. Every file you save is a file on the playground machine, in the folder you are working in.
+You work in a shell on the VM. The parts show how to open it with `astrona ssh`. You log in as the `student` user, which has `sudo` and a kubeconfig file for the cluster. The namespace `tenant-b` exists and is empty. Every file you save is a file on the VM, in the folder you are working in.
 
 Launch your playground now, and keep it running next to you while you read the parts:
 
