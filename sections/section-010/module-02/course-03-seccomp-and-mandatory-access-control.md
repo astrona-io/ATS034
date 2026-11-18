@@ -4,7 +4,7 @@ exam_objectives:
 ---
 # Seccomp, AppArmor And SELinux Settings
 
-A process asks the Linux kernel for everything through system calls: opening a file, creating a socket, loading a kernel module. A container usually needs a small part of the hundreds of system calls that exist. Kernel features that filter those calls reduce the attack surface of the kernel, so a bug in a rarely used system call is not reachable from a container. This part covers the seccomp profile field, which both Baseline and Restricted check, and the AppArmor and SELinux fields, which Baseline limits. The part ends with a graded task that combines every field from this module.
+A process asks the Linux kernel for everything through system calls: opening a file, creating a socket, loading a kernel module. A container usually needs a small part of the hundreds of system calls that exist. Kernel features that filter those calls reduce the attack surface of the kernel, so a bug in a rarely used system call is not reachable from a container. This part covers the seccomp profile field, which both Baseline and Restricted check, and the AppArmor and SELinux fields, which Baseline limits.
 
 ## Seccomp profiles
 

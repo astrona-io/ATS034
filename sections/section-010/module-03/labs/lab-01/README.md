@@ -1,10 +1,9 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Stage Pod Security Labels On Two Namespaces
+# Roll Out Restricted Using A Dry-Run Inventory
 
-Label two namespaces with different Pod Security profiles and prove the effect without disturbing the running Pods.
+Use a server-side dry run of the enforce label as an inventory, enforce Restricted where every running Pod complies and warn on Restricted everywhere else. The lab runs in its own pinned kind cluster. Python 3 is required on the grading host.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

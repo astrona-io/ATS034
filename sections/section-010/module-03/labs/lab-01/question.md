@@ -1,36 +1,46 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Stage Pod Security Labels On Two Namespaces
+# Roll Out Restricted Using A Dry-Run Inventory
 
-Label two namespaces with different Pod Security profiles and prove the effect without disturbing the running Pods.
+Allow about 10 minutes for the tasks.
 
-## Starting state
+Three teams share the cluster. The security team wants the Restricted profile everywhere, but only where it does not break a running workload today.
 
-Neither `starfleet` nor `outpost` has Pod Security labels. The `starfleet` namespace runs the `probe` Deployment (two replicas), the `probe` Service and the `shuttle` client Pod. The `outpost` namespace runs the `drifter` client Pod. All of these Pods run as root and have no security settings.
+## Connect to the lab
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-010-03-01)"
-test "$(kubectl config current-context)" = "kind-ats-034-lab-010-03-01" || exit 1
-node_name="astro-ats-034-lab-010-03-01-control-plane"
-worker_name="astro-ats-034-lab-010-03-01-worker"
+test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-010-03-01" || exit 1
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Required result
+## Starting state
 
-Set these labels and keep every existing label.
+Three namespaces have no Pod Security labels:
 
-1. Namespace `starfleet` enforces Baseline, and it warns and audits on Restricted. Pin the version of all three modes to `v1.35`.
-2. Namespace `outpost` enforces Restricted, pinned to `v1.35`.
+- `bridge-034-010-03-01` runs the Deployment `bridge`.
+- `starfleet-034-010-03-01` runs the Deployment `shuttle`.
+- `outpost-034-010-03-01` runs the Pod `drifter`.
 
-Do not change any workload. When you finish, a Pod without security settings is admitted in `starfleet` and rejected by Pod Security Admission in `outpost`, a privileged Pod is rejected in both, and the `probe`, `shuttle` and `drifter` Pods are still Ready.
+All three run `docker.io/library/busybox:1.37.0` with the command `sleep infinity`. You do not know yet which of them meet the Restricted profile.
 
-## Verify The Result
+## Tasks
 
-The grader checks the namespace labels and runs server-side dry runs. A rejection for any other reason, such as a missing namespace or a malformed request, does not count. Preserve the workloads and the `project` labels.
+1. Find out, without changing anything, which namespaces run only Pods that meet the Restricted profile at version `v1.35`.
+2. In every namespace where all running Pods comply, enforce `restricted` pinned to `v1.35`.
+3. In every other namespace, do not enforce Restricted. Set the `warn` mode to `restricted` pinned to `v1.35`, so that new Pods are still admitted but the team sees a warning.
+4. Do not change, delete or restart any workload.
+
+## Check your work
+
+```sh
+kubectl get namespaces -L pod-security.kubernetes.io/enforce,pod-security.kubernetes.io/warn | grep 034-010-03-01
+kubectl get pods -A | grep 034-010-03-01
+```
+
+Only the namespace whose Pods comply shows `restricted` in the enforce column. The two others show `restricted` in the warn column, and all three workloads are still `Running`.

@@ -46,32 +46,86 @@ modules:
     title: The Three Pod Security Standards
     path: sections/section-010/module-01/course-01-the-three-pod-security-standards.md
   - type: reading
-    title: Security Context Fields
-    path: sections/section-010/module-01/course-02-security-context-fields.md
-  - type: reading
-    title: Pod Security Admission Modes
-    path: sections/section-010/module-01/course-03-pod-security-admission-modes.md
-  - type: reading
-    title: Enforce Restricted Pod Admission — Task
+    title: Enforce Baseline And Restricted With Namespace Labels — Task
     path: sections/section-010/module-01/labs/lab-01/question.md
   - type: lab
-    title: Enforce Restricted Pod Admission
+    title: Enforce Baseline And Restricted With Namespace Labels
     path: sections/section-010/module-01/labs/lab-01
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 8m
     topic: pod-security-admission
     task_kind: build
     learning_goals:
-    - Admit a compliant Pod and reject a privileged Pod through the API server.
+    - Enforce Baseline and Restricted pinned to v1.35 with namespace labels and prove each with a server-side dry run.
     tags:
     - cks
     - pod-security-admission
   - type: reading
-    title: Enforce Restricted Pod Admission — Solution
+    title: Enforce Baseline And Restricted With Namespace Labels — Solution
     path: sections/section-010/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: Security Context Fields
+    path: sections/section-010/module-01/course-02-security-context-fields.md
+  - type: reading
+    title: Run A Pod That Meets Restricted With A Read-Only Root — Task
+    path: sections/section-010/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Run A Pod That Meets Restricted With A Read-Only Root
+    path: sections/section-010/module-01/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Run a Pod that meets Restricted with a non-root user, RuntimeDefault seccomp and a read-only root filesystem.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Run A Pod That Meets Restricted With A Read-Only Root — Solution
+    path: sections/section-010/module-01/labs/lab-02/solution.md
+  - type: reading
+    title: Pod Security Admission Modes
+    path: sections/section-010/module-01/course-03-pod-security-admission-modes.md
+  - type: reading
+    title: Enforce Baseline And Preview Restricted — Task
+    path: sections/section-010/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Enforce Baseline And Preview Restricted
+    path: sections/section-010/module-01/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 8m
+    topic: pod-security-admission
+    task_kind: build
+    learning_goals:
+    - Enforce Baseline while warn and audit preview Restricted on the same namespace.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Enforce Baseline And Preview Restricted — Solution
+    path: sections/section-010/module-01/labs/lab-03/solution.md
   - type: reading
     title: Admission For Workloads And Troubleshooting
     path: sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+  - type: reading
+    title: Repair A Deployment That Pod Security Admission Blocks — Task
+    path: sections/section-010/module-01/labs/lab-04/question.md
+  - type: lab
+    title: Repair A Deployment That Pod Security Admission Blocks
+    path: sections/section-010/module-01/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-admission
+    task_kind: troubleshooting
+    learning_goals:
+    - Find a FailedCreate event from Pod Security Admission and repair the Deployment template.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Repair A Deployment That Pod Security Admission Blocks — Solution
+    path: sections/section-010/module-01/labs/lab-04/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-01/course-05-summary.md
@@ -87,32 +141,86 @@ modules:
     title: Run As A Non-Root User
     path: sections/section-010/module-02/course-01-run-as-a-non-root-user.md
   - type: reading
-    title: Capabilities And Privilege Escalation
-    path: sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
-  - type: reading
-    title: Seccomp And Mandatory Access Control
-    path: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
-  - type: reading
-    title: Repair A Deployment To Meet Restricted — Task
+    title: Run A Deployment As A Non-Root User — Task
     path: sections/section-010/module-02/labs/lab-01/question.md
   - type: lab
-    title: Repair A Deployment To Meet Restricted
+    title: Run A Deployment As A Non-Root User
     path: sections/section-010/module-02/labs/lab-01
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: pod-security-context
     task_kind: troubleshooting
     learning_goals:
-    - Repair a Deployment so its Pod meets the Restricted profile and runs as a non-root user with a read-only root filesystem.
+    - Run a Deployment as a non-root user and prove it with id and a working Service.
     tags:
     - cks
     - security-context
   - type: reading
-    title: Repair A Deployment To Meet Restricted — Solution
+    title: Run A Deployment As A Non-Root User — Solution
     path: sections/section-010/module-02/labs/lab-01/solution.md
+  - type: reading
+    title: Capabilities And Privilege Escalation
+    path: sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+  - type: reading
+    title: Drop All Capabilities And Block Privilege Escalation — Task
+    path: sections/section-010/module-02/labs/lab-02/question.md
+  - type: lab
+    title: Drop All Capabilities And Block Privilege Escalation
+    path: sections/section-010/module-02/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 8m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Drop all capabilities and set no_new_privs on a container that still runs as root.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Drop All Capabilities And Block Privilege Escalation — Solution
+    path: sections/section-010/module-02/labs/lab-02/solution.md
+  - type: reading
+    title: Seccomp And Mandatory Access Control
+    path: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+  - type: reading
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile — Task
+    path: sections/section-010/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile
+    path: sections/section-010/module-02/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Install a Localhost seccomp profile and an AppArmor profile on a node and attach both to a Pod.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile — Solution
+    path: sections/section-010/module-02/labs/lab-03/solution.md
   - type: reading
     title: Host Namespaces And Host Paths
     path: sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+  - type: reading
+    title: Remove Host Networking And A hostPath Volume — Task
+    path: sections/section-010/module-02/labs/lab-04/question.md
+  - type: lab
+    title: Remove Host Networking And A hostPath Volume
+    path: sections/section-010/module-02/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-context
+    task_kind: troubleshooting
+    learning_goals:
+    - Remove host networking and a hostPath volume so a Deployment passes Baseline.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Remove Host Networking And A hostPath Volume — Solution
+    path: sections/section-010/module-02/labs/lab-04/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-02/course-05-summary.md
@@ -131,29 +239,65 @@ modules:
     title: Stage A Label Change
     path: sections/section-010/module-03/course-02-stage-a-label-change.md
   - type: reading
-    title: Stage Pod Security Labels On Two Namespaces — Task
+    title: Roll Out Restricted Using A Dry-Run Inventory — Task
     path: sections/section-010/module-03/labs/lab-01/question.md
   - type: lab
-    title: Stage Pod Security Labels On Two Namespaces
+    title: Roll Out Restricted Using A Dry-Run Inventory
     path: sections/section-010/module-03/labs/lab-01
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: pod-security-rollout
     task_kind: build
     learning_goals:
-    - Label two namespaces with different profiles and prove the effect with server-side dry runs.
+    - Use a server-side dry run of the enforce label as an inventory and roll out Restricted only where Pods comply.
     tags:
     - cks
     - pod-security-admission
   - type: reading
-    title: Stage Pod Security Labels On Two Namespaces — Solution
+    title: Roll Out Restricted Using A Dry-Run Inventory — Solution
     path: sections/section-010/module-03/labs/lab-01/solution.md
   - type: reading
     title: Cluster-Wide Defaults And Exemptions
     path: sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
   - type: reading
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption — Task
+    path: sections/section-010/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption
+    path: sections/section-010/module-03/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: pod-security-rollout
+    task_kind: build
+    learning_goals:
+    - Set cluster-wide Pod Security defaults and a namespace exemption with an AdmissionConfiguration file.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption — Solution
+    path: sections/section-010/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Exceptions, Upgrades And Ongoing Checks
     path: sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+  - type: reading
+    title: Admit A Node Agent And Protect Pod Security Labels — Task
+    path: sections/section-010/module-03/labs/lab-03/question.md
+  - type: lab
+    title: Admit A Node Agent And Protect Pod Security Labels
+    path: sections/section-010/module-03/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: pod-security-rollout
+    task_kind: build
+    learning_goals:
+    - Exempt a node agent with Privileged plus Baseline warn and audit, and remove RBAC that can change namespace labels.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Admit A Node Agent And Protect Pod Security Labels — Solution
+    path: sections/section-010/module-03/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-03/course-05-summary.md
@@ -162,24 +306,6 @@ modules:
     path: sections/section-010/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: Apply Pod Security Standards Across Three Namespaces — Task
-    path: sections/section-010/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Apply Pod Security Standards Across Three Namespaces
-    path: sections/section-010/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 50m
-    topic: pod-security-capstone
-    task_kind: build
-    learning_goals:
-    - Repair two workloads and label three namespaces so each enforces the right profile while the applications keep running.
-    tags:
-    - cks
-    - pod-security-capstone
-  - type: reading
-    title: Apply Pod Security Standards Across Three Namespaces — Solution
-    path: sections/section-010/capstone/labs/lab-01/solution.md
 - id: module-020
   title: Manage Kubernetes secrets
   description: Developed reading and reasoning for Manage Kubernetes secrets.
