@@ -1,8 +1,8 @@
 training:
   id: ATS034
   title: 'CKS: Minimize Microservice Vulnerabilities'
-  description: 'Detailed reading material and reusable YAML knowledge checks for CKS: Minimize Microservice
-    Vulnerabilities. Technical content remains draft. Includes independent labs and playground practice.'
+  description: 'Reading material, graded labs, playgrounds and reusable YAML knowledge checks for CKS: Minimize
+    Microservice Vulnerabilities.'
   certification:
     name: Certified Kubernetes Security Specialist
     code: CKS
@@ -1005,4 +1005,5 @@ modules:
   - type: quiz
     title: Final Domain Quiz
     path: sections/final-domain-quiz.yaml
+    question_count: 12
     pass_score: 70

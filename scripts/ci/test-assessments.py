@@ -10,6 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 BANK = 'sections/section-010/module-01/quiz.yaml'
+INDEXED_BANK = 'sections/final-domain-quiz.yaml'
 spec = importlib.util.spec_from_file_location('assessments', Path(__file__).with_name('check-assessments.py'))
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -72,7 +73,7 @@ class AssessmentTests(unittest.TestCase):
 
     def test_stale_index_count(self):
         index = self.load('assessments/index.yaml')
-        next(b for b in index['banks'] if b['path'] == BANK)['question_count'] += 1
+        next(b for b in index['banks'] if b['path'] == INDEXED_BANK)['question_count'] += 1
         self.save('assessments/index.yaml', index)
         with self.assertRaisesRegex(ValueError, 'assessments/index.yaml'):
             module.validate(self.root)
