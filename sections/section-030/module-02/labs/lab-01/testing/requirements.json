@@ -1,0 +1,36 @@
+{
+  "context": "kubernetes-admin@astro-ats-034-lab-030-02-01",
+  "cluster": "astro-ats-034-lab-030-02-01",
+  "runtime": "qemu",
+  "namespace": "tenant-b-034-030-02-01",
+  "resources": [
+    {
+      "kind": "runtimeclass",
+      "name": "gvisor",
+      "namespace": null,
+      "expected": {
+        "handler": "runsc"
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet-034-030-02-01",
+      "expected": {
+        "metadata": {
+          "name": "shuttle"
+        }
+      }
+    }
+  ],
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "get",
+        "--raw=/readyz"
+      ],
+      "equals": "ok"
+    }
+  ]
+}

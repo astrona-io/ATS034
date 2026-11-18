@@ -1,0 +1,52 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-030-02-01
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  # gVisor needs a real node with the runsc runtime handler in containerd, so
+  # the lab runs a one-node kubeadm cluster in a VM instead of kind.
+  type: qemu
+  qemu:
+  - image:
+      type: oci
+      source: ghcr.io/astrona-io/ubuntu-qcow2-image:24.04-cks-arm64
+    cpus: 2
+    memoryMB: 4096
+    diskSizeGB: 25
+    display: false
+bootstrap:
+  init:
+  - name: seed-private-environment
+    type: file
+    source: vm/install.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: vm/verify-start.sh
+  - name: reference-result
+    type: file
+    source: vm/apply-solution.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: vm/wait-solved.sh
+validation:
+  scripts:
+  - name: containerd-handler
+    description: containerd registers the runtime handler runsc with the shim io.containerd.runsc.v1 and keeps runc
+    type: file
+    source: vm/validate-containerd-handler.sh
+    points: 1
+  - name: sandboxed-pod
+    description: Pod scout in tenant-b-034-030-02-01 runs under gVisor, proven by dmesg in the Pod and the runtime handler in containerd
+    type: file
+    source: vm/validate-sandboxed-pod.sh
+    points: 2
