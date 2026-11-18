@@ -1,19 +1,16 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
 # Prerequisites
 
-Use astrona, kubectl, Python 3, Podman and a shell. Node inspection exercises use the containers in this environment, not the physical host.
+Use a host shell with astrona and kubectl.
 
-Use a host shell with this lab's private kubeconfig. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool. This environment is separate from the ungraded playground.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-020-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-020-03-01" || exit 1
-node_name="astro-ats-034-lab-020-03-01-control-plane"
-worker_name="astro-ats-034-lab-020-03-01-worker"
 ```
 
-Keep this connection selected. Every script supplied by the lab refuses a different context.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.

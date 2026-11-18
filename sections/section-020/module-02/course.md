@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -9,7 +8,7 @@ Not every Secret is a generic bag of key-value pairs. Kubernetes defines types o
 
 This module teaches how to choose the right Secret type, how to give a workload a registry credential or a short-lived ServiceAccount token, how to freeze a Secret with the `immutable` field, and how to write a Role that reads one Secret and nothing else. Each idea is tried on the playground cluster with disposable credentials, so no real secret appears in a command.
 
-The module has four parts. **Secret Types And How To Create Them** lists the built-in types, their required keys and the `kubectl create secret` commands. **Image Pull Secrets And ServiceAccount Tokens** shows how a Pod pulls from a private registry and why a bound token is safer than a token stored in a Secret. **Immutable Secrets** freezes a Secret and ends with a graded task. **Least-Privilege Access To Secrets** writes a Role with `resourceNames` and tests it with `kubectl auth can-i`.
+The module has four parts. **Secret Types And How To Create Them** lists the built-in types, their required keys and the `kubectl create secret` commands. **Image Pull Secrets And ServiceAccount Tokens** shows how a Pod pulls from a private registry and why a bound token is safer than a token stored in a Secret. **Immutable Secrets** freezes a Secret and shows how to replace one. **Least-Privilege Access To Secrets** writes a Role with `resourceNames` and tests it with `kubectl auth can-i`. A graded lab follows each of the last three parts.
 
 ## Learning objectives
 

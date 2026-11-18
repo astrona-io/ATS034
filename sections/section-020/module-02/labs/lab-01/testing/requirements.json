@@ -1,0 +1,28 @@
+{
+  "context": "kind-astro-ats-034-lab-020-02-01",
+  "cluster": "astro-ats-034-lab-020-02-01",
+  "namespace": "starfleet-034-020-02-01",
+  "resources": [
+    {
+      "kind": "secret",
+      "name": "registry-pull",
+      "namespace": "starfleet-034-020-02-01",
+      "expected": {
+        "type": "kubernetes.io/dockerconfigjson"
+      },
+      "outcome": "pull-secret"
+    },
+    {
+      "kind": "pod",
+      "name": "pull-check",
+      "namespace": "starfleet-034-020-02-01",
+      "expected": {
+        "spec": {
+          "serviceAccountName": "puller"
+        }
+      },
+      "state": "pod",
+      "outcome": "pod-receives-pull-secret"
+    }
+  ]
+}

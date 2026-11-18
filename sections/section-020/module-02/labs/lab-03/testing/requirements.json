@@ -1,0 +1,18 @@
+{
+  "context": "kind-astro-ats-034-lab-020-02-03",
+  "cluster": "astro-ats-034-lab-020-02-03",
+  "namespace": "starfleet-034-020-02-03",
+  "resources": [
+    {
+      "kind": "role",
+      "name": "secret-reader",
+      "namespace": "starfleet-034-020-02-03",
+      "expected": {
+        "metadata": {
+          "name": "secret-reader"
+        }
+      },
+      "outcome": "role-scoped"
+    }
+  ]
+}

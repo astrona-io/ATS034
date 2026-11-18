@@ -203,17 +203,36 @@ modules:
     title: Delivering Secrets To Pods
     path: sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
   - type: reading
+    title: "Deliver A Secret As An Environment Variable And A File \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Deliver A Secret As An Environment Variable And A File
+    path: sections/section-020/module-01/labs/lab-01
+    examScope: namespace
+    difficulty: beginner
+    estimated_duration: 10m
+    topic: secret-delivery
+    task_kind: build
+    learning_goals:
+    - Deliver one Secret key to a container as an environment variable and as a read-only file.
+    tags:
+    - cks
+    - secret-delivery
+  - type: reading
+    title: "Deliver A Secret As An Environment Variable And A File \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-01/solution.md
+  - type: reading
     title: Rotating A Secret
     path: sections/section-020/module-01/course-03-rotating-a-secret.md
   - type: reading
-    title: "Rotate A Secret And Refresh Its Consumer \u2014 Task"
-    path: sections/section-020/module-01/labs/lab-01/question.md
+    title: "Rotate A Secret And Refresh Its Consumers \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-02/question.md
   - type: lab
-    title: Rotate A Secret And Refresh Its Consumer
-    path: sections/section-020/module-01/labs/lab-01
+    title: Rotate A Secret And Refresh Its Consumers
+    path: sections/section-020/module-01/labs/lab-02
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 12m
     topic: secret-rotation
     task_kind: build
     learning_goals:
@@ -222,11 +241,29 @@ modules:
     - cks
     - secret-rotation
   - type: reading
-    title: "Rotate A Secret And Refresh Its Consumer \u2014 Solution"
-    path: sections/section-020/module-01/labs/lab-01/solution.md
+    title: "Rotate A Secret And Refresh Its Consumers \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-02/solution.md
   - type: reading
     title: Encryption At Rest
     path: sections/section-020/module-01/course-04-encryption-at-rest.md
+  - type: reading
+    title: "Encrypt Secrets At Rest In etcd \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Encrypt Secrets At Rest In etcd
+    path: sections/section-020/module-01/labs/lab-03
+    difficulty: advanced
+    estimated_duration: 20m
+    topic: encryption-at-rest
+    task_kind: build
+    learning_goals:
+    - Turn on encryption at rest for Secrets and prove from raw etcd data that new and existing Secrets are encrypted.
+    tags:
+    - cks
+    - encryption-at-rest
+  - type: reading
+    title: "Encrypt Secrets At Rest In etcd \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-020/module-01/course-05-summary.md
@@ -245,17 +282,36 @@ modules:
     title: Image Pull Secrets And ServiceAccount Tokens
     path: sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
   - type: reading
+    title: "Give A ServiceAccount An Image Pull Secret \u2014 Task"
+    path: sections/section-020/module-02/labs/lab-01/question.md
+  - type: lab
+    title: Give A ServiceAccount An Image Pull Secret
+    path: sections/section-020/module-02/labs/lab-01
+    examScope: namespace
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: image-pull-secrets
+    task_kind: build
+    learning_goals:
+    - Create a dockerconfigjson Secret, attach it to a ServiceAccount and confirm that new pods receive it.
+    tags:
+    - cks
+    - image-pull-secrets
+  - type: reading
+    title: "Give A ServiceAccount An Image Pull Secret \u2014 Solution"
+    path: sections/section-020/module-02/labs/lab-01/solution.md
+  - type: reading
     title: Immutable Secrets
     path: sections/section-020/module-02/course-03-immutable-secrets.md
   - type: reading
     title: "Create An Immutable Basic-Auth Secret \u2014 Task"
-    path: sections/section-020/module-02/labs/lab-01/question.md
+    path: sections/section-020/module-02/labs/lab-02/question.md
   - type: lab
     title: Create An Immutable Basic-Auth Secret
-    path: sections/section-020/module-02/labs/lab-01
+    path: sections/section-020/module-02/labs/lab-02
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 8m
     topic: immutable-secrets
     task_kind: build
     learning_goals:
@@ -265,10 +321,29 @@ modules:
     - immutable-secrets
   - type: reading
     title: "Create An Immutable Basic-Auth Secret \u2014 Solution"
-    path: sections/section-020/module-02/labs/lab-01/solution.md
+    path: sections/section-020/module-02/labs/lab-02/solution.md
   - type: reading
     title: Least-Privilege Access To Secrets
     path: sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+  - type: reading
+    title: "Limit Secret Access To One Named Secret With RBAC \u2014 Task"
+    path: sections/section-020/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Limit Secret Access To One Named Secret With RBAC
+    path: sections/section-020/module-02/labs/lab-03
+    examScope: namespace
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: secret-rbac
+    task_kind: build
+    learning_goals:
+    - Grant get on one named Secret and prove with kubectl auth can-i that list, watch and other Secrets stay denied.
+    tags:
+    - cks
+    - secret-rbac
+  - type: reading
+    title: "Limit Secret Access To One Named Secret With RBAC \u2014 Solution"
+    path: sections/section-020/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-020/module-02/course-05-summary.md
@@ -284,23 +359,23 @@ modules:
     title: Where Credentials Leak
     path: sections/section-020/module-03/course-01-where-credentials-leak.md
   - type: reading
-    title: "Move A Credential From A ConfigMap Into A Secret \u2014 Task"
+    title: "Move A Leaked Credential Into A Secret \u2014 Task"
     path: sections/section-020/module-03/labs/lab-01/question.md
   - type: lab
-    title: Move A Credential From A ConfigMap Into A Secret
+    title: Move A Leaked Credential Into A Secret
     path: sections/section-020/module-03/labs/lab-01
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: credential-leaks
     task_kind: build
     learning_goals:
-    - Replace a credential stored in a ConfigMap with a mounted Secret and remove the ConfigMap.
+    - Replace a literal credential in a Deployment and a ConfigMap with a Secret reference and remove the leaked copy.
     tags:
     - cks
     - credential-leaks
   - type: reading
-    title: "Move A Credential From A ConfigMap Into A Secret \u2014 Solution"
+    title: "Move A Leaked Credential Into A Secret \u2014 Solution"
     path: sections/section-020/module-03/labs/lab-01/solution.md
   - type: reading
     title: External Secret Stores
@@ -312,6 +387,24 @@ modules:
     title: Auditing Secret Access
     path: sections/section-020/module-03/course-04-auditing-secret-access.md
   - type: reading
+    title: "Record Secret Access In The Audit Log \u2014 Task"
+    path: sections/section-020/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Record Secret Access In The Audit Log
+    path: sections/section-020/module-03/labs/lab-02
+    difficulty: advanced
+    estimated_duration: 15m
+    topic: secret-audit
+    task_kind: build
+    learning_goals:
+    - Write an audit policy that logs Secrets at Metadata level, turn on the audit log and find a Secret read in it.
+    tags:
+    - cks
+    - secret-audit
+  - type: reading
+    title: "Record Secret Access In The Audit Log \u2014 Solution"
+    path: sections/section-020/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Summary
     path: sections/section-020/module-03/course-05-summary.md
   - type: quiz
@@ -319,24 +412,6 @@ modules:
     path: sections/section-020/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Lock Down Secret Handling For One Workload \u2014 Task"
-    path: sections/section-020/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Lock Down Secret Handling For One Workload
-    path: sections/section-020/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 45m
-    topic: secret-handling-capstone
-    task_kind: build
-    learning_goals:
-    - Combine an immutable Secret, a pull Secret, a narrow Role and a read-only mount for one workload.
-    tags:
-    - cks
-    - capstone
-  - type: reading
-    title: "Lock Down Secret Handling For One Workload \u2014 Solution"
-    path: sections/section-020/capstone/labs/lab-01/solution.md
 - id: module-030
   title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
   description: Developed reading and reasoning for Understand and implement isolation techniques (multi-tenancy,

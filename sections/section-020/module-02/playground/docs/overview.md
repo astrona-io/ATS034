@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -12,11 +11,9 @@ This guide repeats the steps of the module on your playground cluster. Use a hos
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-playground-020-02)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-020-02" || exit 1
-node_name="astro-ats-034-playground-020-02-control-plane"
-worker_name="astro-ats-034-playground-020-02-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection selected for every command on this page.
 
 ## Inspect And Explain
 

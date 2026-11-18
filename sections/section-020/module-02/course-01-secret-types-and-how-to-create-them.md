@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---

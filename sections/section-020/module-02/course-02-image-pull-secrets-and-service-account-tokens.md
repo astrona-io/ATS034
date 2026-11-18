@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -24,7 +23,7 @@ The second command prints `kubernetes.io/dockerconfigjson`. A Secret of this typ
 
 ## Attach the credential to a ServiceAccount
 
-A ServiceAccount is the identity that a Pod uses when it talks to the API server. It also carries a list of `imagePullSecrets`. Every Pod that uses the ServiceAccount receives that list, so you do not repeat it in every Pod specification. Create a ServiceAccount and attach the Secret:
+A ServiceAccount is the identity that a Pod uses when it talks to the API server. It also carries a list of `imagePullSecrets`. When a Pod that uses the ServiceAccount is created, the ServiceAccount admission plugin in the API server copies that list into the Pod specification, so you do not repeat it in every Pod. Create a ServiceAccount and attach the Secret:
 
 ```sh
 kubectl -n starfleet create serviceaccount puller
@@ -32,7 +31,7 @@ kubectl -n starfleet patch serviceaccount puller -p '{"imagePullSecrets":[{"name
 kubectl -n starfleet get serviceaccount puller -o jsonpath='{.imagePullSecrets[0].name}{"\n"}'
 ```
 
-The last command prints `practice-pull`. A Pod can also set `imagePullSecrets` directly in its own specification, and the Pod value is used together with the ServiceAccount value. The Secret must be in the same namespace as the Pod. A Pod cannot use a pull Secret from another namespace.
+The last command prints `practice-pull`. A Pod can also set `imagePullSecrets` directly in its own specification. In that case the API server keeps the Pod list and does not add the ServiceAccount list. The copy happens only when the Pod is created, so a running Pod does not receive a list that you add to the ServiceAccount later. The Secret must be in the same namespace as the Pod. A Pod cannot use a pull Secret from another namespace.
 
 The credential still has a weakness. Any user who can read Secrets in the namespace can decode the registry password. Use a registry account that has read-only access to the images, and rotate its password like any other credential.
 
