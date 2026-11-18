@@ -4,7 +4,7 @@ exam_objectives:
 ---
 # Cilium Transparent Encryption
 
-Cilium is a CNI plugin. It can encrypt the traffic between nodes without any change to the Pods. This reading is a reference procedure. The playground runs a different CNI plugin, so the commands here are for a cluster that has Cilium installed, and you do not run them in the playground.
+Cilium is a CNI (Container Network Interface) plugin: it gives each Pod its network and moves packets between Pods. It can encrypt the traffic between nodes without any change to the Pods. This reading is a reference procedure. The playground runs a different CNI plugin, so the commands here are for a cluster that has Cilium installed, and you do not run them in the playground.
 
 ## What transparent encryption covers
 
@@ -12,7 +12,7 @@ Cilium encrypts packets that leave a node for a Pod on another node. The sending
 
 Cilium supports two encryption protocols:
 
-- **WireGuard.** Cilium creates a WireGuard interface called `cilium_wg0` on each node, and each node has a public key that Cilium shares with the other nodes through a node annotation. It needs a Linux kernel with WireGuard support and uses UDP port 51871 between nodes.
+- **WireGuard.** Cilium creates a WireGuard interface called `cilium_wg0` on each node, and each node has a public key that Cilium publishes on the CiliumNode object of the node, so the other agents can add it as a peer. It needs a Linux kernel with WireGuard support and uses UDP port 51871 between nodes.
 - **IPsec.** Cilium uses the kernel IPsec stack with keys that you store in a Kubernetes Secret. It works on kernels without WireGuard, and you must rotate the keys yourself. It uses ESP packets (IP protocol 50) and, for some modes, UDP port 4500.
 
 Both protocols protect traffic between nodes. Neither identifies the sending workload to the receiver, which is the difference from Istio mTLS.
@@ -22,26 +22,26 @@ Both protocols protect traffic between nodes. Neither identifies the sending wor
 Cilium is configured through Helm values. These are the values for WireGuard:
 
 ```sh
-helm upgrade cilium cilium/cilium --namespace kube-system --reuse-values \
+helm upgrade cilium cilium --repo https://helm.cilium.io --version 1.20.4 --namespace kube-system --reuse-values \
   --set encryption.enabled=true \
   --set encryption.type=wireguard
 kubectl -n kube-system rollout restart daemonset/cilium
 ```
 
-The restart makes the agents on every node start with encryption. Firewalls between nodes must allow UDP 51871. For IPsec, set `encryption.type=ipsec`, create the key Secret first and point the chart at it with `encryption.ipsec.secretName`. An existing connection is not guaranteed to move to the encrypted path at the moment of the change, so plan a short window for the rollout.
+The restart makes the agents on every node start with encryption. Firewalls between nodes must allow UDP 51871. For IPsec, set `encryption.type=ipsec`, create the key Secret `cilium-ipsec-keys` in `kube-system` first; that is the name the chart reads by default. An existing connection is not guaranteed to move to the encrypted path at the moment of the change, so plan a short window for the rollout.
 
 ## Verify that it is active
 
 Ask an agent for its encryption state:
 
 ```sh
-kubectl -n kube-system exec ds/cilium -- cilium-dbg status | grep -i encryption
+kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg status | grep -i encryption
 ```
 
-The line begins with `Encryption:` and names the mode, for example WireGuard, and the number of peers. With WireGuard you can also list the interface on a node:
+The line begins with `Encryption:` and names the mode, for example WireGuard, and the number of peers. For more detail, ask for the encryption status:
 
 ```sh
-kubectl -n kube-system exec ds/cilium -- cilium-dbg encrypt status
+kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg encrypt status
 ```
 
 The output lists the WireGuard interface and its peers. A peer that is missing means that traffic to that node is not encrypted. For proof at the wire, capture packets on the node's network interface with `tcpdump` while two Pods on different nodes talk. An encrypted path shows UDP packets on the WireGuard port and no readable HTTP text.
