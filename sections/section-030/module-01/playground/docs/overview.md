@@ -1,126 +1,40 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
   etc.)
 ---
-# Guided Practice: Compose A Tenant Namespace Boundary
+# Tenant Isolation Playground
 
-Use a host shell with the private kubeconfig for this module playground. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+This playground is a private `kind` cluster for the tenant isolation module. `kind` (Kubernetes in Docker) runs each Kubernetes node as a container on your computer. The cluster runs Kubernetes 1.35 with one control-plane node and one worker node. It uses the Calico network plugin, which enforces `NetworkPolicy`.
+
+## Connect to the cluster
+
+A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. Point kubectl at the playground and check the context before you change anything:
 
 <!-- astrona:playground:renew -->
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-playground-030-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-030-01" || exit 1
-node_name="astro-ats-034-playground-030-01-control-plane"
-worker_name="astro-ats-034-playground-030-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+The `test` command stops the shell when the context is wrong. Keep this connection for every command of the module.
 
-## Inspect And Explain
+## What the playground contains
 
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Inspect the current objects before changing them:
+The namespace `starfleet` holds the `probe` Deployment with two replicas that answer HTTP requests on port 8080, the `probe` Service on port 80, and the `shuttle` Pod, a `busybox` client. The namespace `outpost` holds the `drifter` Pod, a second `busybox` client. No NetworkPolicy, ResourceQuota or LimitRange exists yet, so every Pod can reach every other Pod. List the objects:
 
 ```sh
-kubectl -n starfleet get pods -o wide
-kubectl get nodes -o wide
+kubectl -n starfleet get deployments,services,pods -o wide
+kubectl -n outpost get pods -o wide
+kubectl get nodes
 ```
 
-Create tenant-a enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
-
-Save this as `namespace-tenant-a.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tenant-a
-  labels:
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/enforce-version: v1.35
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: tenant-budget
-  namespace: tenant-a
-spec:
-  hard:
-    pods: '3'
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: tenant-reader
-  namespace: tenant-a
-  labels:
-    app: tenant-reader
-spec:
-  restartPolicy: Never
-  containers:
-  - name: reader
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      readOnlyRootFilesystem: true
-    volumeMounts:
-    - name: scratch
-      mountPath: /scratch
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  volumes:
-  - name: scratch
-    emptyDir: {}
-  automountServiceAccountToken: false
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: tenant-isolation
-  namespace: tenant-a
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress: []
-  egress: []
-```
-
-Apply the scoped correction:
-
-```sh
-kubectl apply -f namespace-tenant-a.yaml
-```
-
-## Verify The Result
-
-Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
-
-```sh
-kubectl -n tenant-a wait --for=condition=Ready pod/tenant-reader --timeout=180s
-```
-
-Combine admission, a resource budget, token minimization and network isolation for one tenant. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.
-
+The pages of the module create their own namespaces (`tenant-demo`, `quota-demo` and `network-demo`) next to these objects. You can delete any of them and apply the page YAML again. To start from the beginning, stop the playground and launch it again.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Confirm the private context and exact node names before a change. Check the stated scope and live result. Do not change unrelated components to hide the original fault.
+> Check the context before every change. A command against another cluster changes that cluster, not the playground.
+>
+> The playground has no gVisor or Kata Containers handler. A Pod that asks for one is accepted but never starts.

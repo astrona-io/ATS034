@@ -1,41 +1,40 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
-# Dedicate A Node To One Tenant
+# Dedicate A Node To One Tenant With Taints And Tolerations
 
-Solve this question on: `terminal`
+Allow about 10 minutes for the tasks.
 
-The `tenant-c` team must run on its own machine and no other namespace may use it. The environment has an empty namespace `tenant-c-034-030-03-01` and two nodes. The worker node has no tenant label and no taint.
+Tenant C must run on its own worker node, and no other namespace may place Pods there. The `drifter` in `outpost` will try.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+## Connect to the lab
+
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-03-01" || exit 1
-node_name="astro-ats-034-lab-030-03-01-control-plane"
-worker_name="astro-ats-034-lab-030-03-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Allow about 7 minutes for the tasks. Cluster startup adds time.
+## Starting state
+
+The cluster has two nodes: `astro-ats-034-lab-030-03-01-control-plane` and `astro-ats-034-lab-030-03-01-worker`. The namespaces `tenant-c-034-030-03-01` and `outpost-034-030-03-01` are empty. The worker node has no `tenant` label and no `tenant` taint.
 
 ## Tasks
 
 1. Label the worker node `tenant=tenant-c`.
-2. Taint the worker node `tenant=tenant-c:NoSchedule`.
-3. Create the Deployment `tenant-c-app` in `tenant-c-034-030-03-01` with one replica, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Give its Pod template the node selector `tenant: tenant-c` and a toleration for the taint, so that the Pod runs on the dedicated worker.
+2. Taint the worker node `tenant=tenant-c:NoSchedule`. Do not label or taint the control-plane node.
+3. In `tenant-c-034-030-03-01`, create the Deployment `tenant-c-app` with one replica, the label `app: tenant-c-app`, the image `docker.io/library/busybox:1.37.0` and the command `sh -c "sleep infinity"`. Its Pod template sets the node selector `tenant: tenant-c` and tolerates the taint with the `Equal` operator.
+4. In `outpost-034-030-03-01`, create the Pod `drifter` with the node selector `tenant: tenant-c`, no toleration, the image `docker.io/library/busybox:1.37.0` and the command `sh -c "sleep infinity"`. It must stay `Pending`.
 
-## Constraints
+## Check your work
 
-- Do not label or taint the control-plane node.
-- Use the `Equal` operator in the toleration.
+```sh
+kubectl -n tenant-c-034-030-03-01 get pods -o wide
+kubectl -n outpost-034-030-03-01 get pod drifter
+```
 
-## How the answer is checked
-
-The grader runs three checks: the `tenant` label on the worker node; the `tenant=tenant-c:NoSchedule` taint on the worker node; and the selector and toleration of `tenant-c-app`, a finished rollout, and its Pod running on the worker node.
-
-Hint: A taint only keeps other Pods away. The node selector is what pulls the tenant Pod onto the node.
+The `tenant-c-app` Pod must run on the worker node. The `drifter` Pod must show `Pending`, and the `FailedScheduling` event in `kubectl describe` must report untolerated taints.

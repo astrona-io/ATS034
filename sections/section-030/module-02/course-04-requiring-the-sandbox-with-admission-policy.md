@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -11,9 +10,32 @@ A `RuntimeClass` is opt-in. A Pod that leaves out `runtimeClassName` runs on the
 
 A **ValidatingAdmissionPolicy** is a built-in admission rule that the API server evaluates with the Common Expression Language (CEL). It needs no webhook server. The policy holds the match rules and the expressions. A **ValidatingAdmissionPolicyBinding** applies the policy to a set of namespaces and chooses the action. An expression that returns `false` rejects the request with the policy message when the action is `Deny`.
 
-The policy below matches Pod creation and requires the class name `sandboxed`. Save this as `policy-require-sandbox.yaml`:
+Run the commands in a shell on the playground VM (virtual machine), which you open with `astrona ssh astro-ats-034-playground-030-02`. The policy requires the class name `sandboxed`, and that class must exist, because the RuntimeClass admission plugin rejects a Pod that names a missing class. The class maps to the gVisor handler `runsc`, adds a fixed overhead and selects nodes with the label `sandbox: "true"`. Save this as `runtimeclass-sandboxed.yaml`:
 
 <!-- astrona:playground:renew -->
+
+```yaml
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: sandboxed
+handler: runsc
+overhead:
+  podFixed:
+    cpu: 50m
+    memory: 64Mi
+scheduling:
+  nodeSelector:
+    sandbox: "true"
+```
+
+Apply it. If the class already exists with the same fields, kubectl reports `unchanged`:
+
+```sh
+kubectl apply -f runtimeclass-sandboxed.yaml
+```
+
+The policy below matches Pod creation and requires the class name `sandboxed`. Save this as `policy-require-sandbox.yaml`:
 
 ```yaml
 apiVersion: admissionregistration.k8s.io/v1
@@ -71,7 +93,13 @@ A server-side dry run runs all admission steps and stores nothing. First send a 
 kubectl -n tenant-b run plain --image=docker.io/library/busybox:1.37.0 --restart=Never --dry-run=server -- sleep 60
 ```
 
-The command fails. The message names the policy, the binding and the text `Pods must set runtimeClassName sandboxed`. The component that rejected the request is the API server admission step, not the scheduler or the kubelet. Now send a Pod with the class by saving this as `pod-policy-allowed.yaml`:
+The command fails with this message:
+
+```text
+The pods "plain" is invalid: : ValidatingAdmissionPolicy 'require-sandbox' with binding 'require-sandbox-tenant-b' denied request: Pods must set runtimeClassName sandboxed
+```
+
+The message names the policy, the binding and the policy message. The component that rejected the request is the API server admission step, not the scheduler or the kubelet. Now send a Pod with the class by saving this as `pod-policy-allowed.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -93,11 +121,17 @@ Test it without storing it:
 kubectl apply -f pod-policy-allowed.yaml --dry-run=server
 ```
 
-The request is accepted. A Pod in another namespace is not affected, because the binding selects only `tenant-b`.
+The output is `pod/policy-allowed created (server dry run)`. The same Pod without a class in the `default` namespace is also accepted, because the binding selects only `tenant-b`.
 
 ## Limits of this control
 
-The expression checks one field at creation time. It does not prove that the node has a real sandbox handler, and it does not stop a user who may edit the policy or the binding. Tenants must never have RBAC rights on admission objects. Pod Security Admission (PSA) can also exempt a runtime class by name in its configuration, so check that tenant classes are not on that exemption list. Pods created before the binding exist stay as they are, so audit them with `kubectl get pods -o jsonpath` on `runtimeClassName`.
+The expression checks one field at creation time. It does not prove that the node has a real sandbox handler, and it does not stop a user who may edit the policy or the binding. Tenants must never have RBAC rights on admission objects. Pod Security Admission (PSA) can also exempt a runtime class by name in its configuration, so check that tenant classes are not on that exemption list. Pods created before the binding stay as they are. List the class of every Pod in the namespace to find them:
+
+```sh
+kubectl -n tenant-b get pods -o custom-columns=NAME:.metadata.name,CLASS:.spec.runtimeClassName
+```
+
+A Pod that shows `<none>` in the `CLASS` column runs with the default `runc` handler, even though the policy now denies new Pods like it. Delete and recreate such Pods with the class.
 
 Use `validationActions: ["Audit", "Warn"]` first on a live cluster. Audit records the violation in the audit log, and Warn returns a warning to the user. Switch to `Deny` after the existing workloads comply.
 

@@ -1,125 +1,101 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
-# Compose A Tenant Namespace Boundary Solution
+# Limit A Tenant User To One Namespace With RBAC Solution
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-01-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-01-01" || exit 1
-node_name="astro-ats-034-lab-030-01-01-control-plane"
-worker_name="astro-ats-034-lab-030-01-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Inspect And Explain
+RBAC (role-based access control) is the part of the API server that decides whether a user may send a request. A Role lists allowed verbs on resources in one namespace. A RoleBinding gives the rules of a Role to users, groups or ServiceAccounts in that same namespace. A ClusterRoleBinding gives the rules of a ClusterRole in every namespace, which is the problem here.
 
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Inspect the current objects before changing them:
+Start by asking the API server what `alice` can do today:
 
 ```sh
-kubectl -n starfleet-034-030-01-01 get pods -o wide
-kubectl get nodes -o wide
+kubectl auth can-i create deployments -n tenant-b-034-030-01-01 --as=alice
+kubectl auth can-i get secrets -n tenant-a-034-030-01-01 --as=alice
 ```
 
-Create tenant-a-034-030-01-01 enforcing restricted Pod Security, a three-Pod ResourceQuota tenant-budget and a default-deny ingress/egress NetworkPolicy tenant-isolation. Run a Ready restricted tenant-reader with no token mount. Its attempted request to the healthy probe Service ClusterIP must time out. Namespace policies are layered controls, not a claim of separate-kernel isolation.
+Both commands print `yes`. The `edit` ClusterRole includes Secrets, and the ClusterRoleBinding `alice-edit` applies it in every namespace. Find every binding that names `alice`:
 
-Save this as `namespace-tenant-a.yaml`:
+```sh
+kubectl get clusterrolebindings -o wide | grep alice
+```
+
+The output shows one line for `alice-edit`, with `ClusterRole/edit` as its role and `alice` in the users column.
+
+Now write the namespaced access. The Role names only the four resource types the task lists, so Secrets stay out. Save this as `rbac-tenant-editor.yaml`:
 
 ```yaml
-apiVersion: v1
-kind: Namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
-  name: tenant-a-034-030-01-01
-  labels:
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/enforce-version: v1.35
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: tenant-budget
+  name: tenant-editor
   namespace: tenant-a-034-030-01-01
-spec:
-  hard:
-    pods: '3'
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
 metadata:
-  name: tenant-reader
+  name: tenant-editor
   namespace: tenant-a-034-030-01-01
-  labels:
-    app: tenant-reader
-spec:
-  restartPolicy: Never
-  containers:
-  - name: reader
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      readOnlyRootFilesystem: true
-    volumeMounts:
-    - name: scratch
-      mountPath: /scratch
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  volumes:
-  - name: scratch
-    emptyDir: {}
-  automountServiceAccountToken: false
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: tenant-isolation
-  namespace: tenant-a-034-030-01-01
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress: []
-  egress: []
+subjects:
+- kind: User
+  name: alice
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: tenant-editor
+  apiGroup: rbac.authorization.k8s.io
 ```
 
-Apply the scoped correction:
+Apply it:
 
 ```sh
-kubectl apply -f namespace-tenant-a.yaml
+kubectl apply -f rbac-tenant-editor.yaml
 ```
 
-## Verify The Result
-
-Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
+RBAC has no deny rule. Permissions only add up, so the new Role takes nothing away while `alice-edit` exists. Delete the cluster-wide binding:
 
 ```sh
-kubectl -n tenant-a-034-030-01-01 wait --for=condition=Ready pod/tenant-reader --timeout=180s
+kubectl delete clusterrolebinding alice-edit
 ```
 
-Combine admission, a resource budget, token minimization and network isolation for one tenant. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.
+Then check the result:
 
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-030-01-01`.
+```sh
+kubectl auth can-i create deployments -n tenant-a-034-030-01-01 --as=alice
+kubectl auth can-i get secrets -n tenant-a-034-030-01-01 --as=alice
+kubectl auth can-i create deployments -n tenant-b-034-030-01-01 --as=alice
+kubectl auth can-i list nodes --as=alice
+```
+
+The first command prints `yes` and the other three print `no`. Before the last `no`, kubectl prints `Warning: resource 'nodes' is not namespace scoped`, because a node belongs to no namespace. A real request shows the same result. A server-side dry run sends the request through authorization and admission but does not store the object:
+
+```sh
+kubectl -n tenant-a-034-030-01-01 create deployment web --image=docker.io/library/busybox:1.37.0 --dry-run=server --as=alice
+kubectl -n tenant-b-034-030-01-01 get pods --as=alice
+```
+
+The first command prints `deployment.apps/web created (server dry run)`. The second fails with `Error from server (Forbidden)`, and the message names the user `alice`, the resource `pods` and the namespace `tenant-b-034-030-01-01`.
+
+When you are done, remove the lab with `astrona destroy ats-034-lab-030-01-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Confirm the private context and exact node names before a change. Check the stated scope and live result. Do not change unrelated components to hide the original fault.
+> Adding a Role does not remove a wider binding. RBAC only adds permissions, so look for every ClusterRoleBinding that names the user and remove the ones that are too wide.
+>
+> `kubectl auth can-i` answers for one verb and one resource. Check the denied cases too (Secrets, the other namespace, nodes), not only the allowed one.

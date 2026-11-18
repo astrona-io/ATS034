@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -62,7 +61,7 @@ The quota allows two Pods, 128 MiB of total requests and 256 MiB of total limits
 
 ## Reach the limit
 
-Save a Deployment that asks for three replicas as `deployment-burst.yaml`. Its container declares no memory values:
+The Deployment below asks for three replicas, and its container declares no memory values. Save this as `deployment-burst.yaml`:
 
 ```yaml
 apiVersion: apps/v1

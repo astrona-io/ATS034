@@ -1,0 +1,26 @@
+{
+  "context": "kind-astro-ats-034-lab-030-02-03",
+  "cluster": "astro-ats-034-lab-030-02-03",
+  "namespace": "untrusted-034-030-02-03",
+  "resources": [
+    {
+      "kind": "runtimeclass",
+      "name": "sandboxed",
+      "namespace": "",
+      "expected": {
+        "handler": "runc"
+      }
+    },
+    {
+      "kind": "namespace",
+      "name": "trusted-034-030-02-03",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "name": "trusted-034-030-02-03"
+        }
+      }
+    }
+  ],
+  "behavior": []
+}

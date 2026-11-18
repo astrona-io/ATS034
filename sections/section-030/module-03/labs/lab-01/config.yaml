@@ -11,7 +11,6 @@ runtime:
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
     preloadImages:
-    - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
     nodes:
       workers: 1
@@ -38,17 +37,22 @@ testing:
 validation:
   scripts:
   - name: worker-label
-    description: The worker node is labelled tenant=tenant-c
+    description: The worker node has the label tenant=tenant-c and the control-plane node does not
     type: file
     source: validation/validate-worker-label.sh
     points: 1
   - name: worker-taint
-    description: The worker node is tainted tenant=tenant-c:NoSchedule
+    description: The worker node has the taint tenant=tenant-c:NoSchedule and the control-plane node does not
     type: file
     source: validation/validate-worker-taint.sh
     points: 1
   - name: tenant-deployment
-    description: Deployment tenant-c-app selects and tolerates the dedicated worker and its Pod runs there
+    description: Deployment tenant-c-app selects and tolerates the dedicated worker, and its Pod runs Ready there
     type: file
     source: validation/validate-tenant-deployment.sh
     points: 2
+  - name: stray-pod-pending
+    description: Pod drifter in outpost-034-030-03-01 selects the dedicated worker without a toleration and stays Pending because of the untolerated taint
+    type: file
+    source: validation/validate-stray-pod-pending.sh
+    points: 1

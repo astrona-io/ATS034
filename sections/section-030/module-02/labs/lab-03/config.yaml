@@ -1,0 +1,46 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-030-02-03
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+bootstrap:
+  init:
+  - name: seed-lab
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: require-sandbox
+    description: The ValidatingAdmissionPolicy require-sandbox and its Deny binding reject a new Pod without runtimeClassName sandboxed in untrusted-034-030-02-03, admit a sandboxed Pod there and leave trusted-034-030-02-03 unchanged
+    type: file
+    source: validation/validate-require-sandbox.sh
+    points: 2
+  - name: job-runner-sandboxed
+    description: Pod job-runner in untrusted-034-030-02-03 was recreated with runtimeClassName sandboxed and runs Ready
+    type: file
+    source: validation/validate-job-runner-sandboxed.sh
+    points: 1

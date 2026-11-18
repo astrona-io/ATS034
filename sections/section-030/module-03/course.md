@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -9,7 +8,7 @@ A sandbox changes the boundary of one Pod. Some tenants need more: their Pods mu
 
 This module builds a dedicated node for one tenant with labels, taints and tolerations, shows why those labels must be protected from the nodes themselves, forces placement at admission so tenants cannot skip it, and finishes with a way to choose between namespaces, sandboxes, dedicated nodes and separate clusters.
 
-The module has four parts. **Dedicated Nodes With Taints And Tolerations** reserves a node for one tenant, and ends with a graded task. **Node Labels You Can Trust** explains the NodeRestriction admission plugin. **Forcing Placement At Admission** makes the placement mandatory. **Choosing A Tenant Boundary** compares the options with worked cases.
+The module has four parts. **Dedicated Nodes With Taints And Tolerations** reserves a node for one tenant. **Node Labels You Can Trust** explains the NodeRestriction admission plugin. **Forcing Placement At Admission** makes the placement mandatory. A graded task follows each of these three parts. **Choosing A Tenant Boundary** compares the options with worked cases, and it has no graded task because it teaches a decision, not a configuration.
 
 ## Learning objectives
 
