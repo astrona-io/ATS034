@@ -39,18 +39,18 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-- name: namespace-override
-  description: The PeerAuthentication namespace-permissive in starfleet-034-040-02-01 has no selector and sets PERMISSIVE, while the mesh-wide policy default in istio-system still sets STRICT
-  type: file
-  source: validation/validate-namespace-override.sh
-  points: 1
-- name: drifter-allowed
-  description: The drifter pod without a sidecar gets a reply from the probe Service in starfleet-034-040-02-01, and the shuttle pod still gets one too
-  type: file
-  source: validation/validate-drifter-allowed.sh
-  points: 1
-- name: depot-still-strict
-  description: depot-034-040-02-01 has no policy of its own, so the mesh-wide STRICT policy still applies there and the drifter pod is reset by the cargo sidecar
-  type: file
-  source: validation/validate-depot-still-strict.sh
-  points: 1
+  - name: namespace-override
+    description: The PeerAuthentication namespace-permissive in starfleet-034-040-02-01 has no selector and sets PERMISSIVE, while the mesh-wide policy default in istio-system still sets STRICT
+    type: file
+    source: validation/validate-namespace-override.sh
+    points: 1
+  - name: drifter-allowed
+    description: The drifter pod without a sidecar gets a reply from the probe Service in starfleet-034-040-02-01, and the shuttle pod still gets one too
+    type: file
+    source: validation/validate-drifter-allowed.sh
+    points: 1
+  - name: depot-still-strict
+    description: depot-034-040-02-01 has no policy of its own, so the mesh-wide STRICT policy still applies there and the drifter pod is reset by the cargo sidecar
+    type: file
+    source: validation/validate-depot-still-strict.sh
+    points: 1

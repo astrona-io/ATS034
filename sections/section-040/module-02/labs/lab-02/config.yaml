@@ -39,18 +39,18 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-- name: namespace-strict
-  description: The PeerAuthentication namespace-strict in starfleet-034-040-02-02 has no selector and sets STRICT, and the drifter pod is reset by the probe sidecar
-  type: file
-  source: validation/validate-namespace-strict.sh
-  points: 1
-- name: legacy-exception
-  description: The PeerAuthentication legacy-permissive selects only the legacy pods and accepts plain text on port 8080, and the drifter pod gets a reply from legacy
-  type: file
-  source: validation/validate-legacy-exception.sh
-  points: 1
-- name: meshed-client-works
-  description: The shuttle pod with its sidecar still gets replies from both the probe and the legacy Service
-  type: file
-  source: validation/validate-meshed-client-works.sh
-  points: 1
+  - name: namespace-strict
+    description: The PeerAuthentication namespace-strict in starfleet-034-040-02-02 has no selector and sets STRICT, and the drifter pod is reset by the probe sidecar
+    type: file
+    source: validation/validate-namespace-strict.sh
+    points: 1
+  - name: legacy-exception
+    description: The PeerAuthentication legacy-permissive selects only the legacy pods and accepts plain text on port 8080, and the drifter pod gets a reply from legacy
+    type: file
+    source: validation/validate-legacy-exception.sh
+    points: 1
+  - name: meshed-client-works
+    description: The shuttle pod with its sidecar still gets replies from both the probe and the legacy Service
+    type: file
+    source: validation/validate-meshed-client-works.sh
+    points: 1

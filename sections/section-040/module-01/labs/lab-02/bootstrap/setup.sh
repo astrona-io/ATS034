@@ -12,7 +12,13 @@ lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 helm upgrade --install istio-base base --repo https://istio-release.storage.googleapis.com/charts --version 1.30.5 -n istio-system --create-namespace --wait --timeout 10m
 helm upgrade --install istiod istiod --repo https://istio-release.storage.googleapis.com/charts --version 1.30.5 -n istio-system --wait --timeout 10m
 kubectl -n istio-system rollout status deployment/istiod --timeout=300s
-kubectl apply -f "$lab_directory/bootstrap/manifests/start.yaml"
+# The sidecar injector webhook can refuse calls for a few seconds after
+# istiod reports ready, so the apply is retried for up to 2.5 minutes.
+for attempt in $(seq 1 30); do
+  kubectl apply -f "$lab_directory/bootstrap/manifests/start.yaml" && break
+  [ "$attempt" -lt 30 ] || exit 1
+  sleep 5
+done
 kubectl -n starfleet-034-040-01-02 rollout status deployment/probe --timeout=300s
 kubectl -n starfleet-034-040-01-02 wait --for=condition=Ready pod/shuttle --timeout=300s
 kubectl -n starfleet-034-040-01-02 wait --for=condition=Ready pod/tender --timeout=300s

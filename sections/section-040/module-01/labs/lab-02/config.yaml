@@ -39,18 +39,18 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-- name: allow-policy
-  description: The AuthorizationPolicy probe-allow-shuttle selects the probe pods with action ALLOW and admits only the principal cluster.local/ns/starfleet-034-040-01-02/sa/shuttle
-  type: file
-  source: validation/validate-allow-policy.sh
-  points: 1
-- name: shuttle-allowed
-  description: The shuttle pod still gets a reply from the probe Service
-  type: file
-  source: validation/validate-shuttle-allowed.sh
-  points: 1
-- name: tender-denied
-  description: The tender pod, which also has a sidecar, gets HTTP 403 from the probe sidecar
-  type: file
-  source: validation/validate-tender-denied.sh
-  points: 1
+  - name: allow-policy
+    description: The AuthorizationPolicy probe-allow-shuttle selects the probe pods with action ALLOW and admits only the principal cluster.local/ns/starfleet-034-040-01-02/sa/shuttle
+    type: file
+    source: validation/validate-allow-policy.sh
+    points: 1
+  - name: shuttle-allowed
+    description: The shuttle pod still gets a reply from the probe Service
+    type: file
+    source: validation/validate-shuttle-allowed.sh
+    points: 1
+  - name: tender-denied
+    description: The tender pod, which also has a sidecar, gets HTTP 403 from the probe sidecar
+    type: file
+    source: validation/validate-tender-denied.sh
+    points: 1
