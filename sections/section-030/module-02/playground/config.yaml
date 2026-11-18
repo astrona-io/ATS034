@@ -11,7 +11,7 @@ runtime:
   qemu:
   - image:
       type: oci
-      source: ghcr.io/astrona-io/ubuntu-qcow2-image:24.04-cks-arm64
+      source: ghcr.io/astrona-io/ubuntu-qcow2-image:24.04-cks
     cpus: 2
     memoryMB: 4096
     diskSizeGB: 25

@@ -110,6 +110,6 @@ The `RUNTIME` column shows `runsc` for `scout` and `(default)` for `shuttle`. `s
 
 > [!WARNING]
 > - Editing the file without a restart changes nothing. containerd keeps the old handlers until it starts again.
-> - A wrong table path, such as the containerd 1.x path `plugins."io.containerd.grpc.v1.cri"` in a `version = 3` file, does not add the handler. Compare with the `runc` table in the same file.
+> - A wrong table path, such as the containerd 1.x path `plugins."io.containerd.grpc.v1.cri"` in a `version = 3` file, does not add the handler. containerd still starts, lists only `runc` and logs `Ignoring unknown key in TOML for plugin` for `plugin=io.containerd.grpc.v1.cri`. Compare with the `runc` table in the same file.
 > - The table name must equal the `handler` field of the RuntimeClass. A table named `gvisor` gives the error `no runtime for "runsc" is configured` again.
 > - Deleting `scout` is not needed. The kubelet retries the sandbox until it succeeds.

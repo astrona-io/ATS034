@@ -39,7 +39,7 @@ Add the taint with the effect `NoSchedule`:
 kubectl taint node astro-ats-034-playground-030-03-worker tenant=tenant-c:NoSchedule
 ```
 
-Save this Deployment as `deployment-tenant-c-app.yaml`:
+The tenant workload is a Deployment. Save this as `deployment-tenant-c-app.yaml`:
 
 ```yaml
 apiVersion: apps/v1
