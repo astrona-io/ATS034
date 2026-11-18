@@ -8,7 +8,7 @@ A Secret is the Kubernetes object for small pieces of sensitive data: a password
 
 This module explains where a Secret lives, who can read it, how it reaches a container, how to replace its value, and how to encrypt it in `etcd`. Each idea is tested on the playground cluster with a disposable credential, so no real secret ever appears in a command.
 
-The module has four parts. **What A Secret Is And Who Can Read It** shows that the `data` field is base64 encoding, not encryption, and that RBAC decides who reads a Secret. **Delivering Secrets To Pods** compares environment variables with Secret volumes and shows the files the kubelet creates. **Rotating A Secret** replaces a value and shows which consumers see the change. **Encryption At Rest** writes an `EncryptionConfiguration`, changes the kube-apiserver static pod and proves in `etcd` that the data is encrypted.
+The module has four parts. **What A Secret Is And Who Can Read It** shows that the `data` field is base64 encoding, not encryption, and that RBAC decides who reads a Secret. **Delivering Secrets To Pods** compares environment variables with Secret volumes and shows the files the kubelet creates. **Rotating A Secret** replaces a value and shows which consumers see the change. **Encryption At Rest** writes an `EncryptionConfiguration`, changes the kube-apiserver static pod and proves in `etcd` that the data is encrypted. A graded lab follows each of the last three parts.
 
 ## Learning objectives
 
