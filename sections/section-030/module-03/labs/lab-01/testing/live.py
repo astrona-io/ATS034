@@ -35,7 +35,7 @@ if wants('tenant-deployment'):
     status = deployment.get('status', {})
     assert status.get('readyReplicas', 0) == deployment['spec'].get('replicas', 1) == 1, 'Deployment tenant-c-app must have one ready replica'
     pods = json.loads(kubectl('-n', TENANT, 'get', 'pods', '-l', 'app=tenant-c-app', '-o', 'json'))['items']
-    running = [pod for pod in pods if pod.get('status', {}).get('phase') == 'Running']
+    running = [pod for pod in pods if pod.get('status', {}).get('phase') == 'Running' and not pod['metadata'].get('deletionTimestamp')]
     assert running, 'No Pod of tenant-c-app is Running'
     assert all(pod['spec'].get('nodeName') == WORKER for pod in running), 'Every Pod of tenant-c-app must run on the worker node ' + WORKER
     assert has_taint(node(WORKER)), 'The worker node must still have the taint tenant=tenant-c:NoSchedule'
