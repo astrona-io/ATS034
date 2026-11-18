@@ -7,11 +7,19 @@ runtime:
   type: kind
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    networking:
+      disableDefaultCNI: true
+    preloadImages:
+    - quay.io/cilium/cilium:v1.20.4
+    - quay.io/cilium/operator-generic:v1.20.4
+    - quay.io/cilium/cilium-envoy:v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459
+    - docker.io/library/busybox:1.37.0
+    - docker.io/nicolaka/netshoot:v0.14
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-cilium
     type: file
     source: bootstrap/setup.sh
 teardown:

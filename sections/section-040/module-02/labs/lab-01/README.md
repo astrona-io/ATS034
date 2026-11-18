@@ -1,10 +1,9 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
-# Migrate A Namespace To Strict mTLS With One Exception
+# Override Mesh-Wide STRICT For One Namespace
 
-Require mTLS for the whole `starfleet` namespace and keep the `legacy` workload reachable for the client without a sidecar.
+Use the precedence of Istio PeerAuthentication policies: keep a mesh-wide STRICT policy and add a namespace policy that sets PERMISSIVE for one namespace only. Live requests prove that the override works in one namespace and that a second namespace stays STRICT. The lab runs Istio 1.30.5 in its own pinned kind cluster. Python 3 is required on the grading host.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

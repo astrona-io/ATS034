@@ -13,22 +13,44 @@ runtime:
     preloadImages:
     - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-istio-and-workloads
     type: file
     source: bootstrap/setup.sh
 teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+- name: strict-policy
+  description: A PeerAuthentication without a selector sets STRICT mutual TLS for starfleet-034-040-01-01, in that namespace or mesh-wide, and no workload policy weakens it for the probe pods
+  type: file
+  source: validation/validate-strict-policy.sh
+  points: 1
+- name: shuttle-allowed
+  description: The shuttle pod with its istio-proxy sidecar still gets a reply from the probe Service
+  type: file
+  source: validation/validate-shuttle-allowed.sh
+  points: 1
+- name: drifter-denied
+  description: The drifter pod in outpost-034-040-01-01, which has no sidecar, sends plain text and the probe sidecar resets the connection
+  type: file
+  source: validation/validate-drifter-denied.sh
+  points: 1

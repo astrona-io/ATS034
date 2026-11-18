@@ -13,22 +13,44 @@ runtime:
     preloadImages:
     - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-istio-and-workloads
     type: file
     source: bootstrap/setup.sh
 teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+- name: namespace-override
+  description: The PeerAuthentication namespace-permissive in starfleet-034-040-02-01 has no selector and sets PERMISSIVE, while the mesh-wide policy default in istio-system still sets STRICT
+  type: file
+  source: validation/validate-namespace-override.sh
+  points: 1
+- name: drifter-allowed
+  description: The drifter pod without a sidecar gets a reply from the probe Service in starfleet-034-040-02-01, and the shuttle pod still gets one too
+  type: file
+  source: validation/validate-drifter-allowed.sh
+  points: 1
+- name: depot-still-strict
+  description: depot-034-040-02-01 has no policy of its own, so the mesh-wide STRICT policy still applies there and the drifter pod is reset by the cargo sidecar
+  type: file
+  source: validation/validate-depot-still-strict.sh
+  points: 1
