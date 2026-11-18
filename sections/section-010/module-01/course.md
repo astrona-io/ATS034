@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -9,7 +8,7 @@ A Pod can ask the kubelet for almost anything on the node: a privileged containe
 
 This module explains the three standards, the `securityContext` fields that make a Pod meet them, and the namespace labels that switch the check on. You will test each profile with server-side dry-run requests, so you see the real rejection messages without leaving objects behind. You will also see why a Deployment can be accepted while its Pods are not, and how to find the reason.
 
-The module has four parts. **The Three Pod Security Standards** compares Privileged, Baseline and Restricted and tests them with a privileged Pod and a plain Pod. **Security Context Fields** shows how to write a Pod that meets Restricted and how to give a read-only application a writable directory. **Pod Security Admission Modes** explains the `enforce`, `audit` and `warn` labels and the version pin, and ends with a graded task. **Admission For Workloads And Troubleshooting** follows a rejected Deployment through its ReplicaSet and covers exemptions and checks on existing namespaces.
+The module has four parts. **The Three Pod Security Standards** compares Privileged, Baseline and Restricted and tests them with a privileged Pod and a plain Pod. **Security Context Fields** shows how to write a Pod that meets Restricted and how to give a read-only application a writable directory. **Pod Security Admission Modes** explains the `enforce`, `audit` and `warn` labels and the version pin. **Admission For Workloads And Troubleshooting** follows a rejected Deployment through its ReplicaSet and covers exemptions and checks on existing namespaces.
 
 ## Learning objectives
 

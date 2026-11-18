@@ -11,24 +11,36 @@ runtime:
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
     preloadImages:
-    - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
-    nodes:
-      workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: seed-lab
     type: file
     source: bootstrap/setup.sh
 teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: baseline-enforced
+    description: In starfleet-034-010-01-01 the API server rejects a privileged Pod under Baseline and admits a plain Pod
+    type: file
+    source: validation/validate-baseline-enforced.sh
+    points: 1
+  - name: restricted-enforced
+    description: In outpost-034-010-01-01 the API server rejects a plain Pod under Restricted and admits a Pod that meets Restricted
+    type: file
+    source: validation/validate-restricted-enforced.sh
+    points: 1

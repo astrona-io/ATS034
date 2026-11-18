@@ -1,10 +1,9 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Enforce Restricted Pod Admission
+# Enforce Baseline And Restricted With Namespace Labels
 
-Admit a compliant Pod and reject a privileged Pod through the API server.
+Label two namespaces so Pod Security Admission enforces Baseline in one and Restricted in the other. The graders send server-side dry-run Pods and check which ones the API server rejects. It runs in its own pinned kind cluster. Python 3 is required on the grading host.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

@@ -1,0 +1,46 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-010-01-03
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+bootstrap:
+  init:
+  - name: seed-lab
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: baseline-enforced
+    description: The API server rejects a privileged Pod under baseline:v1.35 and admits a plain Pod
+    type: file
+    source: validation/validate-baseline-enforced.sh
+    points: 1
+  - name: restricted-warning
+    description: A plain Pod is admitted with the warning that it would violate restricted:v1.35, and audit is set to restricted at v1.35
+    type: file
+    source: validation/validate-restricted-warning.sh
+    points: 1

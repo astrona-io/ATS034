@@ -1,0 +1,56 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-010-01-02
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+bootstrap:
+  init:
+  - name: seed-lab
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: runs-as-user-1000
+    description: The reader Pod runs and its process has user ID 1000
+    type: file
+    source: validation/validate-runs-as-user-1000.sh
+    points: 1
+  - name: kernel-settings
+    description: The process of reader has no_new_privs set, a seccomp filter active and no effective capabilities
+    type: file
+    source: validation/validate-kernel-settings.sh
+    points: 1
+  - name: root-read-only
+    description: Writing to /tmp, a directory that user 1000 could otherwise write, fails with Read-only file system
+    type: file
+    source: validation/validate-root-read-only.sh
+    points: 1
+  - name: scratch-writable
+    description: User 1000 can write a file to the /scratch volume
+    type: file
+    source: validation/validate-scratch-writable.sh
+    points: 1
