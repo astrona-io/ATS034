@@ -5,8 +5,6 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
   printf 'Refusing to operate on another Kubernetes context\n' >&2
   exit 1
 fi
-lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-solution_directory="$lab_directory/solution"
-
-kubectl apply -f "$solution_directory/deployment-scanner.yaml"
-kubectl -n hardened-034-010-02-01 rollout status deployment/scanner --timeout=180s
+solution_directory="$(cd "$(dirname "$0")" && pwd)"
+kubectl apply -f "$solution_directory/deployment-probe.yaml"
+kubectl -n starfleet-034-010-02-01 rollout status deployment/probe --timeout=180s

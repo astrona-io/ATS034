@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -7,7 +6,7 @@ exam_objectives:
 
 A container process is a normal Linux process on a node. What it may do depends on four things: the user it runs as, the Linux capabilities it holds, the system calls its seccomp filter allows, and how much of the node it can see. Each of these has a field in the Pod spec, and each is checked by the Pod Security Standards. This module teaches the fields one group at a time, shows what the kernel does with each, and ends with the host settings that Baseline forbids.
 
-The module has four parts. **Run As A Non-Root User** covers user and group IDs, `runAsNonRoot` and `fsGroup`, and the failure that appears when an image runs as root. **Capabilities And Privilege Escalation** shows what `drop: ["ALL"]` removes and what `allowPrivilegeEscalation: false` sets. **Seccomp, AppArmor And SELinux Settings** covers the profile fields and the values each profile accepts, and ends with a graded task in which you repair a Deployment so that it meets Restricted. **Host Namespaces And Host Paths** tests the settings that give a Pod a view of the node.
+The module has four parts. **Run As A Non-Root User** covers user and group IDs, `runAsNonRoot` and `fsGroup`, and the failure that appears when an image runs as root. **Capabilities And Privilege Escalation** shows what `drop: ["ALL"]` removes and what `allowPrivilegeEscalation: false` sets. **Seccomp, AppArmor And SELinux Settings** covers the profile fields and the values each profile accepts, and shows how a `Localhost` seccomp profile and an AppArmor profile get onto a node. **Host Namespaces And Host Paths** tests the settings that give a Pod a view of the node.
 
 ## Learning objectives
 

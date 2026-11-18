@@ -1,10 +1,9 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Repair A Deployment To Meet Restricted
+# Run A Deployment As A Non-Root User
 
-Repair a Deployment that Pod Security Admission blocks, so its Pod runs as a non-root user with a read-only root filesystem.
+Change a Deployment so its process runs as user 1000 with runAsNonRoot set. The graders run id in each probe Pod and send a request through the Service from shuttle. The lab runs in its own pinned kind cluster. Python 3 is required on the grading host.
 
-The task and solution use a separate pinned kind cluster. Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

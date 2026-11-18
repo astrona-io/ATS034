@@ -11,13 +11,10 @@ runtime:
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
     preloadImages:
-    - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
-    nodes:
-      workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: seed-lab
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -37,13 +34,13 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: starfleet-baseline
-    description: Namespace starfleet-034-010-03-01 enforces Baseline and warns and audits on Restricted, all at v1.35
+  - name: compliant-enforced
+    description: bridge-034-010-03-01 enforces Restricted at v1.35, so a Pod without security settings is rejected, and the bridge Deployment stays Ready
     type: file
-    source: validation/validate-starfleet-baseline.sh
+    source: validation/validate-compliant-enforced.sh
     points: 1
-  - name: outpost-restricted
-    description: Namespace outpost-034-010-03-01 enforces Restricted at v1.35
+  - name: noncompliant-warned
+    description: starfleet-034-010-03-01 and outpost-034-010-03-01 still admit a Pod without security settings but return a restricted:v1.35 warning
     type: file
-    source: validation/validate-outpost-restricted.sh
+    source: validation/validate-noncompliant-warned.sh
     points: 1

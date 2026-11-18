@@ -1,41 +1,40 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Repair A Deployment To Meet Restricted
+# Run A Deployment As A Non-Root User
 
-Solve this question on: `terminal`
+Allow about 10 minutes for the tasks.
 
-The namespace `hardened-034-010-02-01` enforces the Restricted profile at version v1.35. The `scanner` Deployment in it has one replica and no Ready Pod. Its container uses `busybox`, runs as the image default user and writes the file `/tmp/result` before it sleeps. The `starfleet-034-010-02-01` and `outpost-034-010-02-01` namespaces from the shared environment also exist and must not change.
+The `probe` application answers HTTP requests for the `shuttle` client. Its process runs as root today, and it must run as an ordinary user without losing its Service.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+## Connect to the lab
+
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-010-02-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-010-02-01" || exit 1
-node_name="astro-ats-034-lab-010-02-01-control-plane"
-worker_name="astro-ats-034-lab-010-02-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Allow about 8 minutes for the tasks. Cluster startup adds time.
+## Starting state
+
+The namespace `starfleet-034-010-02-01` has no Pod Security labels. It runs the Deployment `probe` with two replicas of a small Python HTTP server, the Service `probe` on port 80, and the client Pod `shuttle`. The `probe` image declares no user, so its process runs as user ID 0 (root).
 
 ## Tasks
 
-1. Find out why the `scanner` Deployment has no Pod. Read the `FailedCreate` event of its ReplicaSet.
-2. In the Pod template, set `runAsNonRoot: true`, `runAsUser: 1000` and a `seccompProfile` of type `RuntimeDefault` at Pod level.
-3. In the container `scanner`, set `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true` and drop all capabilities.
-4. Add an `emptyDir` volume named `tmp`, mount it at `/tmp` in the container, and wait until the Deployment has one Ready Pod.
+1. Change the Deployment `probe` so that its process runs as user ID `1000`.
+2. Make the kubelet refuse to start a `probe` container whose process would run as root.
+3. Keep two replicas, the image, the command and the labels of the Pod template as they are.
+4. The `shuttle` Pod must still get a reply from `http://probe/`.
 
-## Constraints
+## Check your work
 
-- Keep the Deployment name, replica count, selector, image and command. Change only the Pod template.
-- Do not change the labels of the `hardened-034-010-02-01` namespace.
+```sh
+kubectl -n starfleet-034-010-02-01 exec deploy/probe -- id
+kubectl -n starfleet-034-010-02-01 exec shuttle -- wget -q -T 3 -O- http://probe/
+```
 
-## How the answer is checked
-
-The grader runs four checks: the Pod-level security context, the container security context, the `tmp` volume and its mount, and a running Pod. The last one needs one Ready replica and runs bounded commands in it: the process runs as user ID 1000 with `no_new_privs` set, `/tmp/result` contains `scan`, and a write to `/` fails. Every check also confirms that the namespace labels, the name, replica count, selector and image are unchanged.
-
-Hint: `kubectl explain deployment.spec.template.spec.securityContext` lists the Pod-level fields.
+The process must run as `uid=1000`. The reply must start with `version=v1`, and the `host` field names the `probe` Pod that answered.

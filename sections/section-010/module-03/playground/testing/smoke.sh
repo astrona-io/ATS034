@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
+# Runs the commands the playground guide teaches and fails when one of them
+# does not give the expected result.
 set -euo pipefail
-context="${ASTRONA_KUBE_CONTEXT:-kind-astro-ats-034-playground-010-03}"
-if [[ "$(kubectl config current-context)" != "$context" ]]; then
+if [[ "$(kubectl config current-context)" != "kind-astro-ats-034-playground-010-03" ]]; then
   printf 'Refusing to operate on another Kubernetes context\n' >&2
   exit 1
 fi
-lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-if bash "$lab_directory/validate.sh"; then
-  printf 'Starting state unexpectedly passes grading\n' >&2
+
+kubectl get namespaces -L pod-security.kubernetes.io/enforce,pod-security.kubernetes.io/warn,pod-security.kubernetes.io/audit
+
+for namespace in starfleet outpost; do
+  inventory="$(kubectl label --dry-run=server --overwrite namespace "$namespace" pod-security.kubernetes.io/enforce=restricted pod-security.kubernetes.io/enforce-version=v1.35 2>&1)"
+  printf '%s\n' "$inventory"
+  grep -q "existing pods in namespace \"$namespace\" violate the new PodSecurity enforce level \"restricted:v1.35\"" <<<"$inventory"
+done
+
+flags="$(kubectl -n kube-system get pods -l component=kube-apiserver -o jsonpath='{.items[0].spec.containers[0].command}' | tr ',' '\n' | grep -E 'admission|enable' || true)"
+printf '%s\n' "$flags"
+if grep -q 'admission-control-config-file' <<<"$flags"; then
+  printf 'The API server unexpectedly has an admission configuration file\n' >&2
   exit 1
 fi
-bash "$lab_directory/solution/apply.sh"
-for attempt in $(seq 1 20); do
-  if bash "$lab_directory/validate.sh"; then exit 0; fi
-  sleep 3
-done
-printf 'Reference result did not pass within the bounded retry period\n' >&2
-exit 1
+
+answer="$(kubectl auth can-i update namespaces --as=system:serviceaccount:starfleet:default 2>/dev/null || true)"
+printf 'can-i update namespaces: %s\n' "$answer"
+[[ "$answer" == no ]]

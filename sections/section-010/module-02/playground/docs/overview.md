@@ -1,107 +1,75 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Guided Practice: Repair A Deployment To Meet Restricted
+# Playground Guide: Read Pod Security Rejections And Process Settings
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+Work in a shell on your own computer. `kubectl`, the Kubernetes command-line tool, normally already points at the playground cluster after the playground starts. A kubeconfig is the file that tells `kubectl` which cluster to use and which credentials to send. To be sure that you work on the playground and not on another cluster, select the playground's kubeconfig and check the context:
 
 <!-- astrona:playground:renew -->
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-playground-010-02)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-010-02" || exit 1
-node_name="astro-ats-034-playground-010-02-control-plane"
-worker_name="astro-ats-034-playground-010-02-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+The `test` line stops the shell when the context belongs to another cluster. Keep this shell open while you work through the pages of the module.
 
-## Inspect And Explain
+## Look at the starting state
 
-The namespace `hardened` enforces Restricted. The `scanner` Deployment was accepted, but it has no Ready Pod. Pod Security Admission checks Pods and not Deployments, so the reason is in the events of the ReplicaSet.
-
-Inspect the current objects before changing them:
+This playground is a `kind` cluster with one control plane node and one worker node. The `starfleet` namespace runs two `probe` Pods behind the `probe` Service and a `shuttle` client Pod, and the `outpost` namespace runs the `drifter` client Pod. A third namespace, `hardened`, enforces the Restricted standard and holds the `scanner` Deployment. Show the enforce label of each namespace and the Deployment:
 
 ```sh
+kubectl get namespaces starfleet outpost hardened -L pod-security.kubernetes.io/enforce
 kubectl -n hardened get deployment scanner
-kubectl -n hardened get replicaset
-kubectl -n hardened get events --field-selector reason=FailedCreate
 ```
 
-The `FailedCreate` event says the Pod violates `restricted:v1.35` and lists the rules the Pod template breaks: privilege escalation, capabilities, the user and the seccomp profile. Fix all of them in the Pod template. The container also writes to `/tmp`, so a read-only root filesystem needs a writable volume at that path.
-
-Save the corrected Deployment as `deployment-scanner.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: scanner
-  namespace: hardened
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: scanner
-  template:
-    metadata:
-      labels:
-        app: scanner
-    spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        seccompProfile:
-          type: RuntimeDefault
-      containers:
-      - name: scanner
-        image: docker.io/library/busybox:1.37.0
-        command:
-        - sh
-        - -c
-        - echo scan > /tmp/result && sleep 3600
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-      volumes:
-      - name: tmp
-        emptyDir: {}
+```text
+NAME        STATUS   AGE   ENFORCE
+starfleet   Active   3s    
+outpost     Active   3s    
+hardened    Active   3s    restricted
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+scanner   0/1     0            0           3s
 ```
 
-Apply it:
+The API server stored the Deployment, but it has no Pod. Pod Security admission checks Pods, not Deployments, so the Deployment itself was never rejected.
+
+## Find the reason in the events
+
+The ReplicaSet controller creates the Pods of a Deployment. When admission rejects a Pod, the controller records a `FailedCreate` event. Read the message of that event:
 
 ```sh
-kubectl apply -f deployment-scanner.yaml
+kubectl -n hardened get events --field-selector reason=FailedCreate -o custom-columns=MESSAGE:.message --no-headers | head -1
 ```
 
-The template changed, so the Deployment creates a new ReplicaSet. The new Pod passes admission and starts.
+```text
+Error creating: pods "scanner-59c787d7cd-gs5pv" is forbidden: violates PodSecurity "restricted:v1.35": allowPrivilegeEscalation != false (container "scanner" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container "scanner" must set securityContext.capabilities.drop=["ALL"]), runAsNonRoot != true (pod or container "scanner" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container "scanner" must set securityContext.seccompProfile.type to "RuntimeDefault" or "Localhost")
+```
 
-## Verify The Result
+The message lists four broken rules and names the field that fixes each one. The Pod name in your playground ends with other random characters. The event can take a few seconds to appear after the playground starts; run the command again if it prints nothing.
 
-Wait for the rollout, then read the facts from the running process. The kernel and the container runtime, not the Pod spec, decide what the process really has.
+## Read the settings of a running process
+
+The fields in the Pod spec are a request. The kernel shows what the process really got. The `shuttle` Pod in `starfleet` sets no security fields, so it shows the defaults of the container runtime:
 
 ```sh
-kubectl -n hardened rollout status deployment/scanner --timeout=180s
-kubectl -n hardened exec deploy/scanner -- id -u
-kubectl -n hardened exec deploy/scanner -- grep NoNewPrivs /proc/1/status
-kubectl -n hardened exec deploy/scanner -- cat /tmp/result
-kubectl -n hardened exec deploy/scanner -- touch /rootfile
+kubectl -n starfleet exec shuttle -- id
+kubectl -n starfleet exec shuttle -- grep -E 'CapEff|NoNewPrivs|Seccomp:' /proc/1/status
 ```
 
-The user ID is 1000, `NoNewPrivs` is 1 and `/tmp/result` holds `scan`. The last command must fail because the root filesystem is read-only, and it returns a nonzero status when the restriction works.
+```text
+uid=0(root) gid=0(root) groups=0(root),10(wheel)
+CapEff:	00000000a80425fb
+NoNewPrivs:	0
+Seccomp:	0
+```
+
+The process runs as root (user ID 0). `CapEff` is the set of capabilities the kernel checks now, and `00000000a80425fb` is the default set of the container runtime. `NoNewPrivs: 0` means the process could still gain privileges through a setuid program. `Seccomp: 0` means that no seccomp filter is active. These are the values that `runAsNonRoot`, `capabilities.drop`, `allowPrivilegeEscalation: false` and `seccompProfile` change.
 
 ## Common pitfalls
 
 > [!WARNING]
-> - A rejected Deployment shows its reason in the events of the ReplicaSet. The Deployment itself looks accepted.
-> - The Pod level and the container level hold different fields. `allowPrivilegeEscalation`, `capabilities` and `readOnlyRootFilesystem` exist only in the container.
-> - A read-only root filesystem stops the write to `/tmp`. The `emptyDir` volume at `/tmp` is what lets the container start.
-> - A matching Pod spec does not prove the process uses it. Read `/proc/1/status` and run `id -u` in the Pod.
+> - A Deployment that shows `0/1` with no Pods is not a scheduling problem. Read the `FailedCreate` events of the namespace before you change anything else.
+> - A field in the Pod spec does not prove the result. Check `/proc/1/status` inside the container after a change.
+> - Most fields of a running Pod cannot change. A Deployment replaces its Pods when you change the template; a bare Pod must be deleted and created again.

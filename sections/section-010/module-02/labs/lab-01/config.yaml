@@ -13,11 +13,9 @@ runtime:
     preloadImages:
     - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
-    nodes:
-      workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: seed-lab
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -37,23 +35,13 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: pod-security-context
-    description: The scanner Pod template runs as non-root user 1000 with the RuntimeDefault seccomp profile
+  - name: probe-non-root
+    description: Both probe Pods run with runAsNonRoot set and their process has user ID 1000
     type: file
-    source: validation/validate-pod-security-context.sh
+    source: validation/validate-probe-non-root.sh
     points: 1
-  - name: container-security-context
-    description: Container scanner blocks privilege escalation, has a read-only root filesystem and drops all capabilities
+  - name: service-answers
+    description: shuttle gets the probe reply through the probe Service, and the Pod that answered runs as user ID 1000
     type: file
-    source: validation/validate-container-security-context.sh
-    points: 1
-  - name: tmp-volume
-    description: An emptyDir volume named tmp is mounted at /tmp in container scanner
-    type: file
-    source: validation/validate-tmp-volume.sh
-    points: 1
-  - name: scanner-runs
-    description: Deployment scanner is Ready, runs as 1000 with no_new_privs, writes /tmp/result and cannot write to /
-    type: file
-    source: validation/validate-scanner-runs.sh
+    source: validation/validate-service-answers.sh
     points: 1

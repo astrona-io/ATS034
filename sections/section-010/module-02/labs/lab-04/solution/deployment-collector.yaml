@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: starfleet-034-010-02-04
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collector
+  template:
+    metadata:
+      labels:
+        app: collector
+    spec:
+      containers:
+      - name: collector
+        image: docker.io/library/busybox:1.37.0
+        command: ["sleep", "infinity"]
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+      volumes:
+      - name: logs
+        emptyDir: {}

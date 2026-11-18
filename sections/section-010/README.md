@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -7,11 +6,15 @@ exam_objectives:
 
 An application runs as a non-root user but still needs a writable temporary directory. Making its root filesystem read-only does not create that directory. Hardening must restrict unnecessary behavior while preserving the files and operations the application needs.
 
-The explanations identify the responsible components, compare intended and observed state, and work through the decisions needed to preserve the requirement. Read the worked examples as reasoning about a proposed system; no environment is started by this section.
+This section teaches the three Pod Security Standards, the `securityContext` fields that each standard checks, and how to roll the standards out across the namespaces of a running cluster without breaking the workloads in them.
 
-The section has three modules and a capstone. The first compares the three profiles and the admission modes. The second hardens container privileges: users, capabilities, privilege escalation, seccomp, mandatory access control, host namespaces and host paths. The third rolls Pod Security labels out across namespaces with staged changes, cluster defaults, exemptions and RBAC. The capstone applies all of it across three namespaces.
+## Learning Path
 
-Read the module goals, teaching and closing summary in order. YAML checks are indexed separately and appear after designated summaries. Larger domains include an intermediate checkpoint before the final review.
+1. Pod Security Standards And Admission: the Privileged, Baseline and Restricted profiles, the `securityContext` fields, the `enforce`, `audit` and `warn` modes, and why a Deployment is accepted while its Pods are rejected.
+2. Harden Container Privileges: non-root users, capabilities, privilege escalation, seccomp and AppArmor profiles, host namespaces and host paths.
+3. Roll Out Pod Security Labels Across Namespaces: a dry-run inventory, a staged label change, cluster-wide defaults and exemptions in the admission configuration file, and who may change the labels.
+
+Each module ends with a summary and a ten-question knowledge check. The parts carry the hands-on steps, and each graded lab follows the part that practises its skill. Most labs run in their own `kind` cluster with Kubernetes v1.35. The two labs that change files on the node, a seccomp and AppArmor profile and the API server admission configuration, run in their own virtual machine. Each module has a private playground; launch it from the landing page and keep it running while you read.
 
 ## Learning Outcomes
 
@@ -23,4 +26,4 @@ Read the module goals, teaching and closing summary in order. YAML checks are in
 - Apply seccomp, AppArmor and SELinux settings, and avoid host namespaces and host paths.
 - Inventory namespaces and stage a label change through warn, audit and enforce with pinned versions.
 - Explain cluster defaults and exemptions, and place node-level workloads in their own namespace.
-- Repair workloads and label several namespaces so each enforces the right profile.
+- Repair a Deployment that Pod Security Admission blocks, and protect the namespace labels with RBAC.

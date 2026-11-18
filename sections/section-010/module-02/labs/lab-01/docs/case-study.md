@@ -1,8 +1,7 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
 # Starting Environment
 
-The namespace `hardened-034-010-02-01` enforces the Restricted profile at version v1.35. The `scanner` Deployment in it has one replica and no Ready Pod. Its container uses `busybox`, runs as the image default user and writes the file `/tmp/result` before it sleeps. The `starfleet-034-010-02-01` and `outpost-034-010-02-01` namespaces from the shared environment also exist and must not change.
+The namespace `starfleet-034-010-02-01` has no Pod Security labels. It runs the Deployment `probe` with two replicas of a small Python HTTP server, the Service `probe` on port 80, and the client Pod `shuttle`. The `probe` image declares no user, so its process runs as user ID 0 (root).

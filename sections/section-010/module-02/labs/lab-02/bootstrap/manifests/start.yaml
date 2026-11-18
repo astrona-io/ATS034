@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet-034-010-02-02
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: courier
+  namespace: starfleet-034-010-02-02
+  labels:
+    app: courier
+spec:
+  containers:
+  - name: courier
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "infinity"]

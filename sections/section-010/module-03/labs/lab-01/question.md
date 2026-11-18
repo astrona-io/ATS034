@@ -1,40 +1,46 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
-# Stage Pod Security Labels On Two Namespaces
+# Roll Out Restricted Using A Dry-Run Inventory
 
-Solve this question on: `terminal`
+Allow about 10 minutes for the tasks.
 
-Neither `starfleet-034-010-03-01` nor `outpost-034-010-03-01` has Pod Security labels. The `starfleet-034-010-03-01` namespace runs the `probe` Deployment (two replicas), the `probe` Service and the `shuttle` client Pod. The `outpost-034-010-03-01` namespace runs the `drifter` client Pod. All of these Pods run as root and have no security settings.
+Three teams share the cluster. The security team wants the Restricted profile everywhere, but only where it does not break a running workload today.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+## Connect to the lab
+
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-010-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-010-03-01" || exit 1
-node_name="astro-ats-034-lab-010-03-01-control-plane"
-worker_name="astro-ats-034-lab-010-03-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Allow about 6 minutes for the tasks. Cluster startup adds time.
+## Starting state
+
+Three namespaces have no Pod Security labels:
+
+- `bridge-034-010-03-01` runs the Deployment `bridge`.
+- `starfleet-034-010-03-01` runs the Deployment `shuttle`.
+- `outpost-034-010-03-01` runs the Pod `drifter`.
+
+All three run `docker.io/library/busybox:1.37.0` with the command `sleep infinity`. You do not know yet which of them meet the Restricted profile.
 
 ## Tasks
 
-1. Label the namespace `starfleet-034-010-03-01` so that it enforces Baseline and warns and audits on Restricted. Pin the version of all three modes to `v1.35`.
-2. Label the namespace `outpost-034-010-03-01` so that it enforces Restricted, pinned to `v1.35`.
-3. Prove the effect with server-side dry runs: a Pod without security settings is admitted in `starfleet-034-010-03-01` and rejected in `outpost-034-010-03-01`, and a privileged Pod is rejected in both.
+1. Find out, without changing anything, which namespaces run only Pods that meet the Restricted profile at version `v1.35`.
+2. In every namespace where all running Pods comply, enforce `restricted` pinned to `v1.35`.
+3. In every other namespace, do not enforce Restricted. Set the `warn` mode to `restricted` pinned to `v1.35`, so that new Pods are still admitted but the team sees a warning.
+4. Do not change, delete or restart any workload.
 
-## Constraints
+## Check your work
 
-- Keep every existing label, including the `project` labels.
-- Do not change any workload. The `probe`, `shuttle` and `drifter` Pods must stay Ready.
+```sh
+kubectl get namespaces -L pod-security.kubernetes.io/enforce,pod-security.kubernetes.io/warn | grep 034-010-03-01
+kubectl get pods -A | grep 034-010-03-01
+```
 
-## How the answer is checked
-
-The grader runs one check per namespace. Each checks the namespace labels and sends Pods as server-side dry runs: a plain and a privileged Pod. Only a rejection by Pod Security admission counts; a rejection for another reason, such as a missing namespace or a malformed request, does not. Both checks also need the `probe`, `shuttle` and `drifter` Pods to be Ready.
-
-Hint: Labelling a namespace does not evict running Pods. `kubectl label` prints a warning for each existing Pod that would violate the new level.
+Only the namespace whose Pods comply shows `restricted` in the enforce column. The two others show `restricted` in the warn column, and all three workloads are still `Running`.
