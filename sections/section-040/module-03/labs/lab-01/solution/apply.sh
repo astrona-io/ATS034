@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
-if [[ "$(kubectl config current-context)" != "kind-astro-ats-034-lab-040-03-01" ]]; then
+context="${ASTRONA_KUBE_CONTEXT:-kind-astro-ats-034-lab-040-03-01}"
+if [[ "$(kubectl config current-context)" != "$context" ]]; then
   printf 'Refusing to operate on another Kubernetes context\n' >&2
   exit 1
 fi
-lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-solution_directory="$lab_directory/solution"
-kubectl apply -f "$solution_directory/configmap-cilium-values-ipsec.yaml"
-kubectl -n kube-system delete secret cilium-ipsec-keys --ignore-not-found
-kubectl -n kube-system create secret generic cilium-ipsec-keys --from-literal=keys="3+ rfc4106(gcm(aes)) $(openssl rand -hex 20) 128"
+solution_directory="$(cd "$(dirname "$0")" && pwd)"
+helm upgrade cilium cilium --repo https://helm.cilium.io --version 1.20.4 --namespace kube-system \
+  --reuse-values --set encryption.enabled=true --set encryption.type=wireguard --wait --timeout 10m
+kubectl -n kube-system rollout restart daemonset/cilium
+kubectl -n kube-system rollout status daemonset/cilium --timeout=300s

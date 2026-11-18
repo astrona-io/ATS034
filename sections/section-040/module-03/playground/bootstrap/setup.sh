@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Installs Cilium 1.20.4 as the network plugin, with encryption off, then starts
 # a server Pod on the worker node, a client Pod on the control-plane node and
-# a node-tools Pod (tcpdump, wg) in the network namespace of each node.
+# a node-tools Pod (tcpdump, ip) in the network namespace of each node.
+# Cilium needs Docker or rootful Podman, because it mounts the BPF filesystem.
 set -euo pipefail
 context="${ASTRONA_KUBE_CONTEXT:-kind-astro-ats-034-playground-040-03}"
 if [[ "$(kubectl config current-context)" != "$context" ]]; then

@@ -1,84 +1,61 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
-# Prepare IPsec Encryption For Cilium Solution
+# Enable WireGuard Encryption In Cilium Solution
 
-The task has two objects that must agree: the Secret that holds the key and the values file that names it.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-040-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-040-03-01" || exit 1
 ```
 
-## Inspect the starting state
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Read the values file and confirm that the Secret does not exist:
+Cilium transparent encryption encrypts packets between nodes in the kernel. The pods send plain TCP and do not take part. With the type `wireguard`, each Cilium agent creates the network interface `cilium_wg0` on its node, generates a WireGuard key pair, publishes its public key on the CiliumNode object of its node and adds every other node as a WireGuard peer. The agent reads these settings only when it starts.
 
-```sh
-kubectl -n kube-system get configmap cilium-values -o jsonpath='{.data.values\.json}'
-kubectl -n kube-system get secret cilium-ipsec-keys
-```
-
-The values show `enabled` as `false`, and the second command reports that the Secret is not found.
-
-## Create the key Secret
-
-Create the Secret with a random key. The key has 40 hexadecimal characters, which `openssl rand -hex 20` produces:
+The settings live in the Helm values. Change only the two encryption values and keep everything else with `--reuse-values`:
 
 ```sh
-kubectl -n kube-system create secret generic cilium-ipsec-keys --from-literal=keys="3+ rfc4106(gcm(aes)) $(openssl rand -hex 20) 128"
+helm upgrade cilium cilium --repo https://helm.cilium.io --version 1.20.4 --namespace kube-system --reuse-values --set encryption.enabled=true --set encryption.type=wireguard
 ```
 
-## Set the Helm values
-
-Save this as `configmap-cilium-values-ipsec.yaml`:
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cilium-values
-  namespace: kube-system
-data:
-  values.json: |
-    {
-      "encryption": {
-        "enabled": true,
-        "type": "ipsec",
-        "ipsec": {
-          "secretName": "cilium-ipsec-keys",
-          "keyFile": "keys",
-          "mountPath": "/etc/ipsec"
-        }
-      }
-    }
-```
-
-Apply it:
+Helm updates the ConfigMap `cilium-config`, but the running agents keep their old settings. Restart the DaemonSet and wait until every new agent pod is ready:
 
 ```sh
-kubectl apply -f configmap-cilium-values-ipsec.yaml
+kubectl -n kube-system rollout restart daemonset/cilium
+kubectl -n kube-system rollout status daemonset/cilium --timeout=300s
 ```
 
-## Verify the result
-
-Print every field of the key line except the key, and read the values file back:
+Then check the result on each agent. List the agent pods, then run the status command in each one:
 
 ```sh
-kubectl -n kube-system get secret cilium-ipsec-keys -o jsonpath='{.data.keys}' | base64 -d | cut -d' ' -f1,2,4
-kubectl -n kube-system get configmap cilium-values -o jsonpath='{.data.values\.json}'
+kubectl -n kube-system get pods -l k8s-app=cilium -o wide
+kubectl -n kube-system exec <cilium-pod> -c cilium-agent -- cilium-dbg encrypt status
 ```
 
-The first command shows the SPI, the algorithm and the length. The second shows `enabled` as `true`, the type `ipsec` and the Secret name.
+Each agent reports `Encryption: Wireguard`, the interface `cilium_wg0`, its public key and `Number of peers: 1`. The peer is the agent on the other node. The agent container also has the `ip` tool and shares the network of its node, so you can see the interface itself:
 
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-040-03-01`.
+```sh
+kubectl -n kube-system exec <cilium-pod> -c cilium-agent -- ip -d link show cilium_wg0
+```
+
+The output shows a link of type `wireguard`. Its MTU (maximum transmission unit, the largest packet the interface sends) is lower than the MTU of `eth0`, because WireGuard adds its own header to each packet. Finally, send a request from `shuttle` to the `probe` Service:
+
+```sh
+kubectl -n starfleet-034-040-03-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-03-01.svc.cluster.local:8080/
+```
+
+The reply is `probe-reply`. The request now leaves the control-plane node through `cilium_wg0` as UDP packets on port 51871, and the kernel of the worker node decrypts them before they reach the `probe` pod. The grader checks this by reading the transmitted byte count of `cilium_wg0` before and after one request.
+
+When you are done, remove the lab with `astrona destroy ats-034-lab-040-03-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> - **Creating the Secret in the wrong namespace.** The agents read `kube-system` only.
-> - **A key of the wrong length.** Use `openssl rand -hex 20`, which gives 40 hexadecimal characters.
-> - **Values and Secret that disagree.** The `secretName` in the values must be the name of the Secret.
-> - **Printing the key.** Use `cut` to hide it.
+> Running `helm upgrade` with `--set` but without `--reuse-values` can reset the other values of the release to the chart defaults. Keep `--reuse-values` when you change only one setting.
+>
+> The agents read the encryption settings when they start. Until you restart the DaemonSet, `cilium-dbg encrypt status` still reports `Encryption: Disabled`.
+>
+> Check every agent, not only one with `ds/cilium`. One agent without a peer leaves the traffic of its node in plain text.
