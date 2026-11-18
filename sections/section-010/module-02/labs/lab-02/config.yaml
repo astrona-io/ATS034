@@ -1,0 +1,46 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-010-02-02
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+bootstrap:
+  init:
+  - name: seed-lab
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: capabilities-dropped
+    description: courier still runs as root, holds no capabilities, and chown fails with Operation not permitted
+    type: file
+    source: validation/validate-capabilities-dropped.sh
+    points: 1
+  - name: no-new-privileges
+    description: The process of courier has no_new_privs set
+    type: file
+    source: validation/validate-no-new-privileges.sh
+    points: 1

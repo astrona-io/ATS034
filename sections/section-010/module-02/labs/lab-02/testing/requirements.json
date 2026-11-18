@@ -1,0 +1,24 @@
+{
+  "context": "kind-astro-ats-034-lab-010-02-02",
+  "cluster": "astro-ats-034-lab-010-02-02",
+  "namespace": "starfleet-034-010-02-02",
+  "resources": [
+    {
+      "kind": "pod",
+      "name": "courier",
+      "expected": {
+        "spec": {
+          "containers": [
+            {
+              "name": "courier",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": ["sleep", "infinity"]
+            }
+          ]
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}
