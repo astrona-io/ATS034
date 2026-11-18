@@ -1,0 +1,45 @@
+{
+  "context": "kind-astro-ats-034-lab-030-01-03",
+  "cluster": "astro-ats-034-lab-030-01-03",
+  "namespace": "tenant-a-034-030-01-03",
+  "resources": [
+    {
+      "kind": "deployment",
+      "name": "probe",
+      "namespace": "starfleet-034-030-01-03",
+      "expected": {
+        "spec": {
+          "replicas": 2
+        }
+      },
+      "state": "deployment"
+    },
+    {
+      "kind": "pod",
+      "name": "beacon",
+      "namespace": "starfleet-034-030-01-03",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "app": "beacon"
+          }
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet-034-030-01-03",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "app": "shuttle"
+          }
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

@@ -10,16 +10,9 @@ runtime:
   type: kind
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
-    preloadImages:
-    - docker.io/library/python:3.13-alpine
-    - docker.io/library/busybox:1.37.0
-    nodes:
-      workers: 1
-    addons:
-      cni: calico
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: seed-lab
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -39,23 +32,18 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: namespace-restricted
-    description: Namespace tenant-a-034-030-01-01 enforces Restricted at v1.35
+  - name: tenant-a-access
+    description: The RoleBinding tenant-editor binds the user alice to the Role tenant-editor, and alice can create Deployments, Pods, Services and ConfigMaps in tenant-a-034-030-01-01
     type: file
-    source: validation/validate-namespace-restricted.sh
+    source: validation/validate-tenant-a-access.sh
     points: 1
-  - name: resource-quota
-    description: ResourceQuota tenant-budget caps the namespace at three Pods
+  - name: no-secrets
+    description: The user alice gets Forbidden when she reads or creates Secrets in tenant-a-034-030-01-01
     type: file
-    source: validation/validate-resource-quota.sh
+    source: validation/validate-no-secrets.sh
     points: 1
-  - name: default-deny-policy
-    description: NetworkPolicy tenant-isolation denies all ingress and egress and the tenant Pod cannot reach probe
+  - name: other-namespaces-denied
+    description: The user alice gets Forbidden in tenant-b-034-030-01-01 and on cluster-scoped objects, and no ClusterRoleBinding names her
     type: file
-    source: validation/validate-default-deny-policy.sh
+    source: validation/validate-other-namespaces-denied.sh
     points: 1
-  - name: tenant-reader
-    description: Pod tenant-reader runs Ready under the restricted profile
-    type: file
-    source: validation/validate-tenant-reader.sh
-    points: 2

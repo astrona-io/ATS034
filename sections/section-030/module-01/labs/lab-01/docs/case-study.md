@@ -1,11 +1,7 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
 # Starting Environment
 
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Combine admission, a resource budget, token minimization and network isolation for one tenant.
+The namespaces `tenant-a-034-030-01-01` and `tenant-b-034-030-01-01` exist, and each one holds a Secret named `api-key`. The ClusterRoleBinding `alice-edit` binds the built-in ClusterRole `edit` to the user `alice` in every namespace. You act as the cluster administrator.
