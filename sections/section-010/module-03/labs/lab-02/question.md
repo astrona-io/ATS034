@@ -32,7 +32,23 @@ The second command prints `kubernetes-admin@astro-ats-034-lab-010-03-02`. You ar
 
 ## Check your work
 
-Save a privileged Pod as `pod-privileged.yaml` and send it through admission as a dry run in both namespaces:
+Save a privileged Pod as `pod-privileged.yaml`. It has no namespace, so the same file works in both namespaces:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-check
+spec:
+  containers:
+  - name: check
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "3600"]
+    securityContext:
+      privileged: true
+```
+
+Send it through admission as a server-side dry run in both namespaces. A dry run passes every admission check but stores nothing:
 
 ```sh
 kubectl -n starfleet-034-010-03-02 create --dry-run=server -f pod-privileged.yaml
