@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Modes, Scope And Precedence
 
-A cluster usually has more than one `PeerAuthentication`. One may cover the whole mesh, another one namespace, and a third one a single workload with an old client. If you cannot predict which one applies to a Pod, you cannot say whether its traffic is encrypted. This part gives the rules for the mode, the scope and the precedence, and then shows precedence working in the playground.
+A cluster usually has more than one `PeerAuthentication`. One may cover the whole mesh, another one namespace, and a third one a single workload with an old client. If you cannot predict which one applies to a Pod, you cannot say whether its traffic is encrypted. This reading gives the rules for the mode, the scope and the precedence, and then shows precedence working in the playground.
 
 ## The mode decides what the receiving sidecar accepts
 
@@ -92,13 +91,13 @@ kubectl apply -f peerauthentication-namespace-permissive.yaml
 kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The request works again. The namespace policy is narrower than the mesh policy, so it wins for every Pod in `starfleet`. Remove both objects so that the next part starts from the default state:
+The request works again. The namespace policy is narrower than the mesh policy, so it wins for every Pod in `starfleet`. Remove both objects so that the namespace returns to the default state:
 
 ```sh
 kubectl delete -f peerauthentication-namespace-permissive.yaml -f peerauthentication-mesh-strict.yaml
 ```
 
-You now know how a mode, a scope and the precedence rule combine into one effective setting. The open question is how to reach `STRICT` for a namespace that still has clients and workloads that cannot use mTLS, and the next part answers it.
+You now know how a mode, a scope and the precedence rule combine into one effective setting. The open question is how to reach `STRICT` for a namespace that still has clients and workloads that cannot use mTLS.
 
 ## Common pitfalls
 

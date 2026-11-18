@@ -4,89 +4,64 @@
   "namespace": "starfleet-034-010-03-01",
   "resources": [
     {
-      "kind": "namespace",
-      "name": "starfleet-034-010-03-01",
-      "namespace": "",
+      "kind": "deployment",
+      "name": "bridge",
+      "namespace": "bridge-034-010-03-01",
       "expected": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "name": "starfleet-034-010-03-01",
-          "labels": {
-            "project": "ckad",
-            "pod-security.kubernetes.io/enforce": "baseline",
-            "pod-security.kubernetes.io/enforce-version": "v1.35",
-            "pod-security.kubernetes.io/warn": "restricted",
-            "pod-security.kubernetes.io/warn-version": "v1.35",
-            "pod-security.kubernetes.io/audit": "restricted",
-            "pod-security.kubernetes.io/audit-version": "v1.35"
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "bridge",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "command": ["sleep", "infinity"]
+                }
+              ]
+            }
           }
         }
       },
-      "outcome": "starfleet-baseline"
-    },
-    {
-      "kind": "namespace",
-      "name": "outpost-034-010-03-01",
-      "namespace": "",
-      "expected": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "name": "outpost-034-010-03-01",
-          "labels": {
-            "project": "outpost-034-010-03-01",
-            "pod-security.kubernetes.io/enforce": "restricted",
-            "pod-security.kubernetes.io/enforce-version": "v1.35"
-          }
-        }
-      },
-      "outcome": "outpost-restricted"
+      "state": "deployment"
     },
     {
       "kind": "deployment",
-      "name": "probe",
-      "namespace": "starfleet-034-010-03-01",
-      "state": "deployment",
-      "expected": {
-        "apiVersion": "apps/v1",
-        "kind": "Deployment",
-        "metadata": {
-          "name": "probe",
-          "namespace": "starfleet-034-010-03-01"
-        },
-        "spec": {
-          "replicas": 2
-        }
-      }
-    },
-    {
-      "kind": "pod",
       "name": "shuttle",
       "namespace": "starfleet-034-010-03-01",
-      "state": "pod",
       "expected": {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-          "name": "shuttle",
-          "namespace": "starfleet-034-010-03-01"
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "shuttle",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "command": ["sleep", "infinity"]
+                }
+              ]
+            }
+          }
         }
-      }
+      },
+      "state": "deployment"
     },
     {
       "kind": "pod",
       "name": "drifter",
       "namespace": "outpost-034-010-03-01",
-      "state": "pod",
       "expected": {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-          "name": "drifter",
-          "namespace": "outpost-034-010-03-01"
+        "spec": {
+          "containers": [
+            {
+              "name": "drifter",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": ["sleep", "infinity"]
+            }
+          ]
         }
-      }
+      },
+      "state": "pod"
     }
-  ]
+  ],
+  "behavior": []
 }

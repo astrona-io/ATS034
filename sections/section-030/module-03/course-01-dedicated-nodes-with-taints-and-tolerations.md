@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -40,7 +39,7 @@ Add the taint with the effect `NoSchedule`:
 kubectl taint node astro-ats-034-playground-030-03-worker tenant=tenant-c:NoSchedule
 ```
 
-Save this Deployment as `deployment-tenant-c-app.yaml`:
+The tenant workload is a Deployment. Save this as `deployment-tenant-c-app.yaml`:
 
 ```yaml
 apiVersion: apps/v1
@@ -106,7 +105,7 @@ kubectl apply -f pod-stray.yaml
 kubectl -n tenant-c describe pod stray
 ```
 
-The Pod stays `Pending`. The scheduler event reports that the control-plane node has a taint the Pod does not tolerate and that the worker has the taint `tenant=tenant-c`. The scheduler, not the kubelet, refused the placement.
+The Pod stays `Pending`. The `FailedScheduling` event reports `0/2 nodes are available: 2 node(s) had untolerated taint(s)`. The control-plane node has its usual control-plane taint, and the worker has the taint `tenant=tenant-c`. The message counts the nodes but does not print the taints, so read them with `kubectl describe node` when you need them. The scheduler, not the kubelet, refused the placement.
 
 ## Failure cases
 

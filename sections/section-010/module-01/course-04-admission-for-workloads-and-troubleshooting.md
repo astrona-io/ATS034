@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -11,7 +10,7 @@ Most Pods are not created by a person. A Deployment creates a ReplicaSet, and th
 
 The `enforce` mode checks Pod objects only. It does not check a Deployment, a StatefulSet or a Job. The API server accepts a Deployment whose Pod template violates the profile. Later, the ReplicaSet controller (a component of the `kube-controller-manager`) tries to create the Pods, and the API server rejects each one.
 
-The `audit` and `warn` modes also look at workload resources. They check the Pod template inside a Deployment, a ReplicaSet, a Job, a CronJob, a DaemonSet and a StatefulSet. So `warn` tells you at `kubectl apply` time that a Deployment will produce Pods that violate the profile, while `enforce` alone stays silent until the Pods are created.
+Pod Security Admission still reads the Pod template inside a Deployment, a ReplicaSet, a Job, a CronJob, a DaemonSet and a StatefulSet. The `audit` and `warn` modes report a template that breaks their profile. The `enforce` mode does not reject the workload resource, but it returns a warning for it to the client. So `kubectl apply` prints a `Warning: would violate PodSecurity` line for the Deployment and still creates it. The real rejection comes later, when the Pods are created.
 
 ```mermaid
 flowchart TB
@@ -25,9 +24,9 @@ The diagram shows that the rejection is an event on the ReplicaSet, not an error
 
 ## Follow a rejected Deployment
 
-Save this as `namespace-rollout-demo.yaml`:
-
 <!-- astrona:playground:renew -->
+
+Save this as `namespace-rollout-demo.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -82,7 +81,7 @@ kubectl -n rollout-demo get replicaset
 kubectl -n rollout-demo get events --field-selector reason=FailedCreate
 ```
 
-The apply command prints `deployment.apps/scanner created`, so the Deployment was accepted. The `get deployment` output shows `0/1` in the `READY` column, and it stays at zero. The ReplicaSet exists, but it has zero Pods. The event list holds a `FailedCreate` event for the ReplicaSet. Its message says that creating the Pod was forbidden because it `violates PodSecurity "restricted:latest"`, followed by the same list of broken rules as a direct rejection.
+The apply command first prints a `Warning: would violate PodSecurity "restricted:latest"` line, then `deployment.apps/scanner created`, so the Deployment was accepted despite the warning. The `get deployment` output shows `0/1` in the `READY` column, and it stays at zero. The ReplicaSet exists, but it has zero Pods. The event list holds a `FailedCreate` event for the ReplicaSet. Its message says that creating the Pod was forbidden because it `violates PodSecurity "restricted:latest"`, followed by the same list of broken rules as a direct rejection.
 
 Fix the Deployment by adding the missing fields to the Pod template. Save the full corrected file as `deployment-scanner.yaml`:
 

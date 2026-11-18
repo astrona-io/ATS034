@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet-034-010-02-03
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: scout
+  namespace: starfleet-034-010-02-03
+  labels:
+    app: scout
+spec:
+  containers:
+  - name: scout
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "infinity"]

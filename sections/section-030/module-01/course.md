@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -9,7 +8,7 @@ A cluster that runs workloads for more than one team, customer or trust level is
 
 This module builds the layers for one tenant: access control, admission, a resource budget, network rules and a limited identity inside the Pod. It then covers the layer that namespaces cannot give, a separate kernel boundary for untrusted code, through sandboxed container runtimes and `RuntimeClass`.
 
-The module has four parts. **Namespaces And RBAC As A Tenant Boundary** defines the tenant model and sets up a namespace that one user can manage. **Resource Isolation With ResourceQuota And LimitRange** limits what a tenant can consume. **Network Isolation And Token Minimization** blocks traffic with a default-deny `NetworkPolicy` and removes the ServiceAccount token from Pods that do not need it, and ends with a graded task. **Sandboxed Containers With RuntimeClass** explains gVisor and Kata Containers and how a Pod selects them.
+The module has four parts, and a graded task follows each one. **Namespaces And RBAC As A Tenant Boundary** defines the tenant model and sets up a namespace that one user can manage. **Resource Isolation With ResourceQuota And LimitRange** limits what a tenant can consume. **Network Isolation And Token Minimization** blocks traffic with a default-deny `NetworkPolicy` and removes the ServiceAccount token from Pods that do not need it. **Sandboxed Containers With RuntimeClass** explains gVisor and Kata Containers and how a Pod selects them.
 
 ## Learning objectives
 

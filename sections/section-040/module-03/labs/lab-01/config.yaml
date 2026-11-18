@@ -10,11 +10,18 @@ runtime:
   type: kind
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    networking:
+      disableDefaultCNI: true
+    preloadImages:
+    - quay.io/cilium/cilium:v1.20.4
+    - quay.io/cilium/operator-generic:v1.20.4
+    - quay.io/cilium/cilium-envoy:v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459
+    - docker.io/library/busybox:1.37.0
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-cilium-and-workloads
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -34,13 +41,13 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: ipsec-key-secret
-    description: Secret cilium-ipsec-keys in kube-system holds a valid rfc4106 IPsec key line
+  - name: wireguard-enabled
+    description: "Every Cilium agent reports Encryption: Wireguard with one peer, the agent on the other node"
     type: file
-    source: validation/validate-ipsec-key-secret.sh
+    source: validation/validate-wireguard-enabled.sh
     points: 1
-  - name: helm-values
-    description: ConfigMap cilium-values enables IPsec encryption with the key Secret
+  - name: cross-node-encrypted
+    description: "The cilium_wg0 interface exists on both nodes, the shuttle pod gets probe-reply from the probe Service on the other node, and the request raises the transmitted byte count of cilium_wg0 on the shuttle node"
     type: file
-    source: validation/validate-helm-values.sh
+    source: validation/validate-cross-node-encrypted.sh
     points: 1

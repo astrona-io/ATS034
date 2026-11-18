@@ -1,0 +1,32 @@
+{
+  "context": "kind-astro-ats-034-lab-010-01-02",
+  "cluster": "astro-ats-034-lab-010-01-02",
+  "namespace": "starfleet-034-010-01-02",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "starfleet-034-010-01-02",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "restricted",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "pod",
+      "name": "reader",
+      "expected": {
+        "metadata": {
+          "name": "reader",
+          "namespace": "starfleet-034-010-01-02"
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

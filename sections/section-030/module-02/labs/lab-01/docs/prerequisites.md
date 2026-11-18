@@ -1,20 +1,16 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
 # Prerequisites
 
-Use astrona, kubectl, Python 3, Podman and a shell. Node inspection exercises use the containers in this environment, not the physical host.
+Use a host shell with astrona. Everything else runs inside the lab VM (virtual machine): kubectl, crictl, systemctl and the cluster.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+Open a shell on the lab VM and check that kubectl uses this lab's cluster:
 
 ```sh
-export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-02-01)"
-test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-02-01" || exit 1
-node_name="astro-ats-034-lab-030-02-01-control-plane"
-worker_name="astro-ats-034-lab-030-02-01-worker"
+astrona ssh astro-ats-034-lab-030-02-01
+kubectl config current-context
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+The second command prints `kubernetes-admin@astro-ats-034-lab-030-02-01`. crictl is the command-line tool that talks to the container runtime of the node through the CRI (Container Runtime Interface). It needs root, so run it with `sudo`. You also need a text editor on the VM, such as `vi` or `nano`, and you edit the containerd configuration with `sudo`.

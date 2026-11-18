@@ -1,24 +1,21 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
   etc.)
 ---
 # Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 
-Two untrusted applications use different namespaces but share the same node kernel. Namespace organization alone does not supply a separate host trust boundary.
+Two untrusted applications can run in different namespaces and still share one node and one Linux kernel. A namespace groups names and permissions. It does not give a separate kernel, a separate node or a separate network. This section adds those boundaries one layer at a time and shows, on real clusters, which component enforces each one.
 
-The explanations identify the responsible components, compare intended and observed state, and work through the decisions needed to preserve the requirement. Read the worked examples as reasoning about a proposed system; no environment is started by this section.
+The section has three modules. The first module builds the tenant boundary inside one cluster with namespaces, RBAC (role-based access control), ResourceQuota, LimitRange, NetworkPolicy and a Pod without an API token, and then introduces sandboxed runtimes with RuntimeClass. The second module follows a Pod from the kubelet to the low-level runtime, compares gVisor and Kata Containers, adds scheduling and overhead to a RuntimeClass and makes the API server refuse Pods that skip the sandbox. The third module reserves a node for one tenant with labels, taints and tolerations, protects the labels with the NodeRestriction admission plugin, forces the placement at admission and compares the boundaries.
 
-The section has three modules and a capstone lab. The first module builds the tenant boundary with namespaces, RBAC, quota, network policy and token minimization. The second module goes deeper into sandboxed runtimes, RuntimeClass scheduling and overhead, and admission policy that requires the sandbox. The third module separates workloads by node with labels, taints and tolerations, protects the labels, forces placement at admission and compares the boundaries. The capstone lab combines the layers for one untrusted tenant.
-
-Read the module goals, teaching and closing summary in order. YAML checks are indexed separately and appear after designated summaries. Larger domains include an intermediate checkpoint before the final review.
+Each module starts with a landing page and its own playground, a private cluster that stays up while you read. A graded task follows most parts. Each task runs in its own cluster, checks the live result and gives a score. Each module ends with a summary and a knowledge check.
 
 ## Learning Outcomes
 
 - Distinguish namespaced API separation from kernel isolation.
+- Limit a tenant with RBAC, a ResourceQuota, a LimitRange, a NetworkPolicy and a Pod without a token.
 - Compare shared-kernel, sandboxed-runtime and dedicated-node boundaries.
-- Explain RuntimeClass prerequisites and scheduling effects.
-- Evaluate residual credentials, network and resource risks.
+- Explain RuntimeClass prerequisites, scheduling and overhead.
 - Reserve and protect dedicated nodes for one tenant.
 - Require the sandbox class and node placement at admission.

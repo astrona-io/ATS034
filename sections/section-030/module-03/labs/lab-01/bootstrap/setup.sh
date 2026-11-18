@@ -7,4 +7,4 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
 kubectl apply -f "$lab_directory/bootstrap/manifests/start.yaml"
-kubectl wait --for=jsonpath='{.status.phase}'=Active namespace/tenant-c-034-030-03-01 --timeout=60s
+kubectl wait --for=jsonpath='{.status.phase}'=Active namespace/tenant-c-034-030-03-01 namespace/outpost-034-030-03-01 --timeout=60s

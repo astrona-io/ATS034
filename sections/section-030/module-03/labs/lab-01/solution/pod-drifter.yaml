@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: drifter
+  namespace: outpost-034-030-03-01
+  labels:
+    app: drifter
+spec:
+  nodeSelector:
+    tenant: tenant-c
+  containers:
+  - name: client
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -c
+    - sleep infinity

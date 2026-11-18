@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
@@ -43,7 +42,7 @@ Apply it:
 kubectl apply -f policy-require-tenant-node.yaml
 ```
 
-Save the binding as `binding-require-tenant-node.yaml`:
+The binding applies the policy to the tenant namespace. Save this as `binding-require-tenant-node.yaml`:
 
 ```yaml
 apiVersion: admissionregistration.k8s.io/v1

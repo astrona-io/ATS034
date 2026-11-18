@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -7,7 +6,7 @@ exam_objectives:
 
 A cluster has many namespaces and many teams. Labelling one namespace is a command. Labelling all of them without breaking a running application is a plan: find what would fail, warn the owners, fix the workloads, and only then enforce. The Pod Security Admission configuration of the cluster, which sets the defaults and the exemptions, decides what happens to every namespace that has no label of its own. This module covers the plan, the staged change, the cluster configuration and the long-term upkeep.
 
-The module has four parts. **Inventory Before You Label** shows how to list the labels of every namespace and how to ask the API server what a label would break. **Stage A Label Change** applies `warn`, `audit` and `enforce` in order to a namespace that already runs a Deployment, and ends with a graded task. **Cluster-Wide Defaults And Exemptions** explains the admission configuration file that the API server reads. **Exceptions, Upgrades And Ongoing Checks** covers namespaces that must stay Privileged, version pins across cluster upgrades and who may change the labels.
+The module has four parts. **Inventory Before You Label** shows how to list the labels of every namespace and how to ask the API server what a label would break. **Stage A Label Change** applies `warn`, `audit` and `enforce` in order to a namespace that already runs a Deployment. **Cluster-Wide Defaults And Exemptions** explains the admission configuration file that the API server reads. **Exceptions, Upgrades And Ongoing Checks** covers namespaces that must stay Privileged, version pins across cluster upgrades and who may change the labels.
 
 ## Learning objectives
 

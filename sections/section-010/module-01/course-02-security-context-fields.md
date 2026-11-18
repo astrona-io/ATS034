@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
@@ -30,9 +29,9 @@ When the same field is set at both levels, the container-level value wins for th
 
 ## A Pod that meets Restricted
 
-The following Pod sets every field that Restricted needs. It also sets `readOnlyRootFilesystem`, which is optional, and mounts a writable `emptyDir` volume for the one place where the application needs to write. Save this as `namespace-restricted-demo.yaml`:
-
 <!-- astrona:playground:renew -->
+
+The following Pod sets every field that Restricted needs. It also sets `readOnlyRootFilesystem`, which is optional, and mounts a writable `emptyDir` volume for the one place where the application needs to write. Save this as `namespace-restricted-demo.yaml`:
 
 ```yaml
 apiVersion: v1

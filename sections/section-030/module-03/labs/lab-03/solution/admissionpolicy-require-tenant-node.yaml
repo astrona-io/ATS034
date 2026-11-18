@@ -1,0 +1,27 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-tenant-node
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["pods"]
+  validations:
+  - expression: "has(object.spec.nodeSelector) && 'node-restriction.kubernetes.io/tenant' in object.spec.nodeSelector && object.spec.nodeSelector['node-restriction.kubernetes.io/tenant'] == 'tenant-e'"
+    message: "Pods must select node-restriction.kubernetes.io/tenant=tenant-e"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-tenant-node-tenant-e
+spec:
+  policyName: require-tenant-node
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: tenant-e-034-030-03-03

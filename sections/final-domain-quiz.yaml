@@ -214,12 +214,12 @@ questions:
     explanation: A declaration is not proof of enforcement.
   - id: b
     text: A client with a sidecar reaches the service and a client without a sidecar gets a connection reset.
-    explanation: Correct. One allowed and one denied request show the behaviour, and proxy handshake counters add evidence.
+    explanation: Correct. One allowed and one denied request show the behaviour, and the `istio_requests_total` metric with `connection_security_policy="mutual_tls"` adds evidence.
   - id: c
     text: The Pods of the service are `Ready`.
     explanation: Readiness does not show the transport.
   correct_option: b
-  explanation: Test an allowed and a denied path, and read the proxy for handshake evidence.
+  explanation: Test an allowed and a denied path, and read the `istio_requests_total` metric for mTLS evidence.
 - id: ats034-final-q12
   type: single_choice
   difficulty: advanced

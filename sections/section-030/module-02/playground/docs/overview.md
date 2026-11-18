@@ -1,97 +1,41 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
   etc.)
 ---
-# Guided Practice: Schedule Sandboxed Pods With A RuntimeClass
+# gVisor Sandbox Playground
 
-Run the exercise below in the module playground. It practises the RuntimeClass, the node label and the merged Pod fields.
+This ungraded playground is one virtual machine (VM) that runs a single-node Kubernetes 1.35 cluster built with kubeadm, the standard tool that installs a cluster on a Linux machine. The node `astro-ats-034-playground-030-02` is the control plane and also runs your Pods.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+The node runs containerd 2.2, the container runtime that starts the Pods. gVisor is a sandbox that runs its own kernel in user space for each Pod. Its binaries, `runsc` and `containerd-shim-runsc-v1`, are installed in `/usr/local/bin`, and containerd registers them as the runtime handler `runsc` next to the default handler `runc`. Kata Containers is not installed.
+
+## Connect to the node
+
+You log in as the `student` user, which has `sudo` and a kubeconfig file for the cluster. A kubeconfig file tells kubectl, the Kubernetes command-line tool, which cluster to use and which credentials to send.
 
 <!-- astrona:playground:renew -->
 
 ```sh
-export KUBECONFIG="$(astrona kubeconfig ats-034-playground-030-02)"
-test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-030-02" || exit 1
-node_name="astro-ats-034-playground-030-02-control-plane"
-worker_name="astro-ats-034-playground-030-02-worker"
+astrona ssh astro-ats-034-playground-030-02
+kubectl config current-context
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+The second command prints `kubernetes-admin@astro-ats-034-playground-030-02`. Commands that use `sudo` change only this VM. They do not touch your own computer.
 
-## Inspect And Explain
+## What is in the playground
 
-The isolated environment has an empty namespace `tenant-b` and two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
-
-Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory. Label the worker node `sandbox=true`. Run the Pod `sandboxed-app` in `tenant-b` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Do not set a node selector or overhead in the Pod. The API server must add them from the class, and the scheduler must place the Pod on the labeled worker.
-
-Save this as `runtimeclass-sandboxed.yaml`:
-
-```yaml
-apiVersion: node.k8s.io/v1
-kind: RuntimeClass
-metadata:
-  name: sandboxed
-handler: runc
-overhead:
-  podFixed:
-    cpu: 50m
-    memory: 64Mi
-scheduling:
-  nodeSelector:
-    sandbox: "true"
-```
-
-Apply it and label the worker node:
+The namespace `tenant-b` exists and is empty. No RuntimeClass, ValidatingAdmissionPolicy or node label exists at the start, so you create every object yourself. Check the two handlers that containerd has loaded:
 
 ```sh
-kubectl apply -f runtimeclass-sandboxed.yaml
-kubectl label node "$worker_name" sandbox=true
+sudo crictl info | jq -r '.config.containerd.runtimes | keys[]'
 ```
 
-Save this as `pod-sandboxed-app.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: sandboxed-app
-  namespace: tenant-b
-  labels:
-    app: sandboxed-app
-spec:
-  runtimeClassName: sandboxed
-  restartPolicy: Never
-  containers:
-  - name: app
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-```
-
-Apply it:
-
-```sh
-kubectl apply -f pod-sandboxed-app.yaml
-```
-
-## Verify The Result
-
-Wait for the Pod and read the fields that the API server added:
-
-```sh
-kubectl -n tenant-b wait --for=condition=Ready pod/sandboxed-app --timeout=180s
-kubectl -n tenant-b get pod sandboxed-app -o jsonpath='{.spec.overhead}{"\n"}{.spec.nodeSelector}{"\n"}{.spec.nodeName}{"\n"}'
-```
-
-The first line shows the class overhead, the second the merged node selector and the third the labeled worker. No example command output is presented as evidence of a completed run. A matching field alone does not show that the scheduler used it, so read the node name as well.
-
+The output lists `runc` and `runsc`. The containerd configuration file is `/etc/containerd/config.toml`. If you edit it, run `sudo systemctl restart containerd` so that containerd loads the change.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Confirm the private context and exact node names before a change. Label the node before you judge the Pod. Do not set the node selector or overhead in the Pod yourself, because the class must supply them.
+> - `crictl`, `systemctl` and the containerd files need `sudo`.
+> - A broken `/etc/containerd/config.toml` stops containerd, and then no Pod can start. Copy the file before you edit it, and restore the copy if `sudo systemctl status containerd` shows a failure.
+> - The ValidatingAdmissionPolicy `require-sandbox` with its binding `require-sandbox-tenant-b` denies every new Pod in `tenant-b` without `runtimeClassName: sandboxed`. Delete the binding when you want to create other Pods there.
+> - The RuntimeClass `sandboxed` selects nodes with the label `sandbox=true`. Without that label on the node, its Pods stay `Pending`.

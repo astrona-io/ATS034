@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
@@ -33,8 +32,8 @@ Your playground is a `kind` cluster running Kubernetes 1.35 with one control-pla
 | `outpost` | `drifter`, a `busybox` client pod without a sidecar |
 | `istio-system` | `istiod`, the Istio control plane |
 
-The playground does not run Cilium. The Cilium part is a reference procedure with no commands to run. `kubectl` in the playground terminal already points at this cluster. Every file you save is a file on the playground machine, in the folder you are working in.
+The playground does not run Cilium, so the Cilium reading is a reference procedure with no commands to run. `kubectl` in the playground terminal already points at this cluster. Every file you save is a file on the playground machine, in the folder you are working in.
 
-Launch your playground now, and keep it running next to you while you read the parts:
+Launch your playground now, and keep it running next to you while you read:
 
 <!-- astrona:playground -->

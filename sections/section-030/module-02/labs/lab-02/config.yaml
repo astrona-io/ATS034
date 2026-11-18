@@ -7,44 +7,47 @@ metadata:
     caseStudy: docs/case-study.md
     guide: solution.md
 runtime:
-  type: qemu
-  qemu:
-  - image:
-      type: url
-      source: https://cloud-images.ubuntu.com/releases/noble/release-20261017/ubuntu-24.04-server-cloudimg-{ARCH}.img
-      checksums:
-        amd64: sha256:04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94
-        arm64: sha256:50e24e1fb79e89116e939d90aa7738f7af48c442fa1bc2510131e0b39c50348e
-    cpus: 2
-    memoryMB: 2048
-    diskSizeGB: 12
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+    nodes:
+      workers: 1
 bootstrap:
   init:
-  - name: prepare-environment
+  - name: seed-private-environment
     type: file
     source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
 testing:
   init:
   - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
     type: file
     source: testing/verify-start.sh
-  - name: reference-solution
+  - name: reference-result
     type: file
     source: solution/apply.sh
-  - name: negative-cases
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: testing/regression.sh
+    source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: runtime
-    description: Docker launches a fresh container through the installed gVisor runtime
+  - name: runtimeclass
+    description: RuntimeClass sandboxed uses the runc handler, and the API server adds its overhead and node selector to a new Pod
     type: file
-    source: validation/validate-runtime.sh
+    source: validation/validate-runtimeclass.sh
     points: 1
-  - name: workload
-    description: The running scout container uses gVisor and serves the expected response
+  - name: worker-label
+    description: The worker node has the label sandbox=true and the control-plane node does not
     type: file
-    source: validation/validate-workload.sh
+    source: validation/validate-worker-label.sh
     points: 1
-teardown:
-  keepCluster: false
+  - name: sandboxed-pod
+    description: Pod sandboxed-app uses RuntimeClass sandboxed, carries the class overhead and node selector, and runs Ready on the worker node
+    type: file
+    source: validation/validate-sandboxed-pod.sh
+    points: 1

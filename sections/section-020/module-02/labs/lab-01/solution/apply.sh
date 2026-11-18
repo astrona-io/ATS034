@@ -6,7 +6,7 @@ if [[ "$(kubectl config current-context)" != "$context" ]]; then
   exit 1
 fi
 lab_directory="$(cd "$(dirname "$0")/.." && pwd)"
-solution_directory="$lab_directory/solution"
-
-kubectl apply -f "$solution_directory/secret-probe-login.yaml"
-kubectl -n starfleet-034-020-02-01 wait --for=condition=Ready pod/login-reader --timeout=180s
+kubectl apply -f "$lab_directory/solution/secret-registry-pull.yaml"
+kubectl apply -f "$lab_directory/solution/serviceaccount-puller.yaml"
+kubectl apply -f "$lab_directory/solution/pod-pull-check.yaml"
+kubectl -n starfleet-034-020-02-01 wait --for=condition=Ready pod/pull-check --timeout=180s

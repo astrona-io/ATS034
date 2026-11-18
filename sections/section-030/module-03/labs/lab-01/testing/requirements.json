@@ -4,37 +4,14 @@
   "namespace": "tenant-c-034-030-03-01",
   "resources": [
     {
-      "kind": "deployment",
-      "name": "tenant-c-app",
-      "namespace": "tenant-c-034-030-03-01",
+      "kind": "namespace",
+      "name": "outpost-034-030-03-01",
+      "namespace": "",
       "expected": {
-        "apiVersion": "apps/v1",
-        "kind": "Deployment",
         "metadata": {
-          "name": "tenant-c-app",
-          "namespace": "tenant-c-034-030-03-01"
-        },
-        "spec": {
-          "replicas": 1,
-          "template": {
-            "spec": {
-              "nodeSelector": {
-                "tenant": "tenant-c"
-              },
-              "tolerations": [
-                {
-                  "key": "tenant",
-                  "operator": "Equal",
-                  "value": "tenant-c",
-                  "effect": "NoSchedule"
-                }
-              ]
-            }
-          }
+          "name": "outpost-034-030-03-01"
         }
-      },
-      "state": "deployment",
-      "outcome": "tenant-deployment"
+      }
     }
   ],
   "behavior": []

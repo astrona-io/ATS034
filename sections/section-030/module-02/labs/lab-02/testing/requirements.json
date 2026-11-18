@@ -1,0 +1,18 @@
+{
+  "context": "kind-astro-ats-034-lab-030-02-02",
+  "cluster": "astro-ats-034-lab-030-02-02",
+  "namespace": "tenant-b-034-030-02-02",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "tenant-b-034-030-02-02",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "name": "tenant-b-034-030-02-02"
+        }
+      }
+    }
+  ],
+  "behavior": []
+}

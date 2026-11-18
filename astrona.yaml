@@ -1,8 +1,8 @@
 training:
   id: ATS034
   title: 'CKS: Minimize Microservice Vulnerabilities'
-  description: 'Detailed reading material and reusable YAML knowledge checks for CKS: Minimize Microservice
-    Vulnerabilities. Technical content remains draft. Includes independent labs and playground practice.'
+  description: 'Reading material, graded labs, playgrounds and reusable YAML knowledge checks for CKS: Minimize
+    Microservice Vulnerabilities.'
   certification:
     name: Certified Kubernetes Security Specialist
     code: CKS
@@ -46,33 +46,86 @@ modules:
     title: The Three Pod Security Standards
     path: sections/section-010/module-01/course-01-the-three-pod-security-standards.md
   - type: reading
-    title: Security Context Fields
-    path: sections/section-010/module-01/course-02-security-context-fields.md
-  - type: reading
-    title: Pod Security Admission Modes
-    path: sections/section-010/module-01/course-03-pod-security-admission-modes.md
-  - type: reading
-    title: "Enforce Restricted Pod Admission \u2014 Task"
+    title: Enforce Baseline And Restricted With Namespace Labels — Task
     path: sections/section-010/module-01/labs/lab-01/question.md
   - type: lab
-    title: Enforce Restricted Pod Admission
+    title: Enforce Baseline And Restricted With Namespace Labels
     path: sections/section-010/module-01/labs/lab-01
-    examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 8m
     topic: pod-security-admission
     task_kind: build
     learning_goals:
-    - Admit a compliant Pod and reject a privileged Pod through the API server.
+    - Enforce Baseline and Restricted pinned to v1.35 with namespace labels and prove each with a server-side dry run.
     tags:
     - cks
     - pod-security-admission
   - type: reading
-    title: "Enforce Restricted Pod Admission \u2014 Solution"
+    title: Enforce Baseline And Restricted With Namespace Labels — Solution
     path: sections/section-010/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: Security Context Fields
+    path: sections/section-010/module-01/course-02-security-context-fields.md
+  - type: reading
+    title: Run A Pod That Meets Restricted With A Read-Only Root — Task
+    path: sections/section-010/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Run A Pod That Meets Restricted With A Read-Only Root
+    path: sections/section-010/module-01/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Run a Pod that meets Restricted with a non-root user, RuntimeDefault seccomp and a read-only root filesystem.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Run A Pod That Meets Restricted With A Read-Only Root — Solution
+    path: sections/section-010/module-01/labs/lab-02/solution.md
+  - type: reading
+    title: Pod Security Admission Modes
+    path: sections/section-010/module-01/course-03-pod-security-admission-modes.md
+  - type: reading
+    title: Enforce Baseline And Preview Restricted — Task
+    path: sections/section-010/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Enforce Baseline And Preview Restricted
+    path: sections/section-010/module-01/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 8m
+    topic: pod-security-admission
+    task_kind: build
+    learning_goals:
+    - Enforce Baseline while warn and audit preview Restricted on the same namespace.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Enforce Baseline And Preview Restricted — Solution
+    path: sections/section-010/module-01/labs/lab-03/solution.md
   - type: reading
     title: Admission For Workloads And Troubleshooting
     path: sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+  - type: reading
+    title: Repair A Deployment That Pod Security Admission Blocks — Task
+    path: sections/section-010/module-01/labs/lab-04/question.md
+  - type: lab
+    title: Repair A Deployment That Pod Security Admission Blocks
+    path: sections/section-010/module-01/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-admission
+    task_kind: troubleshooting
+    learning_goals:
+    - Find a FailedCreate event from Pod Security Admission and repair the Deployment template.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Repair A Deployment That Pod Security Admission Blocks — Solution
+    path: sections/section-010/module-01/labs/lab-04/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-01/course-05-summary.md
@@ -88,34 +141,86 @@ modules:
     title: Run As A Non-Root User
     path: sections/section-010/module-02/course-01-run-as-a-non-root-user.md
   - type: reading
-    title: Capabilities And Privilege Escalation
-    path: sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
-  - type: reading
-    title: Seccomp And Mandatory Access Control
-    path: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
-  - type: reading
-    title: "Repair A Deployment To Meet Restricted \u2014 Task"
+    title: Run A Deployment As A Non-Root User — Task
     path: sections/section-010/module-02/labs/lab-01/question.md
   - type: lab
-    title: Repair A Deployment To Meet Restricted
+    title: Run A Deployment As A Non-Root User
     path: sections/section-010/module-02/labs/lab-01
-    examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: pod-security-context
     task_kind: troubleshooting
     learning_goals:
-    - Repair a Deployment so its Pod meets the Restricted profile and runs as a non-root user with a read-only
-      root filesystem.
+    - Run a Deployment as a non-root user and prove it with id and a working Service.
     tags:
     - cks
     - security-context
   - type: reading
-    title: "Repair A Deployment To Meet Restricted \u2014 Solution"
+    title: Run A Deployment As A Non-Root User — Solution
     path: sections/section-010/module-02/labs/lab-01/solution.md
+  - type: reading
+    title: Capabilities And Privilege Escalation
+    path: sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+  - type: reading
+    title: Drop All Capabilities And Block Privilege Escalation — Task
+    path: sections/section-010/module-02/labs/lab-02/question.md
+  - type: lab
+    title: Drop All Capabilities And Block Privilege Escalation
+    path: sections/section-010/module-02/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 8m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Drop all capabilities and set no_new_privs on a container that still runs as root.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Drop All Capabilities And Block Privilege Escalation — Solution
+    path: sections/section-010/module-02/labs/lab-02/solution.md
+  - type: reading
+    title: Seccomp And Mandatory Access Control
+    path: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+  - type: reading
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile — Task
+    path: sections/section-010/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile
+    path: sections/section-010/module-02/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: pod-security-context
+    task_kind: build
+    learning_goals:
+    - Install a Localhost seccomp profile and an AppArmor profile on a node and attach both to a Pod.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Attach A Localhost Seccomp Profile And An AppArmor Profile — Solution
+    path: sections/section-010/module-02/labs/lab-03/solution.md
   - type: reading
     title: Host Namespaces And Host Paths
     path: sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+  - type: reading
+    title: Remove Host Networking And A hostPath Volume — Task
+    path: sections/section-010/module-02/labs/lab-04/question.md
+  - type: lab
+    title: Remove Host Networking And A hostPath Volume
+    path: sections/section-010/module-02/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: pod-security-context
+    task_kind: troubleshooting
+    learning_goals:
+    - Remove host networking and a hostPath volume so a Deployment passes Baseline.
+    tags:
+    - cks
+    - security-context
+  - type: reading
+    title: Remove Host Networking And A hostPath Volume — Solution
+    path: sections/section-010/module-02/labs/lab-04/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-02/course-05-summary.md
@@ -134,30 +239,65 @@ modules:
     title: Stage A Label Change
     path: sections/section-010/module-03/course-02-stage-a-label-change.md
   - type: reading
-    title: "Stage Pod Security Labels On Two Namespaces \u2014 Task"
+    title: Roll Out Restricted Using A Dry-Run Inventory — Task
     path: sections/section-010/module-03/labs/lab-01/question.md
   - type: lab
-    title: Stage Pod Security Labels On Two Namespaces
+    title: Roll Out Restricted Using A Dry-Run Inventory
     path: sections/section-010/module-03/labs/lab-01
-    examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: pod-security-rollout
     task_kind: build
     learning_goals:
-    - Label two namespaces with different profiles and prove the effect with server-side dry runs.
+    - Use a server-side dry run of the enforce label as an inventory and roll out Restricted only where Pods comply.
     tags:
     - cks
     - pod-security-admission
   - type: reading
-    title: "Stage Pod Security Labels On Two Namespaces \u2014 Solution"
+    title: Roll Out Restricted Using A Dry-Run Inventory — Solution
     path: sections/section-010/module-03/labs/lab-01/solution.md
   - type: reading
     title: Cluster-Wide Defaults And Exemptions
     path: sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
   - type: reading
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption — Task
+    path: sections/section-010/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption
+    path: sections/section-010/module-03/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: pod-security-rollout
+    task_kind: build
+    learning_goals:
+    - Set cluster-wide Pod Security defaults and a namespace exemption with an AdmissionConfiguration file.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Set Cluster-Wide Pod Security Defaults And An Exemption — Solution
+    path: sections/section-010/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Exceptions, Upgrades And Ongoing Checks
     path: sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+  - type: reading
+    title: Admit A Node Agent And Protect Pod Security Labels — Task
+    path: sections/section-010/module-03/labs/lab-03/question.md
+  - type: lab
+    title: Admit A Node Agent And Protect Pod Security Labels
+    path: sections/section-010/module-03/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: pod-security-rollout
+    task_kind: build
+    learning_goals:
+    - Exempt a node agent with Privileged plus Baseline warn and audit, and remove RBAC that can change namespace labels.
+    tags:
+    - cks
+    - pod-security-admission
+  - type: reading
+    title: Admit A Node Agent And Protect Pod Security Labels — Solution
+    path: sections/section-010/module-03/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-010/module-03/course-05-summary.md
@@ -166,25 +306,6 @@ modules:
     path: sections/section-010/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Apply Pod Security Standards Across Three Namespaces \u2014 Task"
-    path: sections/section-010/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Apply Pod Security Standards Across Three Namespaces
-    path: sections/section-010/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 50m
-    topic: pod-security-capstone
-    task_kind: build
-    learning_goals:
-    - Repair two workloads and label three namespaces so each enforces the right profile while the applications
-      keep running.
-    tags:
-    - cks
-    - pod-security-capstone
-  - type: reading
-    title: "Apply Pod Security Standards Across Three Namespaces \u2014 Solution"
-    path: sections/section-010/capstone/labs/lab-01/solution.md
 - id: module-020
   title: Manage Kubernetes secrets
   description: Developed reading and reasoning for Manage Kubernetes secrets.
@@ -203,17 +324,36 @@ modules:
     title: Delivering Secrets To Pods
     path: sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
   - type: reading
+    title: "Deliver A Secret As An Environment Variable And A File \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-01/question.md
+  - type: lab
+    title: Deliver A Secret As An Environment Variable And A File
+    path: sections/section-020/module-01/labs/lab-01
+    examScope: namespace
+    difficulty: beginner
+    estimated_duration: 10m
+    topic: secret-delivery
+    task_kind: build
+    learning_goals:
+    - Deliver one Secret key to a container as an environment variable and as a read-only file.
+    tags:
+    - cks
+    - secret-delivery
+  - type: reading
+    title: "Deliver A Secret As An Environment Variable And A File \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-01/solution.md
+  - type: reading
     title: Rotating A Secret
     path: sections/section-020/module-01/course-03-rotating-a-secret.md
   - type: reading
-    title: "Rotate A Secret And Refresh Its Consumer \u2014 Task"
-    path: sections/section-020/module-01/labs/lab-01/question.md
+    title: "Rotate A Secret And Refresh Its Consumers \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-02/question.md
   - type: lab
-    title: Rotate A Secret And Refresh Its Consumer
-    path: sections/section-020/module-01/labs/lab-01
+    title: Rotate A Secret And Refresh Its Consumers
+    path: sections/section-020/module-01/labs/lab-02
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 12m
     topic: secret-rotation
     task_kind: build
     learning_goals:
@@ -222,11 +362,29 @@ modules:
     - cks
     - secret-rotation
   - type: reading
-    title: "Rotate A Secret And Refresh Its Consumer \u2014 Solution"
-    path: sections/section-020/module-01/labs/lab-01/solution.md
+    title: "Rotate A Secret And Refresh Its Consumers \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-02/solution.md
   - type: reading
     title: Encryption At Rest
     path: sections/section-020/module-01/course-04-encryption-at-rest.md
+  - type: reading
+    title: "Encrypt Secrets At Rest In etcd \u2014 Task"
+    path: sections/section-020/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Encrypt Secrets At Rest In etcd
+    path: sections/section-020/module-01/labs/lab-03
+    difficulty: advanced
+    estimated_duration: 20m
+    topic: encryption-at-rest
+    task_kind: build
+    learning_goals:
+    - Turn on encryption at rest for Secrets and prove from raw etcd data that new and existing Secrets are encrypted.
+    tags:
+    - cks
+    - encryption-at-rest
+  - type: reading
+    title: "Encrypt Secrets At Rest In etcd \u2014 Solution"
+    path: sections/section-020/module-01/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-020/module-01/course-05-summary.md
@@ -245,17 +403,36 @@ modules:
     title: Image Pull Secrets And ServiceAccount Tokens
     path: sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
   - type: reading
+    title: "Give A ServiceAccount An Image Pull Secret \u2014 Task"
+    path: sections/section-020/module-02/labs/lab-01/question.md
+  - type: lab
+    title: Give A ServiceAccount An Image Pull Secret
+    path: sections/section-020/module-02/labs/lab-01
+    examScope: namespace
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: image-pull-secrets
+    task_kind: build
+    learning_goals:
+    - Create a dockerconfigjson Secret, attach it to a ServiceAccount and confirm that new pods receive it.
+    tags:
+    - cks
+    - image-pull-secrets
+  - type: reading
+    title: "Give A ServiceAccount An Image Pull Secret \u2014 Solution"
+    path: sections/section-020/module-02/labs/lab-01/solution.md
+  - type: reading
     title: Immutable Secrets
     path: sections/section-020/module-02/course-03-immutable-secrets.md
   - type: reading
     title: "Create An Immutable Basic-Auth Secret \u2014 Task"
-    path: sections/section-020/module-02/labs/lab-01/question.md
+    path: sections/section-020/module-02/labs/lab-02/question.md
   - type: lab
     title: Create An Immutable Basic-Auth Secret
-    path: sections/section-020/module-02/labs/lab-01
+    path: sections/section-020/module-02/labs/lab-02
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 8m
     topic: immutable-secrets
     task_kind: build
     learning_goals:
@@ -265,10 +442,29 @@ modules:
     - immutable-secrets
   - type: reading
     title: "Create An Immutable Basic-Auth Secret \u2014 Solution"
-    path: sections/section-020/module-02/labs/lab-01/solution.md
+    path: sections/section-020/module-02/labs/lab-02/solution.md
   - type: reading
     title: Least-Privilege Access To Secrets
     path: sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+  - type: reading
+    title: "Limit Secret Access To One Named Secret With RBAC \u2014 Task"
+    path: sections/section-020/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Limit Secret Access To One Named Secret With RBAC
+    path: sections/section-020/module-02/labs/lab-03
+    examScope: namespace
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: secret-rbac
+    task_kind: build
+    learning_goals:
+    - Grant get on one named Secret and prove with kubectl auth can-i that list, watch and other Secrets stay denied.
+    tags:
+    - cks
+    - secret-rbac
+  - type: reading
+    title: "Limit Secret Access To One Named Secret With RBAC \u2014 Solution"
+    path: sections/section-020/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-020/module-02/course-05-summary.md
@@ -284,23 +480,23 @@ modules:
     title: Where Credentials Leak
     path: sections/section-020/module-03/course-01-where-credentials-leak.md
   - type: reading
-    title: "Move A Credential From A ConfigMap Into A Secret \u2014 Task"
+    title: "Move A Leaked Credential Into A Secret \u2014 Task"
     path: sections/section-020/module-03/labs/lab-01/question.md
   - type: lab
-    title: Move A Credential From A ConfigMap Into A Secret
+    title: Move A Leaked Credential Into A Secret
     path: sections/section-020/module-03/labs/lab-01
     examScope: namespace
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: credential-leaks
     task_kind: build
     learning_goals:
-    - Replace a credential stored in a ConfigMap with a mounted Secret and remove the ConfigMap.
+    - Replace a literal credential in a Deployment and a ConfigMap with a Secret reference and remove the leaked copy.
     tags:
     - cks
     - credential-leaks
   - type: reading
-    title: "Move A Credential From A ConfigMap Into A Secret \u2014 Solution"
+    title: "Move A Leaked Credential Into A Secret \u2014 Solution"
     path: sections/section-020/module-03/labs/lab-01/solution.md
   - type: reading
     title: External Secret Stores
@@ -312,6 +508,24 @@ modules:
     title: Auditing Secret Access
     path: sections/section-020/module-03/course-04-auditing-secret-access.md
   - type: reading
+    title: "Record Secret Access In The Audit Log \u2014 Task"
+    path: sections/section-020/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Record Secret Access In The Audit Log
+    path: sections/section-020/module-03/labs/lab-02
+    difficulty: advanced
+    estimated_duration: 15m
+    topic: secret-audit
+    task_kind: build
+    learning_goals:
+    - Write an audit policy that logs Secrets at Metadata level, turn on the audit log and find a Secret read in it.
+    tags:
+    - cks
+    - secret-audit
+  - type: reading
+    title: "Record Secret Access In The Audit Log \u2014 Solution"
+    path: sections/section-020/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Summary
     path: sections/section-020/module-03/course-05-summary.md
   - type: quiz
@@ -319,24 +533,6 @@ modules:
     path: sections/section-020/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Lock Down Secret Handling For One Workload \u2014 Task"
-    path: sections/section-020/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Lock Down Secret Handling For One Workload
-    path: sections/section-020/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 45m
-    topic: secret-handling-capstone
-    task_kind: build
-    learning_goals:
-    - Combine an immutable Secret, a pull Secret, a narrow Role and a read-only mount for one workload.
-    tags:
-    - cks
-    - capstone
-  - type: reading
-    title: "Lock Down Secret Handling For One Workload \u2014 Solution"
-    path: sections/section-020/capstone/labs/lab-01/solution.md
 - id: module-030
   title: Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
   description: Developed reading and reasoning for Understand and implement isolation techniques (multi-tenancy,
@@ -353,32 +549,89 @@ modules:
     title: Namespaces And RBAC As A Tenant Boundary
     path: sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
   - type: reading
-    title: Resource Isolation With ResourceQuota And LimitRange
-    path: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
-  - type: reading
-    title: Network Isolation And Token Minimization
-    path: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
-  - type: reading
-    title: "Compose A Tenant Namespace Boundary \u2014 Task"
+    title: "Limit A Tenant User To One Namespace With RBAC \u2014 Task"
     path: sections/section-030/module-01/labs/lab-01/question.md
   - type: lab
-    title: Compose A Tenant Namespace Boundary
+    title: Limit A Tenant User To One Namespace With RBAC
     path: sections/section-030/module-01/labs/lab-01
+    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: tenant-isolation
     task_kind: build
     learning_goals:
-    - Combine admission, a resource budget, token minimization and network isolation for one tenant.
+    - Bind a namespaced Role to a tenant user and prove its access with kubectl auth can-i.
     tags:
     - cks
     - tenant-isolation
   - type: reading
-    title: "Compose A Tenant Namespace Boundary \u2014 Solution"
+    title: "Limit A Tenant User To One Namespace With RBAC \u2014 Solution"
     path: sections/section-030/module-01/labs/lab-01/solution.md
+  - type: reading
+    title: Resource Isolation With ResourceQuota And LimitRange
+    path: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+  - type: reading
+    title: "Cap A Tenant With ResourceQuota And LimitRange \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Cap A Tenant With ResourceQuota And LimitRange
+    path: sections/section-030/module-01/labs/lab-02
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: tenant-resource-isolation
+    task_kind: build
+    learning_goals:
+    - Cap a tenant namespace with a ResourceQuota and give containers default requests and limits with a LimitRange.
+    tags:
+    - cks
+    - tenant-isolation
+  - type: reading
+    title: "Cap A Tenant With ResourceQuota And LimitRange \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-02/solution.md
+  - type: reading
+    title: Network Isolation And Token Minimization
+    path: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+  - type: reading
+    title: "Isolate A Tenant Namespace And Remove Its Token \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-03/question.md
+  - type: lab
+    title: Isolate A Tenant Namespace And Remove Its Token
+    path: sections/section-030/module-01/labs/lab-03
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: tenant-network-isolation
+    task_kind: build
+    learning_goals:
+    - Isolate a tenant namespace with NetworkPolicy and stop the API token mount for its workload.
+    tags:
+    - cks
+    - tenant-isolation
+  - type: reading
+    title: "Isolate A Tenant Namespace And Remove Its Token \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-03/solution.md
   - type: reading
     title: Sandboxed Containers With RuntimeClass
     path: sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+  - type: reading
+    title: "Run A Pod Under gVisor With A RuntimeClass \u2014 Task"
+    path: sections/section-030/module-01/labs/lab-04/question.md
+  - type: lab
+    title: Run A Pod Under gVisor With A RuntimeClass
+    path: sections/section-030/module-01/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: sandbox-gvisor
+    task_kind: build
+    learning_goals:
+    - Create a RuntimeClass for the runsc handler and prove that a Pod runs inside the gVisor kernel.
+    tags:
+    - cks
+    - sandbox-runtimeclass
+  - type: reading
+    title: "Run A Pod Under gVisor With A RuntimeClass \u2014 Solution"
+    path: sections/section-030/module-01/labs/lab-04/solution.md
   - type: reading
     title: Summary
     path: sections/section-030/module-01/course-05-summary.md
@@ -394,20 +647,38 @@ modules:
     title: The Runtime Handler Chain
     path: sections/section-030/module-02/course-01-the-runtime-handler-chain.md
   - type: reading
+    title: "Register The gVisor Handler In containerd \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-01/question.md
+  - type: lab
+    title: Register The gVisor Handler In containerd
+    path: sections/section-030/module-02/labs/lab-01
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: sandbox-handler
+    task_kind: build
+    learning_goals:
+    - Register the runsc handler in containerd, restart containerd and prove the sandbox with crictl and dmesg.
+    tags:
+    - cks
+    - sandbox-runtimeclass
+  - type: reading
+    title: "Register The gVisor Handler In containerd \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-01/solution.md
+  - type: reading
     title: gVisor And Kata Compared
     path: sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
   - type: reading
     title: RuntimeClass Scheduling And Overhead
     path: sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
   - type: reading
-    title: "Schedule Sandboxed Pods With A RuntimeClass \u2014 Task"
-    path: sections/section-030/module-02/labs/lab-01/question.md
+    title: "Schedule Pods With A RuntimeClass Overhead And Node Selector \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-02/question.md
   - type: lab
-    title: Schedule Sandboxed Pods With A RuntimeClass
-    path: sections/section-030/module-02/labs/lab-01
+    title: Schedule Pods With A RuntimeClass Overhead And Node Selector
+    path: sections/section-030/module-02/labs/lab-02
     examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: sandbox-runtimeclass
     task_kind: build
     learning_goals:
@@ -416,28 +687,30 @@ modules:
     - cks
     - sandbox-runtimeclass
   - type: reading
-    title: "Schedule Sandboxed Pods With A RuntimeClass \u2014 Solution"
-    path: sections/section-030/module-02/labs/lab-01/solution.md
+    title: "Schedule Pods With A RuntimeClass Overhead And Node Selector \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-02/solution.md
   - type: reading
     title: Requiring The Sandbox With Admission Policy
     path: sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
   - type: reading
-    title: Start And Verify A Real gVisor Sandbox
-    path: sections/section-030/module-02/course-04a-run-a-real-gvisor-sandbox.md
-  - type: reading
-    title: "Run A Workload Under gVisor \u2014 Task"
-    path: sections/section-030/module-02/labs/lab-02/question.md
+    title: "Require A RuntimeClass With A ValidatingAdmissionPolicy \u2014 Task"
+    path: sections/section-030/module-02/labs/lab-03/question.md
   - type: lab
-    title: Run A Workload Under gVisor
-    path: sections/section-030/module-02/labs/lab-02
+    title: Require A RuntimeClass With A ValidatingAdmissionPolicy
+    path: sections/section-030/module-02/labs/lab-03
+    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 15m
+    estimated_duration: 10m
+    topic: sandbox-admission
+    task_kind: build
     learning_goals:
-    - Docker launches a fresh container through the installed gVisor runtime
-    - The running scout container uses gVisor and serves the expected response
+    - Reject Pods without the sandbox RuntimeClass in one namespace with a ValidatingAdmissionPolicy.
+    tags:
+    - cks
+    - sandbox-runtimeclass
   - type: reading
-    title: "Run A Workload Under gVisor \u2014 Solution"
-    path: sections/section-030/module-02/labs/lab-02/solution.md
+    title: "Require A RuntimeClass With A ValidatingAdmissionPolicy \u2014 Solution"
+    path: sections/section-030/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-030/module-02/course-05-summary.md
@@ -453,14 +726,14 @@ modules:
     title: Dedicated Nodes With Taints And Tolerations
     path: sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
   - type: reading
-    title: "Dedicate A Node To One Tenant \u2014 Task"
+    title: "Dedicate A Node To One Tenant With Taints And Tolerations \u2014 Task"
     path: sections/section-030/module-03/labs/lab-01/question.md
   - type: lab
-    title: Dedicate A Node To One Tenant
+    title: Dedicate A Node To One Tenant With Taints And Tolerations
     path: sections/section-030/module-03/labs/lab-01
     examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: node-dedication
     task_kind: build
     learning_goals:
@@ -469,14 +742,52 @@ modules:
     - cks
     - node-dedication
   - type: reading
-    title: "Dedicate A Node To One Tenant \u2014 Solution"
+    title: "Dedicate A Node To One Tenant With Taints And Tolerations \u2014 Solution"
     path: sections/section-030/module-03/labs/lab-01/solution.md
   - type: reading
     title: Node Labels You Can Trust
     path: sections/section-030/module-03/course-02-node-labels-you-can-trust.md
   - type: reading
+    title: "Use A NodeRestriction Label For Tenant Placement \u2014 Task"
+    path: sections/section-030/module-03/labs/lab-02/question.md
+  - type: lab
+    title: Use A NodeRestriction Label For Tenant Placement
+    path: sections/section-030/module-03/labs/lab-02
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: node-restriction
+    task_kind: build
+    learning_goals:
+    - Place tenant Pods with a node-restriction.kubernetes.io label that the kubelet cannot change.
+    tags:
+    - cks
+    - node-dedication
+  - type: reading
+    title: "Use A NodeRestriction Label For Tenant Placement \u2014 Solution"
+    path: sections/section-030/module-03/labs/lab-02/solution.md
+  - type: reading
     title: Forcing Placement At Admission
     path: sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+  - type: reading
+    title: "Require A Tenant Node Selector With A ValidatingAdmissionPolicy \u2014 Task"
+    path: sections/section-030/module-03/labs/lab-03/question.md
+  - type: lab
+    title: Require A Tenant Node Selector With A ValidatingAdmissionPolicy
+    path: sections/section-030/module-03/labs/lab-03
+    examScope: cluster
+    difficulty: intermediate
+    estimated_duration: 12m
+    topic: placement-admission
+    task_kind: build
+    learning_goals:
+    - Reject tenant Pods without the protected node selector with a ValidatingAdmissionPolicy.
+    tags:
+    - cks
+    - node-dedication
+  - type: reading
+    title: "Require A Tenant Node Selector With A ValidatingAdmissionPolicy \u2014 Solution"
+    path: sections/section-030/module-03/labs/lab-03/solution.md
   - type: reading
     title: Choosing A Tenant Boundary
     path: sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
@@ -488,25 +799,6 @@ modules:
     path: sections/section-030/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Isolate An Untrusted Tenant End To End \u2014 Task"
-    path: sections/section-030/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Isolate An Untrusted Tenant End To End
-    path: sections/section-030/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 45m
-    topic: tenant-isolation-capstone
-    task_kind: build
-    learning_goals:
-    - Combine namespace controls, a sandbox class, a dedicated node, a network policy and an admission
-      policy for one untrusted tenant.
-    tags:
-    - cks
-    - tenant-isolation-capstone
-  - type: reading
-    title: "Isolate An Untrusted Tenant End To End \u2014 Solution"
-    path: sections/section-030/capstone/labs/lab-01/solution.md
 - id: module-040
   title: Implement Pod-to-Pod encryption (Cilium, Istio)
   description: Developed reading and reasoning for Implement Pod-to-Pod encryption (Cilium, Istio).
@@ -525,27 +817,44 @@ modules:
     title: Istio Mutual TLS With PeerAuthentication
     path: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
   - type: reading
-    title: "Require Mutual TLS Between Workloads \u2014 Task"
+    title: Require Mutual TLS With PeerAuthentication — Task
     path: sections/section-040/module-01/labs/lab-01/question.md
   - type: lab
-    title: Require Mutual TLS Between Workloads
+    title: Require Mutual TLS With PeerAuthentication
     path: sections/section-040/module-01/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: workload-mtls
     task_kind: build
     learning_goals:
-    - Require mesh-authenticated traffic while keeping the injected client able to reach the application.
+    - Require STRICT mTLS for a namespace so that meshed clients keep working and a client without a sidecar is rejected.
     tags:
     - cks
     - workload-mtls
   - type: reading
-    title: "Require Mutual TLS Between Workloads \u2014 Solution"
+    title: Require Mutual TLS With PeerAuthentication — Solution
     path: sections/section-040/module-01/labs/lab-01/solution.md
   - type: reading
     title: Authorizing Workloads With AuthorizationPolicy
     path: sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+  - type: reading
+    title: Allow One Workload Identity With AuthorizationPolicy — Task
+    path: sections/section-040/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Allow One Workload Identity With AuthorizationPolicy
+    path: sections/section-040/module-01/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: workload-authorization
+    task_kind: build
+    learning_goals:
+    - Allow requests to a workload only from one ServiceAccount principal with an Istio AuthorizationPolicy.
+    tags:
+    - cks
+    - workload-authorization
+  - type: reading
+    title: Allow One Workload Identity With AuthorizationPolicy — Solution
+    path: sections/section-040/module-01/labs/lab-02/solution.md
   - type: reading
     title: Cilium Transparent Encryption
     path: sections/section-040/module-01/course-04-cilium-transparent-encryption.md
@@ -564,34 +873,68 @@ modules:
     title: Modes, Scope And Precedence
     path: sections/section-040/module-02/course-01-modes-scope-and-precedence.md
   - type: reading
-    title: Migrating From Permissive To Strict
-    path: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
-  - type: reading
-    title: "Migrate A Namespace To Strict mTLS With One Exception \u2014 Task"
+    title: Override Mesh-Wide STRICT For One Namespace — Task
     path: sections/section-040/module-02/labs/lab-01/question.md
   - type: lab
-    title: Migrate A Namespace To Strict mTLS With One Exception
+    title: Override Mesh-Wide STRICT For One Namespace
     path: sections/section-040/module-02/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: mtls-migration
     task_kind: build
     learning_goals:
-    - Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level
-      exception.
+    - Predict and set the effective mTLS mode with mesh-wide and namespace PeerAuthentication precedence.
     tags:
     - cks
     - mtls-migration
   - type: reading
-    title: "Migrate A Namespace To Strict mTLS With One Exception \u2014 Solution"
+    title: Override Mesh-Wide STRICT For One Namespace — Solution
     path: sections/section-040/module-02/labs/lab-01/solution.md
+  - type: reading
+    title: Migrating From Permissive To Strict
+    path: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  - type: reading
+    title: Migrate A Namespace To STRICT With One Exception — Task
+    path: sections/section-040/module-02/labs/lab-02/question.md
+  - type: lab
+    title: Migrate A Namespace To STRICT With One Exception
+    path: sections/section-040/module-02/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: mtls-migration
+    task_kind: build
+    learning_goals:
+    - Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level exception.
+    tags:
+    - cks
+    - mtls-migration
+  - type: reading
+    title: Migrate A Namespace To STRICT With One Exception — Solution
+    path: sections/section-040/module-02/labs/lab-02/solution.md
   - type: reading
     title: Certificates And Workload Identity
     path: sections/section-040/module-02/course-03-certificates-and-workload-identity.md
   - type: reading
     title: Verifying And Troubleshooting mTLS
     path: sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+  - type: reading
+    title: Fix A Client TLS Setting That Breaks STRICT — Task
+    path: sections/section-040/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Fix A Client TLS Setting That Breaks STRICT
+    path: sections/section-040/module-02/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: mtls-troubleshooting
+    task_kind: build
+    learning_goals:
+    - Find and fix a DestinationRule that sends plain text to a STRICT destination.
+    tags:
+    - cks
+    - mtls-troubleshooting
+  - type: reading
+    title: Fix A Client TLS Setting That Breaks STRICT — Solution
+    path: sections/section-040/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-040/module-02/course-05-summary.md
@@ -610,47 +953,47 @@ modules:
     title: Enabling WireGuard
     path: sections/section-040/module-03/course-02-enabling-wireguard.md
   - type: reading
-    title: IPsec Keys And Rotation
-    path: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
-  - type: reading
-    title: "Prepare IPsec Encryption For Cilium \u2014 Task"
+    title: Enable WireGuard Encryption In Cilium — Task
     path: sections/section-040/module-03/labs/lab-01/question.md
   - type: lab
-    title: Prepare IPsec Encryption For Cilium
+    title: Enable WireGuard Encryption In Cilium
     path: sections/section-040/module-03/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 20m
+    estimated_duration: 10m
     topic: cilium-ipsec
     task_kind: build
     learning_goals:
-    - Create the IPsec key Secret and set the Helm values that enable Cilium IPsec encryption.
+    - Turn on Cilium WireGuard encryption with Helm and confirm a peer on every agent.
     tags:
     - cks
     - cilium-ipsec
   - type: reading
-    title: "Prepare IPsec Encryption For Cilium \u2014 Solution"
+    title: Enable WireGuard Encryption In Cilium — Solution
     path: sections/section-040/module-03/labs/lab-01/solution.md
   - type: reading
-    title: Verifying Cilium Encryption And Its Limits
-    path: sections/section-040/module-03/course-04-verifying-and-limits.md
+    title: IPsec Keys And Rotation
+    path: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
   - type: reading
-    title: Prove Cilium Encrypts A Cross-Node Request
-    path: sections/section-040/module-03/course-03a-observe-encrypted-cross-node-traffic.md
-  - type: reading
-    title: "Encrypt And Observe Cross-Node Traffic \u2014 Task"
+    title: Rotate The Cilium IPsec Key — Task
     path: sections/section-040/module-03/labs/lab-02/question.md
   - type: lab
-    title: Encrypt And Observe Cross-Node Traffic
+    title: Rotate The Cilium IPsec Key
     path: sections/section-040/module-03/labs/lab-02
     difficulty: intermediate
     estimated_duration: 15m
+    topic: cilium-ipsec-rotation
+    task_kind: build
     learning_goals:
-    - Both real Cilium agents have active WireGuard peers
-    - Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the node interface
+    - Rotate the Cilium IPsec key to a higher SPI and confirm that every agent loaded it.
+    tags:
+    - cks
+    - cilium-ipsec-rotation
   - type: reading
-    title: "Encrypt And Observe Cross-Node Traffic \u2014 Solution"
+    title: Rotate The Cilium IPsec Key — Solution
     path: sections/section-040/module-03/labs/lab-02/solution.md
+  - type: reading
+    title: Verifying Cilium Encryption And Its Limits
+    path: sections/section-040/module-03/course-04-verifying-and-limits.md
   - type: reading
     title: Summary
     path: sections/section-040/module-03/course-05-summary.md
@@ -659,25 +1002,8 @@ modules:
     path: sections/section-040/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Encrypt And Authorize Pod Traffic \u2014 Task"
-    path: sections/section-040/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Encrypt And Authorize Pod Traffic
-    path: sections/section-040/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 40m
-    topic: pod-encryption-capstone
-    task_kind: build
-    learning_goals:
-    - Combine strict mTLS, an identity-based AuthorizationPolicy and Cilium WireGuard values in one cluster.
-    tags:
-    - cks
-    - pod-encryption-capstone
-  - type: reading
-    title: "Encrypt And Authorize Pod Traffic \u2014 Solution"
-    path: sections/section-040/capstone/labs/lab-01/solution.md
   - type: quiz
     title: Final Domain Quiz
     path: sections/final-domain-quiz.yaml
+    question_count: 12
     pass_score: 70

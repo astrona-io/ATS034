@@ -1,43 +1,42 @@
 ---
-draft: true
 exam_objectives:
-- Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
-  etc.)
+- Understand and implement isolation techniques (multi-tenancy, sandboxed containers, etc.)
 ---
-# Schedule Sandboxed Pods With A RuntimeClass
+# Register The gVisor Handler In containerd
 
-Solve this question on: `terminal`
+Allow about 15 minutes for the tasks.
 
-Sandboxed workloads must run only on a node prepared for them. The namespace `tenant-b-034-030-02-01` is empty, and the cluster has two nodes. The worker node has no sandbox label, and no RuntimeClass exists for sandboxed Pods.
+The `scout` Pod of tenant B must run under gVisor, but it has been stuck in `ContainerCreating` since it was created. The platform team says the RuntimeClass is correct.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+## Starting state
+
+The lab VM (virtual machine) runs a one-node Kubernetes cluster built with kubeadm, the standard tool that installs a cluster on a Linux machine. The node is the control plane and also runs the Pods. gVisor is a sandbox that runs a separate kernel in user space for each Pod. Its binaries, `runsc` and `containerd-shim-runsc-v1`, are installed in `/usr/local/bin`.
+
+containerd is the container runtime of the node. Its configuration file is `/etc/containerd/config.toml`, and it lists one runtime handler, `runc`. The RuntimeClass `gvisor` names the handler `runsc`. The Pod `scout` in `tenant-b-034-030-02-01` sets `runtimeClassName: gvisor`. The Pod `shuttle` in `starfleet-034-030-02-01` uses the default handler and is running.
+
+Open a shell on the lab VM and check that kubectl uses this lab's cluster:
 
 ```sh
-export KUBECONFIG="$(astrona kubeconfig ats-034-lab-030-02-01)"
-test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-030-02-01" || exit 1
-node_name="astro-ats-034-lab-030-02-01-control-plane"
-worker_name="astro-ats-034-lab-030-02-01-worker"
+astrona ssh astro-ats-034-lab-030-02-01
+kubectl config current-context
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
-
-Allow about 7 minutes for the tasks. Cluster startup adds time.
+The second command prints `kubernetes-admin@astro-ats-034-lab-030-02-01`. You are logged in as the `student` user. The containerd files belong to root, so edit them and run `crictl` and `systemctl` with `sudo`. These commands change only the lab VM, not your own computer.
 
 ## Tasks
 
-1. Create the RuntimeClass `sandboxed` with the handler `runc`, a node selector `sandbox: "true"` and a fixed Pod overhead of `50m` CPU and `64Mi` memory.
-2. Label the worker node `sandbox=true`.
-3. Run the Pod `sandboxed-app` in `tenant-b-034-030-02-01` with `runtimeClassName: sandboxed`, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`.
+1. Find out which component keeps `scout` from starting, and why.
+2. Register the runtime handler `runsc` in `/etc/containerd/config.toml` with `runtime_type = "io.containerd.runsc.v1"`. Keep the `runc` handler as it is.
+3. Make containerd load the new configuration. Do not delete or change `scout` or the RuntimeClass.
+4. Prove that `scout` now runs under gVisor and that `shuttle` still uses the default handler.
 
-## Constraints
+## Check your work
 
-- Do not set a node selector or an overhead in the Pod. The API server must add them from the class.
-- Do not label or taint the control-plane node.
+```sh
+sudo crictl info | jq '.config.containerd.runtimes | keys'
+kubectl -n tenant-b-034-030-02-01 get pod scout
+kubectl -n tenant-b-034-030-02-01 exec scout -- dmesg
+sudo crictl pods --namespace tenant-b-034-030-02-01 --name scout
+```
 
-## How the answer is checked
-
-The name `sandboxed` is only a RuntimeClass name. Its handler is `runc`, so this exercise proves RuntimeClass admission and scheduling, not an additional gVisor or Kata isolation boundary.
-
-The grader runs three checks: the handler, overhead and node selector of the RuntimeClass `sandboxed`; the `sandbox=true` label on the worker node; and that `sandboxed-app` is Ready, carries the overhead and node selector the class added, and runs on the worker node.
-
-Hint: The worker node is the node whose name ends in `-worker`: `kubectl get nodes`.
+containerd must list the handlers `runc` and `runsc`, and the handler must stay in the configuration file after a restart. `scout` must be `Running`, its `dmesg` output must show `Starting gVisor`, and the `RUNTIME` column of `crictl pods` must show `runsc`. The grader also checks that `shuttle` keeps the default handler.

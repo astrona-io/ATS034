@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: job-runner
+  namespace: untrusted-034-030-02-03
+  labels:
+    app: job-runner
+spec:
+  runtimeClassName: sandboxed
+  containers:
+  - name: runner
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -c
+    - sleep infinity

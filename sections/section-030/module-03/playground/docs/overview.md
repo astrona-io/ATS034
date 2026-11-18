@@ -1,92 +1,39 @@
 ---
-draft: true
 exam_objectives:
 - Understand and implement isolation techniques (multi-tenancy, sandboxed containers,
   etc.)
 ---
-# Guided Practice: Dedicate A Node To One Tenant
+# Node Separation Playground
 
-Run the exercise below in the module playground. It practises the node label, the taint, the node selector and the toleration.
+This playground is a private `kind` cluster for the node separation module. `kind` (Kubernetes in Docker) runs each Kubernetes node as a container on your computer. The cluster runs Kubernetes 1.35 with one control-plane node, `astro-ats-034-playground-030-03-control-plane`, and one worker node, `astro-ats-034-playground-030-03-worker`.
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+## Connect to the cluster
+
+A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. Point kubectl at the playground and check the context before you change anything:
 
 <!-- astrona:playground:renew -->
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-playground-030-03)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-030-03" || exit 1
-node_name="astro-ats-034-playground-030-03-control-plane"
-worker_name="astro-ats-034-playground-030-03-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+The `test` command stops the shell when the context is wrong. Keep this connection for every command of the module.
 
-## Inspect And Explain
+## What the playground contains
 
-The isolated environment has an empty namespace `tenant-c` and two nodes. The worker node has no tenant label and no taint.
-
-Dedicate the worker node to `tenant-c`. Label it `tenant=tenant-c` and taint it `tenant=tenant-c:NoSchedule`. Create the Deployment `tenant-c-app` in `tenant-c` with one replica, the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Give its Pod template the matching node selector and a toleration for the taint, so that the Pod runs on the dedicated worker.
-
-Label and taint the worker node:
+The namespace `tenant-c` exists and is empty. The worker node has no `tenant` label and no `tenant` taint. The control-plane node carries the taint `node-role.kubernetes.io/control-plane:NoSchedule`, which keeps ordinary Pods away from it. Read both nodes with their taints:
 
 ```sh
-kubectl label node "$worker_name" tenant=tenant-c
-kubectl taint node "$worker_name" tenant=tenant-c:NoSchedule
+kubectl get nodes --show-labels
+kubectl describe nodes | grep -A 1 Taints
 ```
 
-Save this as `deployment-tenant-c-app.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tenant-c-app
-  namespace: tenant-c
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: tenant-c-app
-  template:
-    metadata:
-      labels:
-        app: tenant-c-app
-    spec:
-      nodeSelector:
-        tenant: tenant-c
-      tolerations:
-      - key: tenant
-        operator: Equal
-        value: tenant-c
-        effect: NoSchedule
-      containers:
-      - name: app
-        image: docker.io/library/busybox:1.37.0
-        command:
-        - sh
-        - -c
-        - sleep 3600
-```
-
-Apply it:
-
-```sh
-kubectl apply -f deployment-tenant-c-app.yaml
-```
-
-## Verify The Result
-
-Wait for the rollout and read the node of the Pod:
-
-```sh
-kubectl -n tenant-c rollout status deployment/tenant-c-app --timeout=180s
-kubectl -n tenant-c get pods -o wide
-```
-
-The node column shows the dedicated worker. No example command output is presented as evidence of a completed run. The taint keeps other Pods off the node, and the selector with the toleration puts this Pod on it, so check that all four settings exist.
-
+The pages of the module label and taint the worker, run Pods in `tenant-c` and add a ValidatingAdmissionPolicy. To remove a label, run `kubectl label node <node> tenant-`. To remove a taint, run `kubectl taint node <node> tenant=tenant-c:NoSchedule-`. To start from the beginning, stop the playground and launch it again.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Confirm the private context and exact node names before a change. Use the effect NoSchedule exactly. A toleration without a node selector does not place the Pod, and a selector without a toleration leaves it Pending.
+> Check the context before every change. A label or taint on a node of another cluster changes where that cluster runs its Pods.
+>
+> A ValidatingAdmissionPolicy stays in the cluster after the page ends. Delete it and its binding with `kubectl delete validatingadmissionpolicybinding require-tenant-node-tenant-c` and `kubectl delete validatingadmissionpolicy require-tenant-node` before you run Pods without the selector in `tenant-c`.

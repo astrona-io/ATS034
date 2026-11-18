@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Starts one playground, runs its smoke test, and always destroys it.
 #
-#   scripts/ci/test-playground.sh sections/section-030/module-10/playground
+#   scripts/ci/test-playground.sh sections/section-040/module-10/playground
 #
 # 1. `astrona run` must finish: the bootstrap and every waitFor in config.yaml
 #    pass.
 # 2. If the playground has testing/smoke.sh, it runs with KUBECONFIG set to
 #    the playground cluster. The smoke test runs the commands the pages teach
 #    and exits non-zero when one of them does not give the expected result.
+#    A qemu playground has no kubeconfig on the host: its cluster lives inside
+#    the VM, and its bootstrap already checked it there, so step 2 is skipped.
 #
 # The script uses its own kubeconfig file, so it never changes the current
 # context of the machine it runs on.
@@ -15,7 +17,7 @@ set -euo pipefail
 
 dir=${1:?usage: test-playground.sh <playground directory>}
 dir=$(cd "$dir" && pwd)
-name=$(yq '.metadata.name' "$dir/config.yaml")
+name=$(python3 -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["metadata"]["name"])' "$dir/config.yaml")
 work=$(mktemp -d)
 export KUBECONFIG="$work/kubeconfig-start"
 
@@ -34,6 +36,13 @@ trap cleanup EXIT
 echo "::group::astrona run $name"
 (cd "$dir" && astrona run -c . --headless --accept-terms --trust --keep-context --yes)
 echo "::endgroup::"
+
+runtime=$(python3 -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["runtime"]["type"])' "$dir/config.yaml")
+if [ "$runtime" = qemu ]; then
+  echo "qemu playground: the bootstrap checked the cluster inside the VM"
+  echo "PASS $name"
+  exit 0
+fi
 
 # In CI astrona can print a terms notice first, so take the path line only.
 KUBECONFIG=$(astrona kubeconfig "$name" --accept-terms --headless 2>/dev/null | grep -m1 "/kubeconfig$")

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scout
+  namespace: starfleet-034-020-03-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scout
+  template:
+    metadata:
+      labels:
+        app: scout
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: scout
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - sleep 86400
+        env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: scout-credentials
+              key: token

@@ -1,0 +1,62 @@
+{
+  "context": "kind-astro-ats-034-lab-040-02-02",
+  "cluster": "astro-ats-034-lab-040-02-02",
+  "namespace": "starfleet-034-040-02-02",
+  "resources": [
+    {
+      "kind": "deployment",
+      "name": "probe",
+      "namespace": "starfleet-034-040-02-02",
+      "expected": {
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet-034-040-02-02"
+        }
+      },
+      "state": "deployment"
+    },
+    {
+      "kind": "deployment",
+      "name": "legacy",
+      "namespace": "starfleet-034-040-02-02",
+      "expected": {
+        "metadata": {
+          "name": "legacy",
+          "namespace": "starfleet-034-040-02-02"
+        }
+      },
+      "state": "deployment"
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet-034-040-02-02",
+      "expected": {
+        "metadata": {
+          "name": "shuttle",
+          "namespace": "starfleet-034-040-02-02",
+          "labels": {
+            "app": "shuttle"
+          }
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "pod",
+      "name": "drifter",
+      "namespace": "outpost-034-040-02-02",
+      "expected": {
+        "metadata": {
+          "name": "drifter",
+          "namespace": "outpost-034-040-02-02",
+          "labels": {
+            "app": "drifter"
+          }
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

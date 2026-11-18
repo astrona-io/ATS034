@@ -26,4 +26,4 @@ spec:
         command:
         - sh
         - -c
-        - sleep 3600
+        - sleep infinity

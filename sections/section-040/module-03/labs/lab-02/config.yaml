@@ -7,45 +7,47 @@ metadata:
     caseStudy: docs/case-study.md
     guide: solution.md
 runtime:
-  type: qemu
-  qemu:
-  - image:
-      type: url
-      source: https://cloud-images.ubuntu.com/releases/noble/release-20261017/ubuntu-24.04-server-cloudimg-{ARCH}.img
-      checksums:
-        amd64: sha256:04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94
-        arm64: sha256:50e24e1fb79e89116e939d90aa7738f7af48c442fa1bc2510131e0b39c50348e
-    cpus: 4
-    memoryMB: 6144
-    diskSizeGB: 24
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    networking:
+      disableDefaultCNI: true
+    preloadImages:
+    - quay.io/cilium/cilium:v1.20.4
+    - quay.io/cilium/operator-generic:v1.20.4
+    - quay.io/cilium/cilium-envoy:v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459
+    - docker.io/library/busybox:1.37.0
+    nodes:
+      workers: 1
 bootstrap:
   init:
-  - name: prepare-environment
+  - name: install-cilium-and-workloads
     type: file
     source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
 testing:
   init:
   - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
     type: file
     source: testing/verify-start.sh
-  - name: reference-solution
+  - name: reference-result
     type: file
     source: solution/apply.sh
-  - name: negative-cases
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: testing/regression.sh
+    source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: wireguard-peers
-    description: Both real Cilium agents have active WireGuard peers
+  - name: key-rotated
+    description: "The Secret cilium-ipsec-keys holds a new key in the format SPI, rfc4106(gcm(aes)), 40 hexadecimal characters, 128, with an SPI above the starting SPI 3"
     type: file
-    source: validation/validate-wireguard-peers.sh
+    source: validation/validate-key-rotated.sh
     points: 1
-  - name: encrypted-traffic
-    description: Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the
-      node interface
+  - name: agents-use-new-key
+    description: "Every Cilium agent reports IPsec with no errors and its node has security associations with the new SPI, and the shuttle pod still gets probe-reply from the probe Service on the other node"
     type: file
-    source: validation/validate-encrypted-traffic.sh
+    source: validation/validate-agents-use-new-key.sh
     points: 1
-teardown:
-  keepCluster: false

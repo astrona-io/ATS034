@@ -1,64 +1,31 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
-# Migrate A Namespace To Strict mTLS With One Exception Solution
+# Override Mesh-Wide STRICT For One Namespace Solution
 
-The task has two policies. The namespace policy sets `STRICT` for every workload. The workload policy replaces it for the Pods labelled `app: legacy`, because the narrower scope wins.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-040-02-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-040-02-01" || exit 1
 ```
 
-## Inspect the starting state
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-Check that every Pod has a sidecar, and that both clients reach both workloads before you change anything:
+Istio picks one PeerAuthentication for each workload, and the most specific one wins. A policy with a `selector` that matches the pod comes first. Next comes a policy without a selector in the pod's own namespace. Last comes the mesh-wide policy: a policy without a selector in the root namespace, which is `istio-system` here. So a namespace policy overrides the mesh-wide policy for that namespace only.
 
-```sh
-kubectl -n starfleet-034-040-02-01 get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[*].name}{"\n"}{end}'
-kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01/
-kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://legacy.starfleet-034-040-02-01/
-```
+In this lab the mesh-wide `default` policy sets `STRICT`. A namespace policy in `starfleet-034-040-02-01` with `PERMISSIVE` makes the probe sidecar accept plain text again, while `depot-034-040-02-01` has no policy of its own and still uses the mesh-wide `STRICT`.
 
-Each Pod in `starfleet-034-040-02-01` lists an `istio-proxy` container, and both requests return a line that starts with `version=`.
-
-## Require STRICT for the namespace
-
-Save this as `peerauthentication-namespace-strict.yaml`:
+Save this as `peerauthentication-namespace-permissive.yaml`:
 
 ```yaml
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
-  name: namespace-strict
+  name: namespace-permissive
   namespace: starfleet-034-040-02-01
 spec:
-  mtls:
-    mode: STRICT
-```
-
-Apply it:
-
-```sh
-kubectl apply -f peerauthentication-namespace-strict.yaml
-```
-
-## Add the exception for legacy
-
-Save this as `peerauthentication-legacy-permissive.yaml`:
-
-```yaml
-apiVersion: security.istio.io/v1
-kind: PeerAuthentication
-metadata:
-  name: legacy-permissive
-  namespace: starfleet-034-040-02-01
-spec:
-  selector:
-    matchLabels:
-      app: legacy
   mtls:
     mode: PERMISSIVE
 ```
@@ -66,28 +33,24 @@ spec:
 Apply it:
 
 ```sh
-kubectl apply -f peerauthentication-legacy-permissive.yaml
+kubectl apply -f peerauthentication-namespace-permissive.yaml
 ```
 
-## Verify the result
-
-Run the four requests. The denied one returns a nonzero status, so run it on its own:
+Then check the result. Wait a few seconds so that `istiod` can push the change:
 
 ```sh
-kubectl -n starfleet-034-040-02-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe/
-kubectl -n starfleet-034-040-02-01 exec shuttle -c client -- wget -q -T 3 -O- http://legacy/
-kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://legacy.starfleet-034-040-02-01/
-kubectl -n outpost-034-040-02-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01/
+kubectl -n outpost-034-040-02-01 exec drifter -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01.svc.cluster.local/
+kubectl -n starfleet-034-040-02-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-02-01.svc.cluster.local/
+kubectl -n outpost-034-040-02-01 exec drifter -c client -- wget -q -T 3 -O- http://cargo.depot-034-040-02-01.svc.cluster.local/
 ```
 
-The first three return a `version=` line. The fourth fails with a connection reset because the sidecar of `probe` requires mTLS and `drifter` sends plain text. If the fourth request still works, wait a few seconds and repeat it.
+The `drifter` and `shuttle` requests to `probe` print a line that starts with `version=v1`. The `shuttle` request still uses mutual TLS, because `PERMISSIVE` accepts both mutual TLS and plain text. The `drifter` request to `cargo` fails with `wget: error getting response: Connection reset by peer`: the cargo sidecar still follows the mesh-wide `STRICT` policy.
 
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-040-02-01`.
+When you are done, remove the lab with `astrona destroy ats-034-lab-040-02-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> - **A selector label that the Pods do not have.** The exception then selects nothing and `legacy` stays strict.
-> - **Putting the exception on the namespace.** A `PERMISSIVE` namespace policy opens `probe` to plain text as well.
-> - **Testing only the allowed paths.** The `probe` denial is half of the result.
-> - **Deleting the namespace policy to fix the legacy path.** The task needs both policies.
+> Do not edit or delete the mesh-wide policy to let one client in. That opens every namespace in the mesh. Override it in the one namespace that needs it.
+>
+> Always test a second namespace after an override. A request that works only proves the override; a request that still fails elsewhere proves its scope.

@@ -1,0 +1,25 @@
+{
+  "context": "kubernetes-admin@astro-ats-034-lab-010-02-03",
+  "cluster": "astro-ats-034-lab-010-02-03",
+  "runtime": "qemu",
+  "namespace": "starfleet-034-010-02-03",
+  "resources": [
+    {
+      "kind": "pod",
+      "name": "scout",
+      "expected": {
+        "spec": {
+          "containers": [
+            {
+              "name": "scout",
+              "image": "docker.io/library/busybox:1.37.0",
+              "command": ["sleep", "infinity"]
+            }
+          ]
+        }
+      },
+      "state": "pod"
+    }
+  ],
+  "behavior": []
+}

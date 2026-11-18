@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet-034-010-01-04
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.35
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scanner
+  namespace: starfleet-034-010-01-04
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scanner
+  template:
+    metadata:
+      labels:
+        app: scanner
+    spec:
+      containers:
+      - name: scanner
+        image: docker.io/library/busybox:1.37.0
+        command: ["sleep", "infinity"]

@@ -1,0 +1,56 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-040-01-02
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/python:3.13-alpine
+    - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
+    nodes:
+      workers: 1
+bootstrap:
+  init:
+  - name: install-istio-and-workloads
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: allow-policy
+    description: The AuthorizationPolicy probe-allow-shuttle selects the probe pods with action ALLOW and admits only the principal cluster.local/ns/starfleet-034-040-01-02/sa/shuttle
+    type: file
+    source: validation/validate-allow-policy.sh
+    points: 1
+  - name: shuttle-allowed
+    description: The shuttle pod still gets a reply from the probe Service
+    type: file
+    source: validation/validate-shuttle-allowed.sh
+    points: 1
+  - name: tender-denied
+    description: The tender pod, which also has a sidecar, gets HTTP 403 from the probe sidecar
+    type: file
+    source: validation/validate-tender-denied.sh
+    points: 1

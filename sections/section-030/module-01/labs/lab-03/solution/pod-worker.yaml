@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: worker
+  namespace: tenant-a-034-030-01-03
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: worker
+  namespace: tenant-a-034-030-01-03
+  labels:
+    app: worker
+spec:
+  serviceAccountName: worker
+  containers:
+  - name: worker
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "infinity"]

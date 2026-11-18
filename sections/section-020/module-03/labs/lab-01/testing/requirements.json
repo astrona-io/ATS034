@@ -4,92 +4,15 @@
   "namespace": "starfleet-034-020-03-01",
   "resources": [
     {
-      "kind": "pod",
-      "name": "migrated-reader",
-      "namespace": "starfleet-034-020-03-01",
-      "expected": {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-          "name": "migrated-reader",
-          "namespace": "starfleet-034-020-03-01"
-        },
-        "spec": {
-          "restartPolicy": "Never",
-          "automountServiceAccountToken": false,
-          "containers": [
-            {
-              "name": "reader",
-              "image": "docker.io/library/busybox:1.37.0",
-              "command": [
-                "sh",
-                "-c",
-                "sleep 3600"
-              ],
-              "volumeMounts": [
-                {
-                  "name": "credentials",
-                  "mountPath": "/credentials",
-                  "readOnly": true
-                }
-              ]
-            }
-          ],
-          "volumes": [
-            {
-              "name": "credentials",
-              "secret": {
-                "secretName": "migrated-credentials",
-                "defaultMode": 256
-              }
-            }
-          ]
-        }
-      },
-      "state": "pod",
-      "outcome": "secret-volume-reader"
-    },
-    {
       "kind": "secret",
-      "name": "migrated-credentials",
+      "name": "scout-credentials",
       "namespace": "starfleet-034-020-03-01",
       "expected": {
-        "type": "Opaque",
         "data": {
-          "token": "ZGlzcG9zYWJsZS12MQ=="
+          "token": "ZGlzcG9zYWJsZS1zY291dA=="
         }
       },
       "outcome": "credential-secret"
-    }
-  ],
-  "behavior": [
-    {
-      "args": [
-        "kubectl",
-        "-n",
-        "starfleet-034-020-03-01",
-        "exec",
-        "migrated-reader",
-        "--",
-        "sh",
-        "-c",
-        "test \"$(cat /credentials/token)\" = disposable-v1"
-      ],
-      "outcome": "secret-volume-reader"
-    },
-    {
-      "args": [
-        "kubectl",
-        "-n",
-        "starfleet-034-020-03-01",
-        "exec",
-        "migrated-reader",
-        "--",
-        "sh",
-        "-c",
-        "test -z \"$(env | grep disposable)\""
-      ],
-      "outcome": "secret-volume-reader"
     }
   ]
 }

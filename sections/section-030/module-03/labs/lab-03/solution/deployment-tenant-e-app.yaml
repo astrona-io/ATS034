@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-e-app
+  namespace: tenant-e-034-030-03-03
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenant-e-app
+  template:
+    metadata:
+      labels:
+        app: tenant-e-app
+    spec:
+      nodeSelector:
+        node-restriction.kubernetes.io/tenant: tenant-e
+      containers:
+      - name: app
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - sleep infinity

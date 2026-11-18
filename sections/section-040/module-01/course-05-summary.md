@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---

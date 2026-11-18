@@ -1,0 +1,43 @@
+{
+  "context": "kind-astro-ats-034-lab-010-02-04",
+  "cluster": "astro-ats-034-lab-010-02-04",
+  "namespace": "starfleet-034-010-02-04",
+  "resources": [
+    {
+      "kind": "namespace",
+      "name": "starfleet-034-010-02-04",
+      "namespace": "",
+      "expected": {
+        "metadata": {
+          "labels": {
+            "pod-security.kubernetes.io/enforce": "baseline",
+            "pod-security.kubernetes.io/enforce-version": "v1.35"
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "collector",
+      "outcome": "rollout-complete",
+      "expected": {
+        "spec": {
+          "replicas": 1,
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "collector",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "command": ["sleep", "infinity"]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "state": "deployment"
+    }
+  ],
+  "behavior": []
+}

@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
 # Seccomp, AppArmor And SELinux Settings
 
-A process asks the Linux kernel for everything through system calls: opening a file, creating a socket, loading a kernel module. A container usually needs a small part of the hundreds of system calls that exist. Kernel features that filter those calls reduce the attack surface of the kernel, so a bug in a rarely used system call is not reachable from a container. This part covers the seccomp profile field, which both Baseline and Restricted check, and the AppArmor and SELinux fields, which Baseline limits. The part ends with a graded task that combines every field from this module.
+A process asks the Linux kernel for everything through system calls: opening a file, creating a socket, loading a kernel module. A container usually needs a small part of the hundreds of system calls that exist. Kernel features that filter those calls reduce the attack surface of the kernel, so a bug in a rarely used system call is not reachable from a container. This part covers the seccomp profile field, which both Baseline and Restricted check, and the AppArmor and SELinux fields, which Baseline limits.
 
 ## Seccomp profiles
 
@@ -92,16 +91,73 @@ For AppArmor, the Pod field `appArmorProfile` has a `type` of `RuntimeDefault`, 
 
 Both modules need support on the node. A Pod that asks for a `Localhost` AppArmor profile that is not loaded on its node does not start, and a Pod that asks for an SELinux label on a node without SELinux has no effect. The Pod spec records the request, and only the node can show whether it is enforced.
 
-## Put the fields together
+## Install Localhost profiles on the node
 
-The task after this part combines the fields from this module. A Deployment in a namespace that enforces Restricted is accepted, but it has no Ready Pods. You read the reason in the events, then correct the Pod template with a non-root user, a seccomp profile, dropped capabilities, no privilege escalation and a read-only root filesystem with a writable volume.
+The `Localhost` type moves work from the Pod to the node. An administrator places the seccomp file and loads the AppArmor profile on every node that may run the Pod, and only then does the Pod start. The kind playground hides its node inside a container, so the commands below are not meant for the playground. They show the steps on a one-node cluster built with kubeadm, the standard tool that installs Kubernetes on a Linux machine, and the task on the next page gives you such a node.
 
-The sequence to follow is the one you used for the earlier parts. Read the `FailedCreate` event, list the broken rules, change the template and check the live process. You now know the fields that Restricted needs. What is left are the settings that Baseline already forbids because they expose the node itself.
+### Place a seccomp file
+
+The kubelet, the node agent that starts the containers, reads a `Localhost` seccomp profile from a path below `/var/lib/kubelet/seccomp`. On a fresh kubeadm node the directory does not exist yet. `install -D` creates the directories and copies the file in one step:
+
+```sh
+sudo install -D -m 0644 /opt/profiles/block-mkdir.json /var/lib/kubelet/seccomp/profiles/block-mkdir.json
+sudo ls -l /var/lib/kubelet/seccomp/profiles
+```
+
+```text
+total 4
+-rw-r--r-- 1 root root 143 Nov 18 12:02 block-mkdir.json
+```
+
+The Pod then sets `localhostProfile: profiles/block-mkdir.json`, the path relative to `/var/lib/kubelet/seccomp`. If the path is wrong, the kubelet cannot find the file, and the container stays in `CreateContainerError` with the event `cannot load seccomp profile "/var/lib/kubelet/seccomp/block-mkdir.json": open /var/lib/kubelet/seccomp/block-mkdir.json: no such file or directory`.
+
+### Load an AppArmor profile
+
+An AppArmor profile is not read from a kubelet directory. The kernel must have it loaded before the container starts. `apparmor_parser -r` loads a profile file, or replaces the profile when it is already loaded, and the kernel lists the loaded profiles in `/sys/kernel/security/apparmor/profiles`:
+
+```sh
+sudo apparmor_parser -r /opt/profiles/k8s-deny-tmp-write
+sudo grep k8s-deny /sys/kernel/security/apparmor/profiles
+```
+
+```text
+k8s-deny-tmp-write (enforce)
+```
+
+The Pod field `localhostProfile` takes the profile name from inside the file, here `k8s-deny-tmp-write`, not a file path. A profile loaded this way does not survive a reboot unless the file is also placed in `/etc/apparmor.d`, where the AppArmor service loads it at boot.
+
+### Check the running process
+
+The container fields from this part look like this when both profiles are attached:
+
+```yaml
+securityContext:
+  seccompProfile:
+    type: Localhost
+    localhostProfile: profiles/block-mkdir.json
+  appArmorProfile:
+    type: Localhost
+    localhostProfile: k8s-deny-tmp-write
+```
+
+After the Pod is created again with these fields, the process in the container reports both profiles, and each one blocks its own action:
+
+```text
+Seccomp:	2
+k8s-deny-tmp-write (enforce)
+mkdir: can't create directory '/data': Operation not permitted
+sh: can't create /tmp/test: Permission denied
+```
+
+The first two lines come from `/proc/1/status` and `/proc/1/attr/current` inside the container. The seccomp filter returns `Operation not permitted` for `mkdir`, and AppArmor returns `Permission denied` for the write below `/tmp`, so the error text tells you which kernel feature stopped the action. This output is shortened: each failed command also prints `command terminated with exit code 1`.
+
+You now know the three profile fields, which values Baseline and Restricted accept, and how a `Localhost` profile reaches the node. The fields in this part still let a container use the node directly through host namespaces, host ports and host paths, and Baseline forbids those settings for that reason.
 
 ## Common pitfalls
 
 > [!WARNING]
 > - **Leaving the seccomp profile out under Restricted.** Baseline accepts a Pod without a profile, and Restricted does not.
 > - **Choosing `Localhost` without placing the file on every node.** The container fails to start on a node that lacks the file.
+> - **Giving a full path or a file name in `localhostProfile`.** For seccomp it is the path relative to `/var/lib/kubelet/seccomp`; for AppArmor it is the profile name that `apparmor_parser` loaded.
 > - **Assuming a profile field proves enforcement.** Read `/proc/1/status` for seccomp, and check the node for AppArmor or SELinux support.
 > - **Setting `Unconfined` to silence an error.** It removes the filter. Find the system call that the application needs and use a custom `Localhost` profile instead.

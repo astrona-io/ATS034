@@ -1,0 +1,46 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-010-01-04
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/busybox:1.37.0
+bootstrap:
+  init:
+  - name: seed-lab
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: rollout-complete
+    description: The scanner Deployment finishes its rollout with two Ready Pods under the Restricted profile
+    type: file
+    source: validation/validate-rollout-complete.sh
+    points: 1
+  - name: pods-restricted
+    description: Each scanner Pod runs as user 1000 with no_new_privs set, a seccomp filter active and no effective capabilities
+    type: file
+    source: validation/validate-pods-restricted.sh
+    points: 1

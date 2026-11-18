@@ -1,10 +1,9 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
-# Prepare IPsec Encryption For Cilium
+# Enable WireGuard Encryption In Cilium
 
-Create the IPsec key Secret and set the Helm values so that Cilium encrypts node-to-node traffic with IPsec.
+Turn on Cilium transparent encryption with WireGuard through Helm, restart the agents and prove that traffic between pods on different nodes goes through the `cilium_wg0` interface. The lab runs Cilium 1.20.4 as the network plugin of its own pinned kind cluster. It needs a rootful container engine, because Cilium mounts the BPF filesystem on each node. Python 3 and Helm are required on the grading host.
 
-The task and solution use a separate pinned kind cluster. Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass. The grader reads the Secret and the values file, because the environment does not run Cilium.
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

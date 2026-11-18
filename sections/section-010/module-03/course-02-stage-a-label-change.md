@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
 # Stage A Label Change
 
-The three modes exist so that a namespace can move to a stricter profile in steps. `warn` tells the person who runs `kubectl` about a problem. `audit` records it for the administrators. `enforce` blocks. A staged change uses them in that order, so each group learns about a problem before it becomes an outage. This part works through a full change on a namespace that already runs a Deployment, and it ends with a graded task on two namespaces.
+The three modes exist so that a namespace can move to a stricter profile in steps. `warn` tells the person who runs `kubectl` about a problem. `audit` records it for the administrators. `enforce` blocks. A staged change uses them in that order, so each group learns about a problem before it becomes an outage. This part works through a full change on a namespace that already runs a Deployment.
 
 ## The order and the reason for it
 
@@ -153,7 +152,7 @@ The listing shows `restricted` and `v1.35`. Prove that enforcement works by send
 kubectl -n stage-demo run root-check --image=docker.io/library/busybox:1.37.0 --dry-run=server -- sleep 3600
 ```
 
-The command fails with a `Forbidden` error that says the Pod violates `restricted:v1.35`. The namespace now has the end state of the rollout. The task after this part asks for the same end state on two existing namespaces, with a different profile for each.
+The command fails with a `Forbidden` error that says the Pod violates `restricted:v1.35`. The namespace now has the end state of the rollout.
 
 You have seen the whole sequence: three modes in order, the dry run as the last gate, and a version pin. What stays open is what happens in a namespace with no label, which the cluster configuration decides.
 

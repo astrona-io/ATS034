@@ -14,3 +14,4 @@ kubectl label node "$worker_name" tenant=tenant-c --overwrite
 kubectl taint node "$worker_name" tenant=tenant-c:NoSchedule --overwrite
 kubectl apply -f "$solution_directory/deployment-tenant-c-app.yaml"
 kubectl -n tenant-c-034-030-03-01 rollout status deployment/tenant-c-app --timeout=180s
+kubectl apply -f "$solution_directory/pod-drifter.yaml"

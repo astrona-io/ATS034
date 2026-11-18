@@ -1,58 +1,36 @@
 {
-  "context": "kind-astro-ats-034-lab-030-02-01",
+  "context": "kubernetes-admin@astro-ats-034-lab-030-02-01",
   "cluster": "astro-ats-034-lab-030-02-01",
+  "runtime": "qemu",
   "namespace": "tenant-b-034-030-02-01",
   "resources": [
     {
       "kind": "runtimeclass",
-      "name": "sandboxed",
-      "namespace": "",
+      "name": "gvisor",
+      "namespace": null,
       "expected": {
-        "apiVersion": "node.k8s.io/v1",
-        "kind": "RuntimeClass",
-        "metadata": {
-          "name": "sandboxed"
-        },
-        "handler": "runc",
-        "overhead": {
-          "podFixed": {
-            "cpu": "50m",
-            "memory": "64Mi"
-          }
-        },
-        "scheduling": {
-          "nodeSelector": {
-            "sandbox": "true"
-          }
-        }
-      },
-      "outcome": "runtimeclass"
+        "handler": "runsc"
+      }
     },
     {
       "kind": "pod",
-      "name": "sandboxed-app",
-      "namespace": "tenant-b-034-030-02-01",
+      "name": "shuttle",
+      "namespace": "starfleet-034-030-02-01",
       "expected": {
-        "apiVersion": "v1",
-        "kind": "Pod",
         "metadata": {
-          "name": "sandboxed-app",
-          "namespace": "tenant-b-034-030-02-01"
-        },
-        "spec": {
-          "runtimeClassName": "sandboxed",
-          "overhead": {
-            "cpu": "50m",
-            "memory": "64Mi"
-          },
-          "nodeSelector": {
-            "sandbox": "true"
-          }
+          "name": "shuttle"
         }
-      },
-      "state": "pod",
-      "outcome": "sandboxed-pod"
+      }
     }
   ],
-  "behavior": []
+  "behavior": [
+    {
+      "args": [
+        "kubectl",
+        "get",
+        "--raw=/readyz"
+      ],
+      "equals": "ok"
+    }
+  ]
 }

@@ -11,13 +11,12 @@ runtime:
   kind:
     image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
     preloadImages:
-    - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: seed-lab
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -37,13 +36,13 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: secret-rotated
-    description: Secret practice-token holds the rotated value
+  - name: environment-delivery
+    description: Pod token-reader reads PRACTICE_TOKEN from the key token of Secret practice-token
     type: file
-    source: validation/validate-secret-rotated.sh
-    points: 1
-  - name: rotated-reader
-    description: Pod rotated-reader reads the rotated value from its environment and from /credentials
+    source: validation/validate-environment-delivery.sh
+    points: 2
+  - name: volume-delivery
+    description: Pod token-reader reads /credentials/token from Secret practice-token with file mode 0400
     type: file
-    source: validation/validate-rotated-reader.sh
+    source: validation/validate-volume-delivery.sh
     points: 2

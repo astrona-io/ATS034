@@ -1,10 +1,7 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
 # Starting Environment
 
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Replace a disposable credential and verify both delivery paths use the new value.
+The namespace `starfleet-034-020-01-01` holds the Secret `practice-token` of type `Opaque`. Its key `token` holds the disposable value `disposable-v1`. The namespace also runs the pod `shuttle`. No pod reads the Secret yet.

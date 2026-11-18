@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Use appropriate pod security standards
 ---
 # Pod Security Admission Modes
 
-Switching a namespace straight to `enforce: restricted` rejects every Pod that does not comply, including the Pods of applications that already run there. Pod Security Admission therefore has three modes, so an administrator can measure the effect of a profile before it blocks anything. This part explains the three modes, the version pin, and the order of steps for a safe rollout. It ends with a graded task.
+Switching a namespace straight to `enforce: restricted` rejects every Pod that does not comply, including the Pods of applications that already run there. Pod Security Admission therefore has three modes, so an administrator can measure the effect of a profile before it blocks anything. This part explains the three modes, the version pin, and the order of steps for a safe rollout.
 
 ## Three modes and two labels each
 
@@ -21,9 +20,9 @@ The three modes are independent. A namespace can enforce Baseline, and warn and 
 
 ## See the modes work
 
-Save this as `namespace-modes-demo.yaml`:
-
 <!-- astrona:playground:renew -->
+
+Save this as `namespace-modes-demo.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -89,8 +88,6 @@ Use this order when you add Pod Security labels to a namespace that already runs
 2. Read the warnings and the audit annotations, and fix each workload.
 3. Run the server-side dry run of the `enforce` label and check that no warning remains.
 4. Set `enforce` to the target profile, with a version label that fixes the rules.
-
-The task after this part follows the end state of that rollout on a new namespace. Namespace `restricted` must enforce Restricted at `v1.35`, a compliant Pod must run there, and a privileged Pod must be rejected by Pod Security Admission.
 
 You now know what each mode does and how to preview a stricter label. What remains is how the checks behave for Pods that controllers create, because a Deployment does not create Pods itself.
 

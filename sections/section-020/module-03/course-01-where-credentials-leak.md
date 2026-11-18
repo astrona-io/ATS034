@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -130,7 +129,7 @@ kubectl -n starfleet exec moved-reader -- sh -c 'test "$(cat /credentials/token)
 
 The last command prints `match`. After the new Pod works, delete the old copies: the ConfigMap key or the whole ConfigMap, and the Pod `leaky`. Deleting a copy does not make the credential safe again. A credential that was readable in a ConfigMap or a repository counts as exposed, so rotate it at its source.
 
-You now know where the copies hide and how to replace one. The graded task on the next page asks you to do this for a ConfigMap. The remaining question is how to avoid having the Secret itself in the cluster or in Git.
+You now know where the copies hide and how to replace one with a Secret. The remaining question is how to avoid having the Secret itself in the cluster or in Git.
 
 ## Common pitfalls
 

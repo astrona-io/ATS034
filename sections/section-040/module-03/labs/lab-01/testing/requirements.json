@@ -1,21 +1,49 @@
 {
   "context": "kind-astro-ats-034-lab-040-03-01",
   "cluster": "astro-ats-034-lab-040-03-01",
-  "namespace": "kube-system",
+  "namespace": "starfleet-034-040-03-01",
   "resources": [
     {
-      "kind": "configmap",
-      "name": "cilium-values",
+      "kind": "pod",
+      "name": "probe",
+      "namespace": "starfleet-034-040-03-01",
+      "expected": {
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet-034-040-03-01",
+          "labels": {
+            "app": "probe"
+          }
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "pod",
+      "name": "shuttle",
+      "namespace": "starfleet-034-040-03-01",
+      "expected": {
+        "metadata": {
+          "name": "shuttle",
+          "namespace": "starfleet-034-040-03-01",
+          "labels": {
+            "app": "shuttle"
+          }
+        }
+      },
+      "state": "pod"
+    },
+    {
+      "kind": "daemonset",
+      "name": "cilium",
       "namespace": "kube-system",
       "expected": {
-        "apiVersion": "v1",
-        "kind": "ConfigMap",
         "metadata": {
-          "name": "cilium-values",
+          "name": "cilium",
           "namespace": "kube-system"
         }
       },
-      "outcome": "helm-values"
+      "state": "daemonset"
     }
   ],
   "behavior": []
