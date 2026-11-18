@@ -1,0 +1,49 @@
+{
+  "context": "kind-astro-ats-034-lab-010-03-03",
+  "cluster": "astro-ats-034-lab-010-03-03",
+  "namespace": "node-agents-034-010-03-03",
+  "resources": [
+    {
+      "kind": "deployment",
+      "name": "log-agent",
+      "outcome": "agent-admitted",
+      "expected": {
+        "spec": {
+          "replicas": 1,
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "log-agent",
+                  "image": "docker.io/library/busybox:1.37.0",
+                  "command": ["sleep", "infinity"]
+                }
+              ],
+              "volumes": [
+                {
+                  "name": "node-logs",
+                  "hostPath": {
+                    "path": "/var/log"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "state": "deployment"
+    },
+    {
+      "kind": "serviceaccount",
+      "name": "deployer",
+      "namespace": "starfleet-034-010-03-03",
+      "outcome": "labels-protected",
+      "expected": {
+        "metadata": {
+          "name": "deployer"
+        }
+      }
+    }
+  ],
+  "behavior": []
+}

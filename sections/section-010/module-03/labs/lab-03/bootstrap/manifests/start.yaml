@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-agents-034-010-03-03
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.35
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet-034-010-03-03
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.35
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-agent
+  namespace: node-agents-034-010-03-03
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-agent
+  template:
+    metadata:
+      labels:
+        app: log-agent
+    spec:
+      containers:
+      - name: log-agent
+        image: docker.io/library/busybox:1.37.0
+        command: ["sleep", "infinity"]
+        volumeMounts:
+        - name: node-logs
+          mountPath: /host-logs
+          readOnly: true
+      volumes:
+      - name: node-logs
+        hostPath:
+          path: /var/log
+          type: Directory
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployer
+  namespace: starfleet-034-010-03-03
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployer
+  namespace: starfleet-034-010-03-03
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployer
+  namespace: starfleet-034-010-03-03
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deployer
+subjects:
+- kind: ServiceAccount
+  name: deployer
+  namespace: starfleet-034-010-03-03
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-labeler-034-010-03-03
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: deployer-namespace-labeler-034-010-03-03
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: namespace-labeler-034-010-03-03
+subjects:
+- kind: ServiceAccount
+  name: deployer
+  namespace: starfleet-034-010-03-03
