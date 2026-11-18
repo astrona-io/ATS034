@@ -38,6 +38,6 @@ if wants('tenant-workload'):
     assert status.get('observedGeneration', 0) >= deployment['metadata']['generation'] and status.get('updatedReplicas', 0) == 1 \
         and status.get('readyReplicas', 0) == 1 and status.get('replicas', 0) == 1, 'Deployment tenant-d-app must finish its rollout with one ready replica'
     pods = json.loads(kubectl('-n', TENANT, 'get', 'pods', '-l', 'app=tenant-d-app', '-o', 'json'))['items']
-    running = [pod for pod in pods if pod.get('status', {}).get('phase') == 'Running']
+    running = [pod for pod in pods if pod.get('status', {}).get('phase') == 'Running' and not pod['metadata'].get('deletionTimestamp')]
     assert running and all(pod['spec'].get('nodeName') == WORKER for pod in running), 'The Pod of tenant-d-app must run on the worker node ' + WORKER
     assert all(pod['spec'].get('nodeSelector', {}) == {PROTECTED: 'tenant-d'} for pod in running), 'The running Pod must come from the updated template'

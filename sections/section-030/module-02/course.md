@@ -8,7 +8,7 @@ A Pod asks for a sandbox with one field, `runtimeClassName`. A long chain of com
 
 This module follows that chain. It shows where the runtime handler is configured on a node, compares the two common sandboxes, controls where sandboxed Pods run and what they cost, and then makes the cluster refuse Pods that do not ask for the sandbox.
 
-The module has four parts. **The Runtime Handler Chain** follows a Pod from the kubelet to the low-level runtime. **gVisor And Kata Compared** explains how each sandbox places its boundary and what each costs. **RuntimeClass Scheduling And Overhead** merges node selectors, tolerations and fixed resources into Pods, and ends with a graded task. **Requiring The Sandbox With Admission Policy** rejects Pods that omit the class.
+The module has four parts. **The Runtime Handler Chain** follows a Pod from the kubelet to the low-level runtime. **gVisor And Kata Compared** explains how each sandbox places its boundary and what each costs. **RuntimeClass Scheduling And Overhead** merges node selectors, tolerations and fixed resources into Pods. **Requiring The Sandbox With Admission Policy** rejects Pods that omit the class. A graded task follows the scheduling part and the admission part.
 
 ## Learning objectives
 
@@ -32,6 +32,3 @@ Launch your playground now, and keep it running next to you while you read the p
 
 <!-- astrona:playground -->
 
-## Independent live assessment
-
-Prepare with [Start And Verify A Real gVisor Sandbox](course-04a-run-a-real-gvisor-sandbox.md). [Run A Workload Under gVisor](labs/lab-02/question.md) uses its own qemu environment. Docker launches a fresh container through the installed gVisor runtime; The running scout container uses gVisor and serves the expected response.
