@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Istio Mutual TLS With PeerAuthentication
 
-Permissive mode lets plain-text clients reach a meshed workload, so it cannot guarantee that traffic is encrypted. Istio has an object for changing that: `PeerAuthentication`. This part explains how Istio sets up mTLS, what the modes mean, how the scopes combine, and what you will observe when you require mTLS for the `starfleet` namespace.
+Permissive mode lets plain-text clients reach a meshed workload, so it cannot guarantee that traffic is encrypted. Istio has an object for changing that: `PeerAuthentication`. This reading explains how Istio sets up mTLS, what the modes mean, how the scopes combine, and what you will observe when you require mTLS for the `starfleet` namespace.
 
 ## How the sidecars build an mTLS connection
 
@@ -67,7 +66,7 @@ kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.sta
 kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The first command still returns the `version=v1` line, because `shuttle` has a sidecar and sends mTLS. The second command fails. The sidecar of the target Pod received a plain-text connection and closed it, so `wget` reports a connection error that mentions a reset. The application did not change, the sidecar of the receiver rejected the connection, and the failure takes effect within a few seconds after `istiod` sends the new configuration to the proxies.
+The first command still returns the `version=v1` line, because `shuttle` has a sidecar and sends mTLS. The second command fails. The sidecar of the target Pod received a plain-text connection and closed it, so `wget` prints `wget: error getting response: Connection reset by peer`. The application did not change, the sidecar of the receiver rejected the connection, and the failure takes effect within a few seconds after `istiod` sends the new configuration to the proxies.
 
 Confirm that the policy did not break the Deployment:
 
@@ -81,7 +80,7 @@ Both Pods stay `Ready`. Istio rewrites the HTTP readiness probes of injected Pod
 
 Move from permissive to strict in this order. Inject sidecars into every workload that talks to the namespace. Watch for plain-text clients in the mesh metrics or access logs. Apply `STRICT` to one namespace, then to the whole mesh with a policy in `istio-system`. Clients outside the mesh, such as an ingress that terminates traffic, a monitoring system or a Job in a namespace without injection, will fail under `STRICT`, so they need a sidecar or a per-port exception.
 
-You now know how to enforce encryption for a namespace and how to predict which callers break. A successful mTLS connection also tells the receiver who the caller is, and the next part uses that fact.
+You now know how to enforce encryption for a namespace and how to predict which callers break. A successful mTLS connection also tells the receiver who the caller is, and that identity is what an authorization rule can check.
 
 ## Common pitfalls
 

@@ -1,33 +1,21 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
-# Require Mutual TLS Between Workloads Solution
+# Require Mutual TLS With PeerAuthentication Solution
 
-Use a host shell with the private kubeconfig for this independent kind environment. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-040-01-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-040-01-01" || exit 1
-node_name="astro-ats-034-lab-040-01-01-control-plane"
-worker_name="astro-ats-034-lab-040-01-01-worker"
 ```
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Inspect And Explain
+A PeerAuthentication is an Istio object that tells the sidecar proxies which incoming traffic they accept. Its `mtls.mode` field takes `PERMISSIVE` (accept mutual TLS and plain text), `STRICT` (accept only mutual TLS) or `DISABLE` (accept only plain text). A policy without a `selector` covers every workload in its namespace. `istiod`, the Istio control plane, turns the policy into listener configuration and sends it to each sidecar.
 
-The isolated environment has two healthy probe replicas, an internal Service and two client Pods. The required result has not been configured.
-
-Inspect the current objects before changing them:
-
-```sh
-kubectl -n starfleet-034-040-01-01 get pods -o wide
-kubectl get nodes -o wide
-```
-
-Apply namespace-strict PeerAuthentication with STRICT mutual TLS to starfleet-034-040-01-01. Keep Istio 1.30.5 running and the application and shuttle Pods injected and Ready. Shuttle with its proxy must receive version one, while the unmeshed outpost-034-040-01-01 drifter must fail its plaintext request with a connection-reset response. This verifies one service-mesh boundary, not host traffic or encryption for every possible path.
+In this lab one namespace-wide policy is enough. The `shuttle` pod keeps working because its sidecar opens a mutual TLS connection to the probe sidecar on its own. The `drifter` pod has no sidecar, so it sends plain HTTP, and the probe sidecar now resets that connection.
 
 Save this as `peerauthentication-namespace-strict.yaml`:
 
@@ -42,26 +30,28 @@ spec:
     mode: STRICT
 ```
 
-Apply the scoped correction:
+Apply it:
 
 ```sh
 kubectl apply -f peerauthentication-namespace-strict.yaml
 ```
 
-## Verify The Result
-
-Observe the actual result. A denied request returns a nonzero status when the denial works, so run it separately from a shell sequence that stops on error. Status convergence and a successful request establish different parts of the result.
+Then check the result. Wait a few seconds so that `istiod` can push the change, and send one request from each client:
 
 ```sh
-kubectl -n starfleet-034-040-01-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe/
-kubectl -n outpost-034-040-01-01 exec drifter -- wget -q -T 3 -O- http://probe.starfleet-034-040-01-01/
+kubectl -n starfleet-034-040-01-01 exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-01-01.svc.cluster.local/
+kubectl -n outpost-034-040-01-01 exec drifter -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-01-01.svc.cluster.local/
 ```
 
-Require mesh-authenticated traffic while keeping the injected client able to reach the application. The commands above deliberately target one environment. Keep its remaining components available so an unrelated failure cannot stand in for the required denial or correction. No example command output is presented as evidence of a completed run. A matching field alone does not establish that a process used it or that a controller reconciled it.
+The `shuttle` request prints a line that starts with `version=v1`. The `drifter` request fails with `wget: error getting response: Connection reset by peer`. The reset comes from the probe sidecar: it waits for a TLS handshake and closes the connection when plain HTTP arrives.
 
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-040-01-01`.
+A mesh-wide policy in `istio-system` with the same `spec` also passes, because Istio uses the mesh-wide policy for every namespace that has no policy of its own. The namespace policy is the safer answer here: it changes only the namespace the task names.
+
+When you are done, remove the lab with `astrona destroy ats-034-lab-040-01-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> Enabling namespace injection does not change existing Pods. Recreate them and verify actual proxies. A declaration of STRICT is not evidence of encryption unless the allowed and denied traffic paths are tested.
+> A policy with `mode: STRICT` proves nothing on its own. Always send one request that must work and one that must fail, from a client with a sidecar and from a client without one.
+>
+> Do not test only from a pod with a sidecar. Its sidecar uses mutual TLS anyway, so the request works with or without the policy.

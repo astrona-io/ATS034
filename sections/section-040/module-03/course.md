@@ -1,33 +1,26 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Cilium WireGuard And IPsec Encryption
 
-Istio encrypts the traffic of Pods that have a sidecar. Pods without a sidecar, and traffic that the mesh does not cover, stay in plain text. Cilium closes that gap from below: it encrypts packets between nodes in the kernel, for every Pod, with no change to the application and no sidecar. This module covers what that encryption protects, how to enable it with WireGuard or IPsec, how to manage the IPsec keys and how to verify it.
+Istio encrypts the traffic of pods that have a sidecar proxy. Pods without a sidecar, and traffic that the mesh does not cover, stay in plain text. Cilium closes that gap at the network layer: it encrypts packets between nodes in the Linux kernel, for every pod, with no change to the application and no sidecar. This module shows what that encryption protects, how to turn it on with WireGuard or IPsec, how to rotate the IPsec key and how to prove that packets are encrypted.
 
-Cilium is a Container Network Interface (CNI) plugin. A CNI plugin sets up the network of each Pod and moves packets between Pods. Cilium does this with eBPF programs in the Linux kernel, and it configures encryption in the same place. WireGuard and IPsec are two protocols that encrypt IP packets between two hosts.
+Cilium is a Container Network Interface (CNI) plugin. A CNI plugin gives each pod its network and moves packets between pods. Cilium does this with eBPF programs, small programs that run inside the Linux kernel, and it sets up the encryption in the same place. WireGuard and IPsec (Internet Protocol Security) are two protocols that encrypt IP packets between two hosts.
 
 ## Learning objectives
 
 After this module you can:
 
 - Say which traffic Cilium encryption protects and which traffic it leaves in plain text.
-- Choose between WireGuard and IPsec for a cluster and check the requirements of each.
-- Write the Helm values that enable each protocol, and create the IPsec key Secret in the correct format.
-- Rotate IPsec keys and verify with the Cilium agent and a packet capture that encryption is active.
+- Turn on WireGuard encryption with Helm and confirm the peers on every Cilium agent.
+- Create the IPsec key Secret in the correct format, switch Cilium to IPsec and rotate the key to a new SPI.
+- Prove encryption with `cilium-dbg`, the kernel state of each node and a packet capture, and state the limits of the result.
 
 ## Before you start
 
-You need Pods, nodes, namespaces, Secrets, ConfigMaps and the commands `kubectl apply`, `kubectl get` and `kubectl create`. You should know what a CNI plugin does. The module has four parts. The first explains what Cilium encrypts. The second enables WireGuard. The third sets up IPsec keys and rotation. The fourth verifies encryption and lists its limits.
+You need pods, nodes, namespaces, DaemonSets and Secrets, and the commands `kubectl get`, `kubectl exec` and `kubectl create`. You also need Helm, the package manager for Kubernetes, on your machine. The module first shows what Cilium encrypts and captures plain-text traffic. It then turns on WireGuard, switches to IPsec and rotates the key, and it ends with a full verification and the limits. A graded lab follows the WireGuard reading and another follows the IPsec reading.
 
-Your playground is a `kind` cluster running Kubernetes 1.35 with one control-plane node and one worker node. This fixture uses kindnet and does not install Cilium. A real Cilium exercise needs its own CNI setup, compatible kernel features, workloads on different nodes and packet-level verification. You do the work that you can do without it: you write the Helm values, you create the key Secret and you check the files that a Cilium installation reads. The commands that talk to Cilium agents are shown as a procedure for a real cluster, and the text says when a command does not run in the playground.
-
-The playground has one ConfigMap, `cilium-values` in `kube-system`. It stands for the Helm values file of a cluster and holds the starting values, with encryption turned off. Launch your playground now and keep it running while you read:
+Your playground is a kind cluster running Kubernetes 1.35 with one control-plane node and one worker node. Cilium 1.20.4 is its network plugin, with encryption turned off. This module needs Docker or rootful Podman, because Cilium mounts the BPF filesystem on each node; to switch Podman, run `podman machine stop; podman machine set --rootful; podman machine start`. Launch your playground now and keep it running while you read:
 
 <!-- astrona:playground -->
-
-## Independent live assessment
-
-Prepare with [Prove Cilium Encrypts A Cross-Node Request](course-03a-observe-encrypted-cross-node-traffic.md). [Encrypt And Observe Cross-Node Traffic](labs/lab-02/question.md) uses its own qemu environment. Both real Cilium agents have active WireGuard peers; Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the node interface.

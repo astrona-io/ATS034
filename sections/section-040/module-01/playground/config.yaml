@@ -10,11 +10,13 @@ runtime:
     preloadImages:
     - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-istio-and-workloads
     type: file
     source: bootstrap/setup.sh
 teardown:

@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Authorizing Workloads With AuthorizationPolicy
 
-Encryption answers whether a connection is private. It does not answer whether the caller is allowed to make the request. With strict mTLS, the receiving sidecar knows the caller's certificate identity, and an `AuthorizationPolicy` can use it. This part explains how the policy is evaluated and tests it with a second client that has its own ServiceAccount.
+Encryption answers whether a connection is private. It does not answer whether the caller is allowed to make the request. With strict mTLS, the receiving sidecar knows the caller's certificate identity, and an `AuthorizationPolicy` can use it. This reading explains how the policy is evaluated and tests it with a second client that has its own ServiceAccount.
 
 ## Identity comes from the ServiceAccount
 
@@ -112,7 +111,7 @@ kubectl -n starfleet exec bridge-client -c client -- wget -q -T 3 -O- http://pro
 kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
 ```
 
-The first command returns the `version=v1` line. The second command fails with an HTTP 403 error, and the response body from the sidecar is `RBAC: access denied`. Both clients used mTLS and both were authenticated. The sidecar of `probe` authorized only one of them, because `shuttle` runs as the default ServiceAccount and its principal is not in the rule. The failure is an HTTP error from the target sidecar, so it differs from the connection reset that a plain-text client gets under strict mTLS.
+The first command returns the `version=v1` line. The second command fails with `wget: server returned error: HTTP/1.1 403 Forbidden`. The sidecar sends the body `RBAC: access denied` with that status, but BusyBox `wget` does not print it. Both clients used mTLS and both were authenticated. The sidecar of `probe` authorized only one of them, because `shuttle` runs as the default ServiceAccount and its principal is not in the rule. The failure is an HTTP error from the target sidecar, so it differs from the connection reset that a plain-text client gets under strict mTLS.
 
 ## Pick the right layer
 

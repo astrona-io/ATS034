@@ -1,11 +1,12 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Guided Practice: Migrate A Namespace To Strict mTLS
 
-Use a host shell with the private kubeconfig for this module playground. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+This playground is a kind cluster with two nodes and Istio 1.30.5. This practice moves the `starfleet` namespace to strict mTLS (mutual Transport Layer Security) and keeps one old workload reachable for a client without a sidecar. A `PeerAuthentication` is the Istio object that tells the sidecar proxies which incoming traffic they accept.
+
+Use a host shell with the private kubeconfig for this playground. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use.
 
 <!-- astrona:playground:renew -->
 

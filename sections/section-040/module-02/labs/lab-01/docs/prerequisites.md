@@ -1,15 +1,16 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Prerequisites
 
-Use `astrona`, `kubectl`, Python 3 and a shell. A kubeconfig identifies the cluster and credentials that `kubectl`, the Kubernetes command-line tool, uses.
+Use a host shell with astrona, kubectl and Python 3.
+
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-040-02-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-040-02-01" || exit 1
 ```
 
-Keep this connection selected. The cluster has one control-plane node and one worker node.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.

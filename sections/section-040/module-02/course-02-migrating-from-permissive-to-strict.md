@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Migrating From Permissive To Strict
 
-Setting `STRICT` on a namespace is quick, and it breaks every client that cannot speak mTLS. In a running cluster some clients cannot: a Job in a namespace without injection, a monitoring agent, or an old service that nobody can change this quarter. This part gives a migration order that avoids an outage and shows how to keep one legacy workload reachable with a narrow exception.
+Setting `STRICT` on a namespace is quick, and it breaks every client that cannot speak mTLS. In a running cluster some clients cannot: a Job in a namespace without injection, a monitoring agent, or an old service that nobody can change this quarter. This reading gives a migration order that avoids an outage and shows how to keep one legacy workload reachable with a narrow exception.
 
 ## The migration order
 
@@ -35,11 +34,11 @@ Start with the current state. The playground has a `legacy` workload next to `pr
 <!-- astrona:playground:renew -->
 
 ```sh
-kubectl -n starfleet get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[*].name}{"\n"}{end}'
+kubectl -n starfleet get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.initContainers[*].name}{"\t"}{.spec.containers[*].name}{"\n"}{end}'
 kubectl -n starfleet get pods -o wide
 ```
 
-Every Pod shows an `istio-proxy` container next to its application container, which proves that injection worked. The client `drifter` in `outpost` has no sidecar, and it stands for the old client that cannot use mTLS. Check that it reaches both workloads before you change anything:
+Every Pod lists `istio-init` and `istio-proxy` in the init container column and its application container after it, which proves that injection worked. On Kubernetes 1.35 `istio-proxy` is a native sidecar: an init container that keeps running next to the application. The client `drifter` in `outpost` has no sidecar, and it stands for the old client that cannot use mTLS. Check that it reaches both workloads before you change anything:
 
 ```sh
 kubectl -n outpost exec drifter -- wget -q -T 3 -O- http://probe.starfleet.svc.cluster.local/
@@ -98,7 +97,7 @@ kubectl -n starfleet exec shuttle -c client -- wget -q -T 3 -O- http://probe.sta
 
 The first command works because the workload policy for `app: legacy` replaces the namespace policy for those Pods. The second still fails, so `probe` stays protected. The third works because `shuttle` has a sidecar and sends mTLS. The exception is narrow: one label, one workload. If the old client could be changed to use the sidecar, you would delete this object and the workload would fall back to the namespace `STRICT`.
 
-You now have a namespace that enforces mTLS except for one named workload. A policy that enforces mTLS depends on certificates, and the next part explains where they come from.
+You now have a namespace that enforces mTLS except for one named workload. A policy that enforces mTLS depends on certificates, and the open question is where they come from.
 
 ## Common pitfalls
 

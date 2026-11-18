@@ -696,27 +696,44 @@ modules:
     title: Istio Mutual TLS With PeerAuthentication
     path: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
   - type: reading
-    title: "Require Mutual TLS Between Workloads \u2014 Task"
+    title: Require Mutual TLS With PeerAuthentication — Task
     path: sections/section-040/module-01/labs/lab-01/question.md
   - type: lab
-    title: Require Mutual TLS Between Workloads
+    title: Require Mutual TLS With PeerAuthentication
     path: sections/section-040/module-01/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: workload-mtls
     task_kind: build
     learning_goals:
-    - Require mesh-authenticated traffic while keeping the injected client able to reach the application.
+    - Require STRICT mTLS for a namespace so that meshed clients keep working and a client without a sidecar is rejected.
     tags:
     - cks
     - workload-mtls
   - type: reading
-    title: "Require Mutual TLS Between Workloads \u2014 Solution"
+    title: Require Mutual TLS With PeerAuthentication — Solution
     path: sections/section-040/module-01/labs/lab-01/solution.md
   - type: reading
     title: Authorizing Workloads With AuthorizationPolicy
     path: sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+  - type: reading
+    title: Allow One Workload Identity With AuthorizationPolicy — Task
+    path: sections/section-040/module-01/labs/lab-02/question.md
+  - type: lab
+    title: Allow One Workload Identity With AuthorizationPolicy
+    path: sections/section-040/module-01/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: workload-authorization
+    task_kind: build
+    learning_goals:
+    - Allow requests to a workload only from one ServiceAccount principal with an Istio AuthorizationPolicy.
+    tags:
+    - cks
+    - workload-authorization
+  - type: reading
+    title: Allow One Workload Identity With AuthorizationPolicy — Solution
+    path: sections/section-040/module-01/labs/lab-02/solution.md
   - type: reading
     title: Cilium Transparent Encryption
     path: sections/section-040/module-01/course-04-cilium-transparent-encryption.md
@@ -735,34 +752,68 @@ modules:
     title: Modes, Scope And Precedence
     path: sections/section-040/module-02/course-01-modes-scope-and-precedence.md
   - type: reading
-    title: Migrating From Permissive To Strict
-    path: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
-  - type: reading
-    title: "Migrate A Namespace To Strict mTLS With One Exception \u2014 Task"
+    title: Override Mesh-Wide STRICT For One Namespace — Task
     path: sections/section-040/module-02/labs/lab-01/question.md
   - type: lab
-    title: Migrate A Namespace To Strict mTLS With One Exception
+    title: Override Mesh-Wide STRICT For One Namespace
     path: sections/section-040/module-02/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 25m
+    estimated_duration: 10m
     topic: mtls-migration
     task_kind: build
     learning_goals:
-    - Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level
-      exception.
+    - Predict and set the effective mTLS mode with mesh-wide and namespace PeerAuthentication precedence.
     tags:
     - cks
     - mtls-migration
   - type: reading
-    title: "Migrate A Namespace To Strict mTLS With One Exception \u2014 Solution"
+    title: Override Mesh-Wide STRICT For One Namespace — Solution
     path: sections/section-040/module-02/labs/lab-01/solution.md
+  - type: reading
+    title: Migrating From Permissive To Strict
+    path: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
+  - type: reading
+    title: Migrate A Namespace To STRICT With One Exception — Task
+    path: sections/section-040/module-02/labs/lab-02/question.md
+  - type: lab
+    title: Migrate A Namespace To STRICT With One Exception
+    path: sections/section-040/module-02/labs/lab-02
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: mtls-migration
+    task_kind: build
+    learning_goals:
+    - Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level exception.
+    tags:
+    - cks
+    - mtls-migration
+  - type: reading
+    title: Migrate A Namespace To STRICT With One Exception — Solution
+    path: sections/section-040/module-02/labs/lab-02/solution.md
   - type: reading
     title: Certificates And Workload Identity
     path: sections/section-040/module-02/course-03-certificates-and-workload-identity.md
   - type: reading
     title: Verifying And Troubleshooting mTLS
     path: sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+  - type: reading
+    title: Fix A Client TLS Setting That Breaks STRICT — Task
+    path: sections/section-040/module-02/labs/lab-03/question.md
+  - type: lab
+    title: Fix A Client TLS Setting That Breaks STRICT
+    path: sections/section-040/module-02/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 15m
+    topic: mtls-troubleshooting
+    task_kind: build
+    learning_goals:
+    - Find and fix a DestinationRule that sends plain text to a STRICT destination.
+    tags:
+    - cks
+    - mtls-troubleshooting
+  - type: reading
+    title: Fix A Client TLS Setting That Breaks STRICT — Solution
+    path: sections/section-040/module-02/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-040/module-02/course-05-summary.md
@@ -781,47 +832,47 @@ modules:
     title: Enabling WireGuard
     path: sections/section-040/module-03/course-02-enabling-wireguard.md
   - type: reading
-    title: IPsec Keys And Rotation
-    path: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
-  - type: reading
-    title: "Prepare IPsec Encryption For Cilium \u2014 Task"
+    title: Enable WireGuard Encryption In Cilium — Task
     path: sections/section-040/module-03/labs/lab-01/question.md
   - type: lab
-    title: Prepare IPsec Encryption For Cilium
+    title: Enable WireGuard Encryption In Cilium
     path: sections/section-040/module-03/labs/lab-01
-    examScope: cluster
     difficulty: intermediate
-    estimated_duration: 20m
+    estimated_duration: 10m
     topic: cilium-ipsec
     task_kind: build
     learning_goals:
-    - Create the IPsec key Secret and set the Helm values that enable Cilium IPsec encryption.
+    - Turn on Cilium WireGuard encryption with Helm and confirm a peer on every agent.
     tags:
     - cks
     - cilium-ipsec
   - type: reading
-    title: "Prepare IPsec Encryption For Cilium \u2014 Solution"
+    title: Enable WireGuard Encryption In Cilium — Solution
     path: sections/section-040/module-03/labs/lab-01/solution.md
   - type: reading
-    title: Verifying Cilium Encryption And Its Limits
-    path: sections/section-040/module-03/course-04-verifying-and-limits.md
+    title: IPsec Keys And Rotation
+    path: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
   - type: reading
-    title: Prove Cilium Encrypts A Cross-Node Request
-    path: sections/section-040/module-03/course-03a-observe-encrypted-cross-node-traffic.md
-  - type: reading
-    title: "Encrypt And Observe Cross-Node Traffic \u2014 Task"
+    title: Rotate The Cilium IPsec Key — Task
     path: sections/section-040/module-03/labs/lab-02/question.md
   - type: lab
-    title: Encrypt And Observe Cross-Node Traffic
+    title: Rotate The Cilium IPsec Key
     path: sections/section-040/module-03/labs/lab-02
     difficulty: intermediate
     estimated_duration: 15m
+    topic: cilium-ipsec-rotation
+    task_kind: build
     learning_goals:
-    - Both real Cilium agents have active WireGuard peers
-    - Cross-node HTTP succeeds, appears inside WireGuard and is absent in plaintext on the node interface
+    - Rotate the Cilium IPsec key to a higher SPI and confirm that every agent loaded it.
+    tags:
+    - cks
+    - cilium-ipsec-rotation
   - type: reading
-    title: "Encrypt And Observe Cross-Node Traffic \u2014 Solution"
+    title: Rotate The Cilium IPsec Key — Solution
     path: sections/section-040/module-03/labs/lab-02/solution.md
+  - type: reading
+    title: Verifying Cilium Encryption And Its Limits
+    path: sections/section-040/module-03/course-04-verifying-and-limits.md
   - type: reading
     title: Summary
     path: sections/section-040/module-03/course-05-summary.md
@@ -830,24 +881,6 @@ modules:
     path: sections/section-040/module-03/quiz.yaml
     question_count: 10
     pass_score: 70
-  - type: reading
-    title: "Encrypt And Authorize Pod Traffic \u2014 Task"
-    path: sections/section-040/capstone/labs/lab-01/question.md
-  - type: lab
-    title: Encrypt And Authorize Pod Traffic
-    path: sections/section-040/capstone/labs/lab-01
-    difficulty: advanced
-    estimated_duration: 40m
-    topic: pod-encryption-capstone
-    task_kind: build
-    learning_goals:
-    - Combine strict mTLS, an identity-based AuthorizationPolicy and Cilium WireGuard values in one cluster.
-    tags:
-    - cks
-    - pod-encryption-capstone
-  - type: reading
-    title: "Encrypt And Authorize Pod Traffic \u2014 Solution"
-    path: sections/section-040/capstone/labs/lab-01/solution.md
   - type: quiz
     title: Final Domain Quiz
     path: sections/final-domain-quiz.yaml

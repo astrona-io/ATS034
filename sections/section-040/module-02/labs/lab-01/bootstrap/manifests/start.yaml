@@ -1,33 +1,44 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: starfleet-034-040-02-01
   labels:
-    project: ckad
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: depot-034-040-02-01
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: outpost-034-040-02-01
-  labels:
-    project: outpost-034-040-02-01
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: probe-code
+  name: server-code
   namespace: starfleet-034-040-02-01
 data:
-  server.py: "from http.server import BaseHTTPRequestHandler, HTTPServer\nfrom pathlib\
-    \ import Path\nimport os\nimport socket\n\nclass Handler(BaseHTTPRequestHandler):\n\
-    \    def do_GET(self):\n        marker = {\"/ready\": \"/tmp/not-ready\", \"/health\"\
-    : \"/tmp/unhealthy\"}.get(self.path)\n        status = 503 if marker and Path(marker).exists()\
-    \ else 200\n        settings = Path(\"/settings/greeting\")\n        greeting\
-    \ = settings.read_text().strip() if settings.exists() else os.getenv(\"GREETING\"\
-    , \"hello\")\n        body = f\"version={os.getenv('VERSION', 'v1')} host={socket.gethostname()}\
-    \ greeting={greeting}\\n\"\n        self.send_response(status)\n        self.send_header(\"\
-    Content-Type\", \"text/plain\")\n        self.end_headers()\n        self.wfile.write(body.encode())\n\
-    \nHTTPServer((\"0.0.0.0\", 8080), Handler).serve_forever()\n"
+  server.py: "from http.server import BaseHTTPRequestHandler, HTTPServer\nimport os\nimport socket\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        body = f\"version={os.getenv('VERSION', 'v1')} host={socket.gethostname()}\\n\"\n        self.send_response(200)\n        self.send_header(\"Content-Type\", \"text/plain\")\n        self.end_headers()\n        self.wfile.write(body.encode())\n\nHTTPServer((\"0.0.0.0\", 8080), Handler).serve_forever()\n"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: probe
+  namespace: starfleet-034-040-02-01
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -35,19 +46,18 @@ metadata:
   name: probe
   namespace: starfleet-034-040-02-01
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: probe
-      release: probe
   template:
     metadata:
       labels:
         app: probe
-        release: probe
     spec:
+      serviceAccountName: probe
       containers:
-      - name: probe
+      - name: server
         image: docker.io/library/python:3.13-alpine
         command:
         - python
@@ -59,8 +69,7 @@ spec:
         - name: http
           containerPort: 8080
         readinessProbe:
-          httpGet:
-            path: /ready
+          tcpSocket:
             port: http
           periodSeconds: 2
         resources:
@@ -76,7 +85,7 @@ spec:
       volumes:
       - name: app
         configMap:
-          name: probe-code
+          name: server-code
 ---
 apiVersion: v1
 kind: Service
@@ -86,11 +95,16 @@ metadata:
 spec:
   selector:
     app: probe
-    release: probe
   ports:
   - name: http
     port: 80
     targetPort: http
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shuttle
+  namespace: starfleet-034-040-02-01
 ---
 apiVersion: v1
 kind: Pod
@@ -100,62 +114,58 @@ metadata:
   labels:
     app: shuttle
 spec:
+  serviceAccountName: shuttle
   containers:
   - name: client
     image: docker.io/library/busybox:1.37.0
     command:
-    - sh
-    - -c
-    - sleep 3600
-  restartPolicy: Never
+    - sleep
+    - "86400"
 ---
 apiVersion: v1
-kind: Pod
+kind: ConfigMap
 metadata:
-  name: drifter
-  namespace: outpost-034-040-02-01
-  labels:
-    app: drifter
-spec:
-  containers:
-  - name: client
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-  restartPolicy: Never
+  name: server-code
+  namespace: depot-034-040-02-01
+data:
+  server.py: "from http.server import BaseHTTPRequestHandler, HTTPServer\nimport os\nimport socket\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        body = f\"version={os.getenv('VERSION', 'v1')} host={socket.gethostname()}\\n\"\n        self.send_response(200)\n        self.send_header(\"Content-Type\", \"text/plain\")\n        self.end_headers()\n        self.wfile.write(body.encode())\n\nHTTPServer((\"0.0.0.0\", 8080), Handler).serve_forever()\n"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cargo
+  namespace: depot-034-040-02-01
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: legacy
-  namespace: starfleet-034-040-02-01
+  name: cargo
+  namespace: depot-034-040-02-01
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: legacy
+      app: cargo
   template:
     metadata:
       labels:
-        app: legacy
+        app: cargo
     spec:
+      serviceAccountName: cargo
       containers:
-      - name: legacy
+      - name: server
         image: docker.io/library/python:3.13-alpine
         command:
         - python
         - /app/server.py
         env:
         - name: VERSION
-          value: legacy
+          value: v1
         ports:
         - name: http
           containerPort: 8080
         readinessProbe:
-          httpGet:
-            path: /ready
+          tcpSocket:
             port: http
           periodSeconds: 2
         resources:
@@ -171,17 +181,39 @@ spec:
       volumes:
       - name: app
         configMap:
-          name: probe-code
+          name: server-code
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: legacy
-  namespace: starfleet-034-040-02-01
+  name: cargo
+  namespace: depot-034-040-02-01
 spec:
   selector:
-    app: legacy
+    app: cargo
   ports:
   - name: http
     port: 80
     targetPort: http
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: drifter
+  namespace: outpost-034-040-02-01
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: drifter
+  namespace: outpost-034-040-02-01
+  labels:
+    app: drifter
+spec:
+  serviceAccountName: drifter
+  containers:
+  - name: client
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sleep
+    - "86400"

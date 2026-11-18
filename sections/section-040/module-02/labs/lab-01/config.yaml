@@ -13,11 +13,13 @@ runtime:
     preloadImages:
     - docker.io/library/python:3.13-alpine
     - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
     nodes:
       workers: 1
 bootstrap:
   init:
-  - name: seed-private-environment
+  - name: install-istio-and-workloads
     type: file
     source: bootstrap/setup.sh
 teardown:
@@ -37,13 +39,18 @@ testing:
     source: testing/wait-solved.sh
 validation:
   scripts:
-  - name: namespace-strict
-    description: PeerAuthentication namespace-strict covers the whole namespace and the plaintext client cannot reach probe
+  - name: namespace-override
+    description: The PeerAuthentication namespace-permissive in starfleet-034-040-02-01 has no selector and sets PERMISSIVE, while the mesh-wide policy default in istio-system still sets STRICT
     type: file
-    source: validation/validate-namespace-strict.sh
+    source: validation/validate-namespace-override.sh
     points: 1
-  - name: legacy-exception
-    description: PeerAuthentication legacy-permissive lets the plaintext client reach legacy
+  - name: drifter-allowed
+    description: The drifter pod without a sidecar gets a reply from the probe Service in starfleet-034-040-02-01, and the shuttle pod still gets one too
     type: file
-    source: validation/validate-legacy-exception.sh
+    source: validation/validate-drifter-allowed.sh
+    points: 1
+  - name: depot-still-strict
+    description: depot-034-040-02-01 has no policy of its own, so the mesh-wide STRICT policy still applies there and the drifter pod is reset by the cargo sidecar
+    type: file
+    source: validation/validate-depot-still-strict.sh
     points: 1
