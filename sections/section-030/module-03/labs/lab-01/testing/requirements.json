@@ -1,37 +1,18 @@
 {
   "context": "kind-astro-ats-034-lab-030-03-01",
+  "cluster": "astro-ats-034-lab-030-03-01",
+  "namespace": "tenant-c-034-030-03-01",
   "resources": [
-    {
-      "kind": "node",
-      "name": "astro-ats-034-lab-030-03-01-worker",
-      "namespace": "",
-      "expected": {
-        "metadata": {
-          "labels": {
-            "tenant": "tenant-c"
-          }
-        },
-        "spec": {
-          "taints": [
-            {
-              "key": "tenant",
-              "value": "tenant-c",
-              "effect": "NoSchedule"
-            }
-          ]
-        }
-      }
-    },
     {
       "kind": "deployment",
       "name": "tenant-c-app",
-      "namespace": "tenant-c",
+      "namespace": "tenant-c-034-030-03-01",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "tenant-c-app",
-          "namespace": "tenant-c"
+          "namespace": "tenant-c-034-030-03-01"
         },
         "spec": {
           "replicas": 1,
@@ -52,7 +33,8 @@
           }
         }
       },
-      "state": "deployment"
+      "state": "deployment",
+      "outcome": "tenant-deployment"
     }
   ],
   "behavior": []

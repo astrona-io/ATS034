@@ -1,15 +1,17 @@
 {
-  "context": "kind-ats-034-lab-010-02-01",
+  "context": "kind-astro-ats-034-lab-010-02-01",
+  "cluster": "astro-ats-034-lab-010-02-01",
+  "namespace": "hardened-034-010-02-01",
   "resources": [
     {
       "kind": "namespace",
-      "name": "hardened",
+      "name": "hardened-034-010-02-01",
       "namespace": "",
       "expected": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
-          "name": "hardened",
+          "name": "hardened-034-010-02-01",
           "labels": {
             "pod-security.kubernetes.io/enforce": "restricted",
             "pod-security.kubernetes.io/enforce-version": "v1.35"
@@ -20,14 +22,13 @@
     {
       "kind": "deployment",
       "name": "scanner",
-      "namespace": "hardened",
-      "state": "deployment",
+      "namespace": "hardened-034-010-02-01",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "scanner",
-          "namespace": "hardened"
+          "namespace": "hardened-034-010-02-01"
         },
         "spec": {
           "replicas": 1,
@@ -38,17 +39,62 @@
           },
           "template": {
             "spec": {
+              "containers": [
+                {
+                  "name": "scanner",
+                  "image": "docker.io/library/busybox:1.37.0"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "scanner",
+      "namespace": "hardened-034-010-02-01",
+      "outcome": "pod-security-context",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scanner",
+          "namespace": "hardened-034-010-02-01"
+        },
+        "spec": {
+          "template": {
+            "spec": {
               "securityContext": {
                 "runAsNonRoot": true,
                 "runAsUser": 1000,
                 "seccompProfile": {
                   "type": "RuntimeDefault"
                 }
-              },
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "scanner",
+      "namespace": "hardened-034-010-02-01",
+      "outcome": "container-security-context",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scanner",
+          "namespace": "hardened-034-010-02-01"
+        },
+        "spec": {
+          "template": {
+            "spec": {
               "containers": [
                 {
                   "name": "scanner",
-                  "image": "docker.io/library/busybox:1.37.0",
                   "securityContext": {
                     "allowPrivilegeEscalation": false,
                     "readOnlyRootFilesystem": true,
@@ -57,7 +103,32 @@
                         "ALL"
                       ]
                     }
-                  },
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "deployment",
+      "name": "scanner",
+      "namespace": "hardened-034-010-02-01",
+      "outcome": "tmp-volume",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scanner",
+          "namespace": "hardened-034-010-02-01"
+        },
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "scanner",
                   "volumeMounts": [
                     {
                       "name": "tmp",
@@ -76,6 +147,26 @@
           }
         }
       }
+    },
+    {
+      "kind": "deployment",
+      "name": "scanner",
+      "namespace": "hardened-034-010-02-01",
+      "outcome": "scanner-runs",
+      "expected": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "scanner",
+          "namespace": "hardened-034-010-02-01"
+        },
+        "spec": {
+          "template": {
+            "spec": {}
+          }
+        }
+      },
+      "state": "deployment"
     }
   ],
   "behavior": [
@@ -83,20 +174,21 @@
       "args": [
         "kubectl",
         "-n",
-        "hardened",
+        "hardened-034-010-02-01",
         "exec",
         "deploy/scanner",
         "--",
         "id",
         "-u"
       ],
-      "equals": "1000"
+      "equals": "1000",
+      "outcome": "scanner-runs"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "hardened",
+        "hardened-034-010-02-01",
         "exec",
         "deploy/scanner",
         "--",
@@ -104,26 +196,28 @@
         "-c",
         "grep NoNewPrivs /proc/1/status | tr -d '[:space:]'"
       ],
-      "equals": "NoNewPrivs:1"
+      "equals": "NoNewPrivs:1",
+      "outcome": "scanner-runs"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "hardened",
+        "hardened-034-010-02-01",
         "exec",
         "deploy/scanner",
         "--",
         "cat",
         "/tmp/result"
       ],
-      "equals": "scan"
+      "equals": "scan",
+      "outcome": "scanner-runs"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "hardened",
+        "hardened-034-010-02-01",
         "exec",
         "deploy/scanner",
         "--",
@@ -134,7 +228,8 @@
       "failure_markers": [
         "read-only file system",
         "permission denied"
-      ]
+      ],
+      "outcome": "scanner-runs"
     }
   ]
 }

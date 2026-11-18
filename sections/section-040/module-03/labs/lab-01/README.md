@@ -7,4 +7,4 @@ exam_objectives:
 
 Create the IPsec key Secret and set the Helm values so that Cilium encrypts node-to-node traffic with IPsec.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. The grader reads the Secret and the values file, because the environment does not run Cilium. Static validation is not live evidence. Runtime verification remains pending.
+The task and solution use a separate pinned kind cluster. Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass. The grader reads the Secret and the values file, because the environment does not run Cilium.

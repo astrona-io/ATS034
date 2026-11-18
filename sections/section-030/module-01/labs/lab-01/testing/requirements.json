@@ -1,50 +1,54 @@
 {
   "context": "kind-astro-ats-034-lab-030-01-01",
+  "cluster": "astro-ats-034-lab-030-01-01",
+  "namespace": "starfleet-034-030-01-01",
   "resources": [
     {
       "kind": "namespace",
-      "name": "tenant-a",
+      "name": "tenant-a-034-030-01-01",
       "namespace": "",
       "expected": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
-          "name": "tenant-a",
+          "name": "tenant-a-034-030-01-01",
           "labels": {
             "pod-security.kubernetes.io/enforce": "restricted",
             "pod-security.kubernetes.io/enforce-version": "v1.35"
           }
         }
-      }
+      },
+      "outcome": "namespace-restricted"
     },
     {
       "kind": "resourcequota",
       "name": "tenant-budget",
-      "namespace": "tenant-a",
+      "namespace": "tenant-a-034-030-01-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "ResourceQuota",
         "metadata": {
           "name": "tenant-budget",
-          "namespace": "tenant-a"
+          "namespace": "tenant-a-034-030-01-01"
         },
         "spec": {
           "hard": {
             "pods": "3"
           }
         }
-      }
+      },
+      "outcome": "resource-quota"
     },
     {
       "kind": "pod",
       "name": "tenant-reader",
-      "namespace": "tenant-a",
+      "namespace": "tenant-a-034-030-01-01",
       "expected": {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
           "name": "tenant-reader",
-          "namespace": "tenant-a",
+          "namespace": "tenant-a-034-030-01-01",
           "labels": {
             "app": "tenant-reader"
           }
@@ -95,29 +99,29 @@
           "automountServiceAccountToken": false
         }
       },
-      "state": "pod"
+      "state": "pod",
+      "outcome": "tenant-reader"
     },
     {
       "kind": "networkpolicy",
       "name": "tenant-isolation",
-      "namespace": "tenant-a",
+      "namespace": "tenant-a-034-030-01-01",
       "expected": {
         "apiVersion": "networking.k8s.io/v1",
         "kind": "NetworkPolicy",
         "metadata": {
           "name": "tenant-isolation",
-          "namespace": "tenant-a"
+          "namespace": "tenant-a-034-030-01-01"
         },
         "spec": {
           "podSelector": {},
           "policyTypes": [
             "Ingress",
             "Egress"
-          ],
-          "ingress": [],
-          "egress": []
+          ]
         }
-      }
+      },
+      "outcome": "default-deny-policy"
     }
   ],
   "behavior": []

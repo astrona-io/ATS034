@@ -1,34 +1,37 @@
 {
   "context": "kind-astro-ats-034-lab-040-02-01",
+  "cluster": "astro-ats-034-lab-040-02-01",
+  "namespace": "starfleet-034-040-02-01",
   "resources": [
     {
       "kind": "peerauthentication",
       "name": "namespace-strict",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-02-01",
       "expected": {
         "apiVersion": "security.istio.io/v1",
         "kind": "PeerAuthentication",
         "metadata": {
           "name": "namespace-strict",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-02-01"
         },
         "spec": {
           "mtls": {
             "mode": "STRICT"
           }
         }
-      }
+      },
+      "outcome": "namespace-strict"
     },
     {
       "kind": "peerauthentication",
       "name": "legacy-permissive",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-02-01",
       "expected": {
         "apiVersion": "security.istio.io/v1",
         "kind": "PeerAuthentication",
         "metadata": {
           "name": "legacy-permissive",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-02-01"
         },
         "spec": {
           "selector": {
@@ -40,18 +43,19 @@
             "mode": "PERMISSIVE"
           }
         }
-      }
+      },
+      "outcome": "legacy-exception"
     },
     {
       "kind": "deployment",
       "name": "probe",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-02-01",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "probe",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-02-01"
         },
         "spec": {
           "replicas": 2,
@@ -131,13 +135,13 @@
     {
       "kind": "deployment",
       "name": "legacy",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-02-01",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "legacy",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-02-01"
         },
         "spec": {
           "replicas": 1,
@@ -156,7 +160,7 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-040-02-01",
         "exec",
         "shuttle",
         "-c",
@@ -177,7 +181,7 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-040-02-01",
         "exec",
         "shuttle",
         "-c",
@@ -198,7 +202,7 @@
       "args": [
         "kubectl",
         "-n",
-        "outpost",
+        "outpost-034-040-02-01",
         "exec",
         "drifter",
         "--",
@@ -207,17 +211,18 @@
         "-T",
         "3",
         "-O-",
-        "http://legacy.starfleet/"
+        "http://legacy.starfleet-034-040-02-01/"
       ],
       "contains": [
         "version=legacy"
-      ]
+      ],
+      "outcome": "legacy-exception"
     },
     {
       "args": [
         "kubectl",
         "-n",
-        "outpost",
+        "outpost-034-040-02-01",
         "exec",
         "drifter",
         "--",
@@ -226,13 +231,14 @@
         "-T",
         "3",
         "-O-",
-        "http://probe.starfleet/"
+        "http://probe.starfleet-034-040-02-01/"
       ],
       "denied": true,
       "failure_markers": [
         "connection reset",
         "error getting response"
-      ]
+      ],
+      "outcome": "namespace-strict"
     }
   ]
 }

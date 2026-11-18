@@ -1,22 +1,18 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
 # Guided Practice: Move A Credential From A ConfigMap Into A Secret
 
-This guide repeats the steps of the module on your playground cluster. Use a host shell with the private kubeconfig for this module playground. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool.
+This playground is a VM (virtual machine) that runs a one-node Kubernetes 1.35 cluster built with kubeadm. The node is the control plane and also runs the pods, so you can change the kube-apiserver and read its audit log on the node. The namespace `starfleet` holds the `shuttle` pod, the Secret `practice-token` and the ConfigMap `legacy-settings`, which stores the disposable credential `disposable-v1`. The namespace `outpost` holds the `drifter` pod.
 
 <!-- astrona:playground:renew -->
 
-```sh
-export KUBECONFIG="$(astrona kubeconfig ats-034-playground-020-03)"
-test "$(kubectl config current-context)" = "kind-astro-ats-034-playground-020-03" || exit 1
-node_name="astro-ats-034-playground-020-03-control-plane"
-worker_name="astro-ats-034-playground-020-03-worker"
-```
+Open a shell on the VM. You are logged in as the `student` user, and `kubectl` already points at the cluster. Node files and processes belong to root, so run node commands with `sudo`.
 
-Keep this connection selected. Host-level commands name only this environment's node containers. They do not operate on the host operating system.
+```sh
+astrona ssh astro-ats-034-playground-020-03
+```
 
 ## Inspect And Explain
 
@@ -93,6 +89,6 @@ kubectl -n starfleet get configmap legacy-settings
 ## Common pitfalls
 
 > [!WARNING]
-> - Confirm the private context before a change.
+> - Run the commands in the VM shell, not on your own computer.
 > - Create and check the replacement before you delete the original.
-> - Do not change the existing `probe` workloads to hide a mistake in the new Pod.
+> - Do not change the existing `shuttle` pod to hide a mistake in the new Pod.

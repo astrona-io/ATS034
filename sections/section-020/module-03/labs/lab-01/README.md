@@ -1,10 +1,11 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Move A Credential From A ConfigMap Into A Secret
+# Move A Leaked Credential Into A Secret
 
-Replace a credential stored in a ConfigMap with a Secret mounted as a read-only file, and remove the ConfigMap.
+Move a credential from a literal environment variable in a Deployment and from a ConfigMap into a Secret, and remove the plain copies.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+The lab runs in its own pinned kind cluster. The graders read the Secret, scan every literal `env` value of the Deployment's pod template, require a `secretKeyRef`, a finished rollout and a match inside the running container, and check that the ConfigMap is gone. Python 3 is required on the grading host.
+
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

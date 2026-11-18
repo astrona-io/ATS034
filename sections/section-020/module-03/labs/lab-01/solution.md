@@ -1,104 +1,97 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Move A Credential From A ConfigMap Into A Secret Solution
+# Move A Leaked Credential Into A Secret Solution
 
-Use a host shell with this lab's private kubeconfig. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool. This environment is separate from the ungraded playground.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-020-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-020-03-01" || exit 1
-node_name="astro-ats-034-lab-020-03-01-control-plane"
-worker_name="astro-ats-034-lab-020-03-01-worker"
 ```
 
-Keep this connection selected throughout the task. Every script supplied by the lab refuses a different context.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Inspect and explain
+A literal `value` of an environment variable is part of the pod template. Anyone who can read the Deployment, any of its pods, or the output of `kubectl describe` reads it. A `secretKeyRef` stores only the name of the Secret and the key, and the kubelet, the agent on the node, reads the value when it starts the container.
 
-A ConfigMap is for settings that are not secret. It has no special protection, and many roles can read it. Look at what the ConfigMap holds, without printing the credential:
+## Create the Secret
+
+Create the Secret with `kubectl create secret`. Unlike `kubectl apply` of a manifest with `stringData`, this command does not store the plain value in the annotation `kubectl.kubernetes.io/last-applied-configuration`:
 
 ```sh
-kubectl -n starfleet get configmap legacy-settings -o jsonpath='{.data}' | grep -c credential
-kubectl -n starfleet get pods -o wide
+kubectl -n starfleet-034-020-03-01 create secret generic scout-credentials --from-literal=token=disposable-scout
 ```
 
-The first command prints `1` when the key `credential` is present. Create the Secret and the Pod that reads it.
+## Change the Deployment
 
-Save this as `secret-migrated-credentials.yaml`, which holds the Secret and the Pod in one file:
+Replace the literal `value` with a reference to the Secret. Changing the pod template makes the Deployment controller start a new pod and stop the old one.
+
+Save this as `deployment-scout.yaml`:
 
 ```yaml
-apiVersion: v1
-kind: Secret
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: migrated-credentials
-  namespace: starfleet
-type: Opaque
-stringData:
-  token: disposable-v1
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: migrated-reader
-  namespace: starfleet
+  name: scout
+  namespace: starfleet-034-020-03-01
 spec:
-  restartPolicy: Never
-  automountServiceAccountToken: false
-  containers:
-  - name: reader
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-    volumeMounts:
-    - name: credentials
-      mountPath: /credentials
-      readOnly: true
-  volumes:
-  - name: credentials
-    secret:
-      secretName: migrated-credentials
-      defaultMode: 0400
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scout
+  template:
+    metadata:
+      labels:
+        app: scout
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: scout
+        image: docker.io/library/busybox:1.37.0
+        command:
+        - sh
+        - -c
+        - sleep 86400
+        env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: scout-credentials
+              key: token
 ```
 
 Apply it:
 
 ```sh
-kubectl apply -f secret-migrated-credentials.yaml
+kubectl apply -f deployment-scout.yaml
 ```
 
-Delete the ConfigMap only after the new Pod is Ready, so you know the Secret works:
+Then check the result. Wait for the rollout, read the `env` list of the template, and compare the value inside the new container:
 
 ```sh
-kubectl -n starfleet wait --for=condition=Ready pod/migrated-reader --timeout=180s
-kubectl -n starfleet delete configmap legacy-settings
+kubectl -n starfleet-034-020-03-01 rollout status deployment/scout --timeout=180s
+kubectl -n starfleet-034-020-03-01 get deployment scout -o jsonpath='{.spec.template.spec.containers[0].env}{"\n"}'
+kubectl -n starfleet-034-020-03-01 exec deployment/scout -- sh -c 'test "$API_TOKEN" = disposable-scout && echo match || echo different'
 ```
 
-## Verify The Result
+The `env` list must show only the `secretKeyRef` to `scout-credentials` and `token`, and the last command must print `match`.
 
-Compare the value inside the container and check that no environment variable holds it. The second command prints nothing and succeeds when no variable value contains the word `disposable`:
+## Remove the old copy
+
+Delete the ConfigMap only after the new pod works, so the application is never without its token:
 
 ```sh
-kubectl -n starfleet exec migrated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v1'
-kubectl -n starfleet exec migrated-reader -- sh -c 'test -z "$(env | grep disposable)"'
+kubectl -n starfleet-034-020-03-01 delete configmap legacy-settings
 ```
 
-Then confirm that the ConfigMap is gone. This command must fail with a `NotFound` error, so run it on its own:
+In a real cluster the token now counts as exposed, because it was readable in a ConfigMap and in the Deployment. Rotate it at the service that issued it, then update the Secret.
 
-```sh
-kubectl -n starfleet get configmap legacy-settings
-```
+When you are done, remove the lab with `astrona destroy ats-034-lab-020-03-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> - Deleting the ConfigMap before the new Pod works. Create and check the replacement first.
-> - Copying the credential into an environment variable. The task asks for a file.
-> - Leaving the value in the ConfigMap. Anyone who can read ConfigMaps still reads it.
-
-
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-020-03-01`.
+> If you change the Deployment with `kubectl edit` or `kubectl set env`, the old literal value can stay in the annotation `kubectl.kubernetes.io/last-applied-configuration` of the Deployment. Apply the full manifest again, or remove the annotation, so no copy of the token is left in the object.
+>
+> `kubectl set env deployment/scout --from=secret/scout-credentials` creates a variable for every key of the Secret, named after the key (`TOKEN`), and keeps the old `API_TOKEN`. Use an explicit `secretKeyRef` for one named variable.

@@ -1,37 +1,41 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Create An Immutable Basic-Auth Secret
+# Give A ServiceAccount An Image Pull Secret
 
-Create a typed, immutable Secret and mount it read-only so the API server rejects every change to its data.
+Allow about 10 minutes for the tasks.
 
-## Starting state
+Pods in `starfleet-034-020-02-01` will soon pull images from the private registry `registry.example.test`. Prepare the registry credential once, so that every pod that runs as the ServiceAccount `puller` receives it without listing it itself.
 
-The `starfleet` namespace runs the `probe` Deployment (two replicas), the `probe` Service and the `shuttle` client Pod. The `outpost` namespace runs the `drifter` Pod. The Secret `probe-login` does not exist yet. The required result has not been configured.
+## Connect to the lab
 
-Use a host shell with this lab's private kubeconfig. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool. This environment is separate from the ungraded playground.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-020-02-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-020-02-01" || exit 1
-node_name="astro-ats-034-lab-020-02-01-control-plane"
-worker_name="astro-ats-034-lab-020-02-01-worker"
 ```
 
-Keep this connection selected throughout the task. Every script supplied by the lab refuses a different context.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Required result
+## Starting state
 
-The `scout` agent in `starfleet` needs a login that nobody can change by accident.
+The namespace `starfleet-034-020-02-01` runs the pod `shuttle`. It has no image pull Secret and no ServiceAccount other than `default`. The registry `registry.example.test` does not exist; the lab only checks the Kubernetes objects.
 
-1. Create the Secret `probe-login` in `starfleet` with type `kubernetes.io/basic-auth`, the key `username` with the value `scout`, the key `password` with the value `disposable-login`, and `immutable: true`.
-2. Create the Pod `login-reader` in `starfleet` with the image `docker.io/library/busybox:1.37.0`, the command `sh -c "sleep 3600"`, `restartPolicy: Never` and `automountServiceAccountToken: false`. Its container is named `reader`. It mounts a Secret volume named `login` from `probe-login` at `/login`, read-only, with `defaultMode: 0400`.
-3. A request to change the password of `probe-login` must be rejected by the API server because the Secret is immutable.
+## Tasks
 
-Do not print the credential to check it. Compare it inside the container.
+1. Create the Secret `registry-pull` in `starfleet-034-020-02-01` with the type `kubernetes.io/dockerconfigjson`. It must hold a login for the server `registry.example.test` with the user name `practice` and the password `disposable-pull`.
+2. Create the ServiceAccount `puller` in the same namespace. It must list `registry-pull` in its `imagePullSecrets`.
+3. Create the pod `pull-check` in the same namespace with `serviceAccountName: puller` and `restartPolicy: Never`. Use one container with the image `docker.io/library/busybox:1.37.0` and the command `sleep 3600`. Do not add `imagePullSecrets` to the pod yourself.
+4. The pod `pull-check` must be Ready, and its `spec.imagePullSecrets` must contain `registry-pull`.
 
-## Verify The Result
+## Check your work
 
-The grader checks the required object fields and live observations. Wait until the Pod is Ready before you submit, and repeat your own checks first. Preserve the namespaces, the existing workloads and everything the task does not name.
+```sh
+kubectl -n starfleet-034-020-02-01 get secret registry-pull -o jsonpath='{.type}{"\n"}'
+kubectl -n starfleet-034-020-02-01 get serviceaccount puller -o jsonpath='{.imagePullSecrets[*].name}{"\n"}'
+kubectl -n starfleet-034-020-02-01 get pod pull-check -o jsonpath='{.spec.imagePullSecrets[*].name}{"\n"}'
+```
+
+The commands must print `kubernetes.io/dockerconfigjson`, `registry-pull` and `registry-pull`.

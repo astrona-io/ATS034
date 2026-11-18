@@ -1,10 +1,11 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Create An Immutable Basic-Auth Secret
+# Give A ServiceAccount An Image Pull Secret
 
-Create a typed, immutable Secret and mount it read-only so the API server rejects every change to its data.
+Create a `kubernetes.io/dockerconfigjson` Secret, attach it to a ServiceAccount, and prove that the API server copies it into a new pod.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+The lab runs in its own pinned kind cluster. The graders decode the `.dockerconfigjson` key, read the ServiceAccount, and read the pod's stored `spec.imagePullSecrets`. Python 3 is required on the grading host.
+
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

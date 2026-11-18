@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -18,9 +17,9 @@ The kubelet puts the files of a Secret volume on a `tmpfs`, a memory-backed file
 
 ## Deliver one Secret both ways
 
-Save this as `pod-delivery-reader.yaml`:
-
 <!-- astrona:playground:renew -->
+
+Save this as `pod-delivery-reader.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -80,7 +79,7 @@ The first listing shows that `token` is a symbolic link that points into a direc
 
 The environment variable is easy to use and hard to contain. A child process inherits it. A crash dump, a debug endpoint or a log line that prints the environment exposes it. Anyone who can `exec` into the container can read it with `env`. The value is also in `/proc/<pid>/environ` of the process.
 
-The volume avoids the environment and lets you set file permissions. It also lets a changed Secret reach a running container, as the next part shows. A file can still be read by anything that runs as the same user in the container.
+The volume avoids the environment and lets you set file permissions. It also lets a changed Secret reach a running container after the kubelet syncs the volume. A file can still be read by anything that runs as the same user in the container.
 
 ```mermaid
 flowchart TB

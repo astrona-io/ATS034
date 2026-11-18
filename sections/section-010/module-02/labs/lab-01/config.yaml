@@ -24,11 +24,36 @@ teardown:
   keepCluster: false
 testing:
   init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
   - name: reference-result
     type: file
     source: solution/apply.sh
-validation:
-  script:
-    name: verify-fields-and-live-evidence
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
     type: file
-    source: validate.sh
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: pod-security-context
+    description: The scanner Pod template runs as non-root user 1000 with the RuntimeDefault seccomp profile
+    type: file
+    source: validation/validate-pod-security-context.sh
+    points: 1
+  - name: container-security-context
+    description: Container scanner blocks privilege escalation, has a read-only root filesystem and drops all capabilities
+    type: file
+    source: validation/validate-container-security-context.sh
+    points: 1
+  - name: tmp-volume
+    description: An emptyDir volume named tmp is mounted at /tmp in container scanner
+    type: file
+    source: validation/validate-tmp-volume.sh
+    points: 1
+  - name: scanner-runs
+    description: Deployment scanner is Ready, runs as 1000 with no_new_privs, writes /tmp/result and cannot write to /
+    type: file
+    source: validation/validate-scanner-runs.sh
+    points: 1

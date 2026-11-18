@@ -1,101 +1,111 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Create An Immutable Basic-Auth Secret Solution
+# Give A ServiceAccount An Image Pull Secret Solution
 
-Use a host shell with this lab's private kubeconfig. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool. This environment is separate from the ungraded playground.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-020-02-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-020-02-01" || exit 1
-node_name="astro-ats-034-lab-020-02-01-control-plane"
-worker_name="astro-ats-034-lab-020-02-01-worker"
 ```
 
-Keep this connection selected throughout the task. Every script supplied by the lab refuses a different context.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Inspect and explain
+An image pull Secret is a Secret of type `kubernetes.io/dockerconfigjson`. Its one key, `.dockerconfigjson`, holds a JSON (JavaScript Object Notation) document with a login per registry server. The kubelet, the agent on each node, reads this Secret when it pulls an image for a pod that lists it in `imagePullSecrets`.
 
-Start with the objects that exist. The Secret type decides which keys the API server requires, so read the type rules before you write the manifest.
+## Create the Secret
+
+The command `kubectl create secret docker-registry` builds the JSON document for you. With `--dry-run=client -o yaml`, kubectl only writes the object, so you can keep it in a file and apply it like any other configuration:
 
 ```sh
-kubectl -n starfleet get secrets
-kubectl get nodes -o wide
-```
-
-The type `kubernetes.io/basic-auth` requires at least one of the keys `username` and `password`. The field `immutable` sits at the top level of the Secret, next to `type`, not inside `data`.
-
-Save this as `secret-probe-login.yaml`, which holds the Secret and the Pod in one file:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: probe-login
-  namespace: starfleet
-type: kubernetes.io/basic-auth
-immutable: true
-stringData:
-  username: scout
-  password: disposable-login
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: login-reader
-  namespace: starfleet
-spec:
-  restartPolicy: Never
-  automountServiceAccountToken: false
-  containers:
-  - name: reader
-    image: docker.io/library/busybox:1.37.0
-    command:
-    - sh
-    - -c
-    - sleep 3600
-    volumeMounts:
-    - name: login
-      mountPath: /login
-      readOnly: true
-  volumes:
-  - name: login
-    secret:
-      secretName: probe-login
-      defaultMode: 0400
+kubectl -n starfleet-034-020-02-01 create secret docker-registry registry-pull \
+  --docker-server=registry.example.test \
+  --docker-username=practice \
+  --docker-password=disposable-pull \
+  --dry-run=client -o yaml > secret-registry-pull.yaml
 ```
 
 Apply it:
 
 ```sh
-kubectl apply -f secret-probe-login.yaml
+kubectl apply -f secret-registry-pull.yaml
 ```
 
-## Verify The Result
-
-Wait for the Pod, then compare the values inside the container. These commands print nothing when the values match, and fail when they differ.
+Then check the result. The first command must print `kubernetes.io/dockerconfigjson`. The second command decodes the JSON document and prints only the server names, not the password; it must print `registry.example.test`:
 
 ```sh
-kubectl -n starfleet wait --for=condition=Ready pod/login-reader --timeout=180s
-kubectl -n starfleet exec login-reader -- sh -c 'test "$(cat /login/username)" = scout && test "$(cat /login/password)" = disposable-login'
+kubectl -n starfleet-034-020-02-01 get secret registry-pull -o jsonpath='{.type}{"\n"}'
+kubectl -n starfleet-034-020-02-01 get secret registry-pull -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d | grep -o '"registry.example.test"'
 ```
 
-Now try to change the password. This command must fail, so run it on its own, not in a shell sequence that stops on the first error:
+## Attach it to the ServiceAccount
+
+A ServiceAccount is the identity a pod runs as. When it lists `imagePullSecrets`, the ServiceAccount admission plugin in the API server copies that list into every new pod that uses the ServiceAccount and has no list of its own.
+
+Save this as `serviceaccount-puller.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: puller
+  namespace: starfleet-034-020-02-01
+imagePullSecrets:
+- name: registry-pull
+```
+
+Apply it:
 
 ```sh
-kubectl -n starfleet patch secret probe-login --type merge -p '{"stringData":{"password":"changed"}}'
+kubectl apply -f serviceaccount-puller.yaml
 ```
 
-The API server rejects the request with a `Forbidden` error that says the field is immutable. The only way to change an immutable Secret is to delete it and create a new one.
+## Start a pod as the ServiceAccount
+
+The pod sets only `serviceAccountName`. It does not list the Secret itself.
+
+Save this as `pod-pull-check.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pull-check
+  namespace: starfleet-034-020-02-01
+spec:
+  serviceAccountName: puller
+  restartPolicy: Never
+  containers:
+  - name: check
+    image: docker.io/library/busybox:1.37.0
+    command:
+    - sh
+    - -c
+    - sleep 3600
+```
+
+Apply it:
+
+```sh
+kubectl apply -f pod-pull-check.yaml
+```
+
+Then check the result. The pod must become Ready, and its stored specification must now contain `registry-pull`, which the API server added:
+
+```sh
+kubectl -n starfleet-034-020-02-01 wait --for=condition=Ready pod/pull-check --timeout=180s
+kubectl -n starfleet-034-020-02-01 get pod pull-check -o jsonpath='{.spec.imagePullSecrets[*].name}{"\n"}'
+```
+
+The pod starts even though `registry.example.test` does not exist, because its image comes from Docker Hub and is already on the node. The kubelet only uses the login when it pulls from the matching server.
+
+When you are done, remove the lab with `astrona destroy ats-034-lab-020-02-01`.
 
 ## Common pitfalls
 
 > [!WARNING]
-> - Writing `immutable: true` under `data`. It is a top-level field of the Secret.
-> - Using the type `kubernetes.io/basic-auth` without `username` or `password`. The API server rejects the Secret.
-> - Testing the change on a Secret that is not immutable yet. Apply the final Secret first, then try the change.
-
-
-After recording your result, remove the independent lab with `astrona destroy ats-034-lab-020-02-01`.
+> The API server copies `imagePullSecrets` from the ServiceAccount only when it creates the pod. A pod that already ran before you changed the ServiceAccount keeps its old list. Delete the pod and create it again.
+>
+> A Secret of type `Opaque` with a key called `.dockerconfigjson` is not an image pull Secret. The kubelet needs the type `kubernetes.io/dockerconfigjson`.

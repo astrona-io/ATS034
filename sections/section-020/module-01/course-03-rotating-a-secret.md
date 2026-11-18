@@ -1,5 +1,4 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
@@ -18,9 +17,9 @@ A mount with `subPath` and a Secret marked `immutable: true` never change. An im
 
 ## Rotate and watch
 
-Start a Pod that consumes `practice-token` both ways. Save this as `pod-rotation-reader.yaml`:
-
 <!-- astrona:playground:renew -->
+
+Start a Pod that consumes `practice-token` both ways. Save this as `pod-rotation-reader.yaml`:
 
 ```yaml
 apiVersion: v1

@@ -1,34 +1,37 @@
 {
   "context": "kind-astro-ats-034-lab-040-01-01",
+  "cluster": "astro-ats-034-lab-040-01-01",
+  "namespace": "starfleet-034-040-01-01",
   "resources": [
     {
       "kind": "peerauthentication",
       "name": "namespace-strict",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-01-01",
       "expected": {
         "apiVersion": "security.istio.io/v1",
         "kind": "PeerAuthentication",
         "metadata": {
           "name": "namespace-strict",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-01-01"
         },
         "spec": {
           "mtls": {
             "mode": "STRICT"
           }
         }
-      }
+      },
+      "outcome": "strict-mtls"
     },
     {
       "kind": "deployment",
       "name": "probe",
-      "namespace": "starfleet",
+      "namespace": "starfleet-034-040-01-01",
       "expected": {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
           "name": "probe",
-          "namespace": "starfleet"
+          "namespace": "starfleet-034-040-01-01"
         },
         "spec": {
           "replicas": 2,
@@ -111,7 +114,7 @@
       "args": [
         "kubectl",
         "-n",
-        "starfleet",
+        "starfleet-034-040-01-01",
         "exec",
         "shuttle",
         "-c",
@@ -132,7 +135,7 @@
       "args": [
         "kubectl",
         "-n",
-        "outpost",
+        "outpost-034-040-01-01",
         "exec",
         "drifter",
         "--",
@@ -141,13 +144,14 @@
         "-T",
         "3",
         "-O-",
-        "http://probe.starfleet/"
+        "http://probe.starfleet-034-040-01-01/"
       ],
       "denied": true,
       "failure_markers": [
         "connection reset",
         "error getting response"
-      ]
+      ],
+      "outcome": "strict-mtls"
     }
   ]
 }

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: token-reader
+  namespace: starfleet-034-020-01-01
+spec:
+  restartPolicy: Never
+  containers:
+  - name: reader
+    image: docker.io/library/busybox:1.37.0
+    command: ["sleep", "3600"]
+    env:
+    - name: PRACTICE_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: practice-token
+          key: token
+    volumeMounts:
+    - name: credentials
+      mountPath: /credentials
+      readOnly: true
+  volumes:
+  - name: credentials
+    secret:
+      secretName: practice-token
+      defaultMode: 0400

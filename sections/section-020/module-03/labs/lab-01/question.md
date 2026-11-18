@@ -1,37 +1,43 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Move A Credential From A ConfigMap Into A Secret
+# Move A Leaked Credential Into A Secret
 
-Replace a credential stored in a ConfigMap with a Secret mounted as a read-only file, and remove the ConfigMap.
+Allow about 10 minutes for the tasks.
 
-## Starting state
+The `scout` Deployment in `starfleet-034-020-03-01` has its API token written as a literal environment variable, and an old copy of the same token sits in the ConfigMap `legacy-settings`. Move the token into a Secret and remove both plain copies.
 
-The `starfleet` namespace runs the `probe` Deployment (two replicas), the `probe` Service and the `shuttle` client Pod. The ConfigMap `legacy-settings` in `starfleet` holds the key `credential` with the disposable value `disposable-v1` and the key `greeting`. Anyone who can read ConfigMaps can read that credential. The required result has not been configured.
+## Connect to the lab
 
-Use a host shell with this lab's private kubeconfig. A kubeconfig identifies the cluster and credentials used by kubectl, the Kubernetes command-line tool. This environment is separate from the ungraded playground.
+Use a host shell with this lab's private kubeconfig. A kubeconfig is the file that tells kubectl, the Kubernetes command-line tool, which cluster to use and with which credentials. This lab runs in its own cluster, separate from the playground.
 
 ```sh
 export KUBECONFIG="$(astrona kubeconfig ats-034-lab-020-03-01)"
 test "$(kubectl config current-context)" = "kind-astro-ats-034-lab-020-03-01" || exit 1
-node_name="astro-ats-034-lab-020-03-01-control-plane"
-worker_name="astro-ats-034-lab-020-03-01-worker"
 ```
 
-Keep this connection selected throughout the task. Every script supplied by the lab refuses a different context.
+Keep this connection for the whole task. Every script of the lab refuses to run against another context.
 
-## Required result
+## Starting state
 
-The credential must leave the ConfigMap and live in a Secret that a Pod reads as a file.
+The Deployment `scout` runs one pod with the container `scout`. Its pod template sets the environment variable `API_TOKEN` with a literal `value`, the disposable token `disposable-scout`. The ConfigMap `legacy-settings` holds the same token in the key `credential`, and the key `greeting`.
 
-1. Create the Secret `migrated-credentials` in `starfleet` with type `Opaque` and the key `token` with the value `disposable-v1`.
-2. Create the Pod `migrated-reader` in `starfleet` with the image `docker.io/library/busybox:1.37.0`, the command `sh -c "sleep 3600"`, `restartPolicy: Never` and `automountServiceAccountToken: false`. Its container is named `reader`. It mounts a Secret volume named `credentials` from `migrated-credentials` at `/credentials`, read-only, with `defaultMode: 0400`. It has no environment variable that holds the credential.
-3. Delete the ConfigMap `legacy-settings`.
+## Tasks
 
-Do not print the credential to check it. Compare it inside the container.
+1. Create the Secret `scout-credentials` in `starfleet-034-020-03-01`. Its key `token` must hold `disposable-scout`.
+2. Change the Deployment `scout` so that `API_TOKEN` in the container `scout` comes from the key `token` of the Secret `scout-credentials`. The pod template must not contain the token as a literal value anywhere.
+3. The rollout of `scout` must finish, and the running container must see the token in `API_TOKEN`.
+4. Delete the ConfigMap `legacy-settings`.
 
-## Verify The Result
+Do not print the token to check it. Compare it inside the container.
 
-The grader checks the required object fields and live observations. Wait until the Pod is Ready before you submit, and repeat your own checks first. Preserve the namespaces, the existing workloads and everything the task does not name.
+## Check your work
+
+```sh
+kubectl -n starfleet-034-020-03-01 get deployment scout -o jsonpath='{.spec.template.spec.containers[0].env}{"\n"}'
+kubectl -n starfleet-034-020-03-01 exec deployment/scout -- sh -c 'test "$API_TOKEN" = disposable-scout && echo match || echo different'
+kubectl -n starfleet-034-020-03-01 get configmap legacy-settings
+```
+
+The first command must show a `secretKeyRef` and no `value`. The second must print `match`. The third must fail with `NotFound`.

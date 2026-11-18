@@ -1,10 +1,11 @@
 ---
-draft: true
 exam_objectives:
 - Manage Kubernetes secrets
 ---
-# Rotate A Secret And Refresh Its Consumer
+# Deliver A Secret As An Environment Variable And A File
 
-Replace a disposable credential and verify both delivery paths use the new value.
+Create one pod that receives the Secret `practice-token` as an environment variable and as a file with mode `0400`, and prove both paths inside the running container.
 
-The task and solution use a separate pinned kind cluster. Run `testing/smoke.sh` with its private kubeconfig to verify initial rejection and reference success. Static validation is not live evidence. Runtime verification remains pending.
+The lab runs in its own pinned kind cluster. The graders read the pod spec, run a compare command in the container and read the file mode with `stat -L`. Python 3 is required on the grading host.
+
+Run `astrona test` on this folder: `testing/verify-start.sh` checks that every outcome fails on the starting state, then the reference solution is applied and every outcome must pass.

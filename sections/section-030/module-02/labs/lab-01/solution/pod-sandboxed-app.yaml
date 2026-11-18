@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: sandboxed-app
-  namespace: tenant-b
+  namespace: tenant-b-034-030-02-01
   labels:
     app: sandboxed-app
 spec:
