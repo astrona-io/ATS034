@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Authorizing Workloads With AuthorizationPolicy
 
-Encryption answers whether a connection is private. It does not answer whether the caller is allowed to make the request. With strict mTLS, the receiving sidecar knows the caller's certificate identity, and an `AuthorizationPolicy` can use it. This part explains how the policy is evaluated and tests it with a second client that has its own ServiceAccount.
+Encryption answers whether a connection is private. It does not answer whether the caller is allowed to make the request. With strict mTLS, the receiving sidecar knows the caller's certificate identity, and an `AuthorizationPolicy` can use it. This reading explains how the policy is evaluated and tests it with a second client that has its own ServiceAccount.
 
 ## Identity comes from the ServiceAccount
 

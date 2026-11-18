@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Certificates And Workload Identity
 
-Strict mode only works when every sidecar holds a valid certificate. If certificates expire or come from the wrong root, mTLS fails even though the policy is correct. This part explains how a sidecar gets its certificate, what the certificate says, how it renews and how to look at it.
+Strict mode only works when every sidecar holds a valid certificate. If certificates expire or come from the wrong root, mTLS fails even though the policy is correct. This reading explains how a sidecar gets its certificate, what the certificate says, how it renews and how to look at it.
 
 ## How a workload gets a certificate
 
@@ -57,7 +56,7 @@ kubectl -n istio-system get secret
 kubectl -n starfleet get configmap istio-ca-root-cert
 ```
 
-The Secret list shows whether the mesh uses the self-signed `istio-ca-secret` or a plugged-in `cacerts`. The ConfigMap `istio-ca-root-cert` exists because `istiod` copies the root certificate into every namespace, and sidecars load it to validate peers. You now know what a sidecar presents when it opens an mTLS connection. The remaining task is to prove that a real connection uses it, which is the next part.
+The Secret list shows whether the mesh uses the self-signed `istio-ca-secret` or a plugged-in `cacerts`. The ConfigMap `istio-ca-root-cert` exists because `istiod` copies the root certificate into every namespace, and sidecars load it to validate peers. You now know what a sidecar presents when it opens an mTLS connection. The remaining task is to prove that a real connection uses it.
 
 ## Common pitfalls
 

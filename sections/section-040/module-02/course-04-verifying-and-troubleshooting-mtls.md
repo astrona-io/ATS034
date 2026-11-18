@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Verifying And Troubleshooting mTLS
 
-A policy object that says `STRICT` is a declaration, not proof. Proof is an allowed request that works, a denied request that fails for the right reason, and evidence in the proxy that a TLS handshake happened. This part builds that habit and then breaks mTLS on purpose, so you can recognise the most common failure.
+A policy object that says `STRICT` is a declaration, not proof. Proof is an allowed request that works, a denied request that fails for the right reason, and evidence in the proxy that a TLS handshake happened. This reading builds that habit and then breaks mTLS on purpose, so you can recognise the most common failure.
 
 ## What counts as proof
 

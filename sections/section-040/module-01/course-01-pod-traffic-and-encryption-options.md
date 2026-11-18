@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Pod Traffic And Encryption Options
 
-A Service call between two Pods crosses the network. On the same node it crosses a virtual network device. Between nodes it crosses the physical or virtual network of the cluster. Kubernetes does not encrypt either path. This part shows what an observer sees by default, looks at what the Istio sidecar changes in the playground, and compares the three ways to add encryption.
+A Service call between two Pods crosses the network. On the same node it crosses a virtual network device. Between nodes it crosses the physical or virtual network of the cluster. Kubernetes does not encrypt either path. This reading shows what an observer sees by default, looks at what the Istio sidecar changes in the playground, and compares the three ways to add encryption.
 
 ## What the default network exposes
 
@@ -24,12 +23,12 @@ Check that the application Pods in `starfleet` run a sidecar. A **sidecar proxy*
 <!-- astrona:playground:renew -->
 
 ```sh
-kubectl -n starfleet get pods -l app=probe -o jsonpath='{.items[0].spec.containers[*].name}'
+kubectl -n starfleet get pods -l app=probe -o jsonpath='{.items[0].spec.initContainers[*].name} {.items[0].spec.containers[*].name}{"\n"}'
 kubectl get namespace starfleet --show-labels
 kubectl -n istio-system get pods
 ```
 
-The first command lists two container names: the application container `probe` and `istio-proxy`. The second shows the label `istio-injection=enabled`, which makes the Istio injection webhook add the proxy to each new Pod in that namespace. The third shows that `istiod` runs. `istiod` issues a certificate to each sidecar and sends it the configuration.
+The first command lists `istio-init` and `istio-proxy` under the init containers and `probe` as the application container. On Kubernetes 1.35 Istio adds `istio-proxy` as a native sidecar: an init container with `restartPolicy: Always`, which starts before the application and keeps running next to it. `istio-init` sets up the traffic redirection to the proxy. The second shows the label `istio-injection=enabled`, which makes the Istio injection webhook add the proxy to each new Pod in that namespace. The third shows that `istiod` runs. `istiod` issues a certificate to each sidecar and sends it the configuration.
 
 Now call the `probe` Service from two clients. The `shuttle` Pod has a sidecar. The `drifter` Pod in `outpost` does not:
 
@@ -57,7 +56,7 @@ The diagram names the three approaches and where each one works: in the applicat
 - **Service mesh mTLS (Istio).** A sidecar proxy in each Pod encrypts and authenticates the connection, and the application sees plain HTTP on localhost. It gives each workload an identity based on its ServiceAccount. It works at the level of TCP connections between meshed Pods and supports authorization by identity.
 - **Transparent encryption (Cilium).** The network plugin encrypts the packets between nodes with WireGuard or IPsec. Applications and Pods do not change. It covers all protocols, but only for traffic between nodes, and it gives the traffic no per-workload identity.
 
-The choice depends on what must be protected and what must be known about the caller. Mesh mTLS answers "who is calling and is the connection private". Cilium encryption answers "is traffic between nodes private". The next part applies the first answer to the playground.
+The choice depends on what must be protected and what must be known about the caller. Mesh mTLS answers "who is calling and is the connection private". Cilium encryption answers "is traffic between nodes private". The first answer, mesh mTLS, is the one the playground can enforce with an Istio policy.
 
 ## Common pitfalls
 

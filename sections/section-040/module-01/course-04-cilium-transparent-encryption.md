@@ -1,11 +1,10 @@
 ---
-draft: true
 exam_objectives:
 - Implement Pod-to-Pod encryption (Cilium, Istio)
 ---
 # Cilium Transparent Encryption
 
-Cilium is a CNI plugin. It can encrypt the traffic between nodes without any change to the Pods. This part is a reference procedure. The playground runs a different CNI plugin, so the commands here are for a cluster that has Cilium installed, and you do not run them in the playground.
+Cilium is a CNI plugin. It can encrypt the traffic between nodes without any change to the Pods. This reading is a reference procedure. The playground runs a different CNI plugin, so the commands here are for a cluster that has Cilium installed, and you do not run them in the playground.
 
 ## What transparent encryption covers
 
