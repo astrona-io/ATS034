@@ -17,6 +17,7 @@ runtime:
     - quay.io/cilium/operator-generic:v1.20.4
     - quay.io/cilium/cilium-envoy:v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459
     - docker.io/library/busybox:1.37.0
+    - docker.io/nicolaka/netshoot:v0.14
     nodes:
       workers: 1
 bootstrap:
@@ -50,4 +51,9 @@ validation:
     description: "Every Cilium agent reports IPsec with no errors and its node has security associations with the new SPI, and the shuttle pod still gets probe-reply from the probe Service on the other node"
     type: file
     source: validation/validate-agents-use-new-key.sh
+    points: 1
+  - name: wire-uses-new-spi
+    description: "A packet capture on eth0 of the worker node, taken while the shuttle pod sends requests to the probe Service, sees ESP packets that all carry the new SPI from the Secret, none with SPI 3 or another old SPI, and never the plain text probe-reply"
+    type: file
+    source: validation/validate-wire-uses-new-spi.sh
     points: 1

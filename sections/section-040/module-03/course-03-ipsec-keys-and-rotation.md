@@ -83,7 +83,7 @@ The kubelet, the node agent of Kubernetes, updates the mounted file in each agen
       4 spi 0x00000004
 ```
 
-At the same moment `cilium-dbg encrypt status` showed `Keys in use: 8` and `Errors: 0`. The agent installs the new key next to the old one, so packets that are still in flight with SPI 3 can be decrypted. The agent log shows why the change took a while:
+At the same moment `cilium-dbg encrypt status` showed `Keys in use: 8` and `Errors: 0`. The agent installs the new key next to the old one, so packets that are still in flight with SPI 3 can be decrypted. New packets leave with the new SPI: in a test run, a packet capture on `eth0` of a node showed `ESP(spi=0x00000004,...)` in both directions at about the time both nodes listed SPI 4, and no packet with SPI 3 after that. On a node without `tcpdump`, `kubectl debug node/<node> --profile=sysadmin --image=<image with tcpdump> -- tcpdump -ni eth0 esp` runs the capture in a privileged pod in the network namespace of the node, and `kubectl logs` on that pod shows the result. The agent log shows why the change took a while:
 
 ```sh
 kubectl -n kube-system logs <cilium-pod> -c cilium-agent | grep -i ipsec

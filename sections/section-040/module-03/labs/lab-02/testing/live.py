@@ -1,12 +1,15 @@
 # Live checks for this lab. check.py runs this file in its own globals, so
-# wants(), kubectl(), get() and command() are available here. The checks run
-# commands inside the cilium-agent containers, which use the network namespace
-# of their node, so no container engine access is needed. No check prints
-# command output that could hold key material.
+# wants(), kubectl(), get(), command(), node_exec() and WORKER are available
+# here. Most checks run commands inside the cilium-agent containers, which use
+# the network namespace of their node. The wire check runs a short packet
+# capture with python3 on the worker node (node_exec, through the container
+# engine). No check prints command output that could hold key material.
 import base64
 import hashlib
 import json
 import re
+import threading
+import time
 
 
 def agents():
@@ -69,3 +72,60 @@ if wants('agents-use-new-key'):
         spis = {int(value, 16) for value in re.findall(r'spi (0x[0-9a-f]+)', agent_exec(pod, 'ip', 'xfrm', 'state'))}
         assert spi in spis, 'Node ' + node + ' has no IPsec security association with the new SPI ' + str(spi) + ' yet'
     expect_probe_reply()
+
+
+# Reads every frame on eth0 of the node for the given number of seconds and
+# prints one JSON line: the number of frames, whether the text probe-reply was
+# seen in any frame, and the count of ESP packets (IP protocol 50) per SPI.
+# The SPI is the first 4 bytes after the IPv4 header of an ESP packet.
+CAPTURE = """
+import json, socket, sys, time
+sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
+sock.bind(('eth0', 0))
+sock.settimeout(0.5)
+end = time.time() + float(sys.argv[1])
+spis, frames, plain = {}, 0, False
+while time.time() < end:
+    try:
+        frame = sock.recv(65535)
+    except socket.timeout:
+        continue
+    frames += 1
+    plain = plain or b'probe-reply' in frame
+    if len(frame) < 38 or frame[12:14] != b'\\x08\\x00' or frame[23] != 50:
+        continue
+    start = 14 + (frame[14] & 15) * 4
+    spi = int.from_bytes(frame[start:start + 4], 'big')
+    spis[spi] = spis.get(spi, 0) + 1
+print(json.dumps({'frames': frames, 'plain': plain, 'esp': spis}))
+"""
+REQUESTS = 'i=0; while [ $i -lt 8 ]; do wget -q -T 2 -O- ' + PROBE + '; i=$((i+1)); sleep 0.5; done'
+
+
+def capture_cross_node_traffic():
+    """Capture on the worker node while shuttle sends requests to probe."""
+    result = []
+    capture = threading.Thread(target=lambda: result.append(node_exec(WORKER, 'python3', '-c', CAPTURE, '9', success=False)))
+    capture.start()
+    time.sleep(1.5)
+    requests = command(['kubectl', '-n', S, 'exec', 'shuttle', '-c', 'client', '--', 'sh', '-c', REQUESTS], success=False)
+    capture.join(timeout=25)
+    assert requests.stdout.count('probe-reply') >= 4, 'The shuttle pod did not get probe-reply from ' + PROBE + ' during the capture'
+    assert result and result[0].returncode == 0, 'The packet capture on node ' + WORKER + ' failed'
+    return json.loads(result[0].stdout.strip().splitlines()[-1])
+
+
+if wants('wire-uses-new-spi'):
+    secret_key()
+    shuttle_node = get('pod', 'shuttle', S)['spec']['nodeName']
+    probe_node = get('pod', 'probe', S)['spec']['nodeName']
+    assert shuttle_node != probe_node, 'The shuttle and probe pods must run on different nodes'
+    seen = capture_cross_node_traffic()
+    spis = {int(value): count for value, count in seen['esp'].items()}
+    assert not seen['plain'], 'The text probe-reply is readable on eth0 of ' + WORKER + ': the traffic between the nodes is not encrypted'
+    assert spis, 'No ESP packets were seen on eth0 of ' + WORKER + ' while shuttle sent requests to probe'
+    assert 3 not in spis, 'ESP packets between the nodes still carry the starting SPI 3'
+    spi = rotated_spi()
+    old = sorted(value for value in spis if value != spi)
+    assert spi in spis, 'The ESP packets between the nodes carry SPI ' + ', '.join(map(str, old)) + ', not the new SPI ' + str(spi)
+    assert not old, 'ESP packets between the nodes still carry SPI ' + ', '.join(map(str, old)) + ' next to the new SPI ' + str(spi)

@@ -50,6 +50,31 @@ kubectl -n starfleet-034-040-03-02 exec shuttle -c client -- wget -q -T 3 -O- ht
 
 The reply is `probe-reply`, so the traffic kept flowing through the rotation.
 
+A security association with SPI 4 in the kernel does not yet prove that the packets use it. The proof is on the wire: a packet capture on `eth0` of the worker node. The kind nodes have no `tcpdump`, so `kubectl debug node/...` starts a debugging pod on the node. With `--profile=sysadmin` the pod runs privileged in the network namespace of the node, so it sees the packets of `eth0` and not those of a pod. Start a capture of 10 ESP packets, which stops after at most 20 seconds:
+
+```sh
+WORKER_NODE=$(kubectl -n starfleet-034-040-03-02 get pod probe -o jsonpath='{.spec.nodeName}')
+kubectl -n starfleet-034-040-03-02 debug node/$WORKER_NODE --profile=sysadmin --image=docker.io/nicolaka/netshoot:v0.14 -- timeout 20 tcpdump -ni eth0 -c 10 esp
+```
+
+The command prints the name of the pod, for example `node-debugger-astro-ats-034-lab-040-03-02-worker-vnc2k`, and returns. Within the 20 seconds, send the `wget` request again. Then read the capture and delete the pod:
+
+```sh
+kubectl -n starfleet-034-040-03-02 logs <node-debugger-pod>
+kubectl -n starfleet-034-040-03-02 delete pod <node-debugger-pod>
+```
+
+In a test run, a few minutes after the patch, the capture showed lines like these (timestamps removed, 4 of 10 lines shown):
+
+```text
+IP 10.89.0.13 > 10.89.0.12: ESP(spi=0x00000004,seq=0xbe9), length 220
+IP 10.89.0.12 > 10.89.0.13: ESP(spi=0x00000004,seq=0xb73), length 312
+IP 10.89.0.13 > 10.89.0.12: ESP(spi=0x00000004,seq=0xbeb), length 196
+IP 10.89.0.12 > 10.89.0.13: ESP(spi=0x00000004,seq=0xb75), length 288
+```
+
+Both directions between the node addresses carry `spi=0x00000004`, and no line shows `spi=0x00000003`. In the same test run, a capture taken about every 13 seconds showed only SPI 3 for about 40 seconds after the patch, then one capture with both SPIs, and only SPI 4 after that. The old security associations stay in the kernel for a few more minutes, but the kernels no longer send with them: they are only there to decrypt packets that were still on the way. The same steps with the filter `tcp port 8080` and the option `-A`, which prints the packet content as text, captured `0 packets`: the HTTP request and the text `probe-reply` do not cross `eth0` in plain text.
+
 When you are done, remove the lab with `astrona destroy ats-034-lab-040-03-02`.
 
 ## Common pitfalls
@@ -58,5 +83,7 @@ When you are done, remove the lab with `astrona destroy ats-034-lab-040-03-02`.
 > A new key with the same SPI is not a rotation. The kernels identify keys by SPI, so the change has no clear effect or breaks traffic between nodes that loaded different keys.
 >
 > `ip xfrm state` prints the keys. Filter its output, as shown, before it reaches your screen or a log.
+>
+> A capture inside the `shuttle` or `probe` pod shows plain text in every case. Capture on `eth0` of the node, with `--profile=sysadmin`.
 >
 > Do not judge the rotation in the first seconds. Each agent waits a random time of up to 30 seconds before it loads the new key; check again after about one minute.

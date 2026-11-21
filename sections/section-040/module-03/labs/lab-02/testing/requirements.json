@@ -44,6 +44,23 @@
         }
       },
       "state": "daemonset"
+    },
+    {
+      "kind": "service",
+      "name": "probe",
+      "namespace": "starfleet-034-040-03-02",
+      "outcome": "wire-uses-new-spi",
+      "expected": {
+        "metadata": {
+          "name": "probe",
+          "namespace": "starfleet-034-040-03-02"
+        },
+        "spec": {
+          "selector": {
+            "app": "probe"
+          }
+        }
+      }
     }
   ],
   "behavior": []

@@ -1024,6 +1024,7 @@ modules:
     task_kind: build
     learning_goals:
     - Rotate the Cilium IPsec key to a higher SPI and confirm that every agent loaded it.
+    - Prove with a packet capture on the node interface that ESP traffic between the nodes uses the new SPI.
     tags:
     - cks
     - cilium-ipsec-rotation
