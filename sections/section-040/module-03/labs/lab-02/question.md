@@ -32,7 +32,10 @@ The namespace `starfleet-034-040-03-02` runs the pod `probe` on the worker node,
 1. Replace the key in the Secret `cilium-ipsec-keys` with a new random key. Use a higher SPI than the current one and keep the same format.
 2. Wait until the Cilium agents on both nodes use the new key, with no IPsec errors.
 3. The `shuttle` pod must still get `probe-reply` from `http://probe.starfleet-034-040-03-02.svc.cluster.local:8080/`.
-4. Never print the key itself in your terminal.
+4. On `eth0` of the worker node, the traffic between `shuttle` and `probe` must be ESP (Encapsulating Security Payload, the encrypted IPsec packet format) with the new SPI only. No packet may still carry SPI 3, and the text `probe-reply` must never appear there in plain text.
+5. Never print the key itself in your terminal.
+
+The image `docker.io/nicolaka/netshoot:v0.14`, which contains `tcpdump`, is loaded on both nodes.
 
 ## Check your work
 
@@ -50,4 +53,12 @@ Each agent must report `Encryption: IPsec` and `Errors: 0`. Then send one reques
 kubectl -n starfleet-034-040-03-02 exec shuttle -c client -- wget -q -T 3 -O- http://probe.starfleet-034-040-03-02.svc.cluster.local:8080/
 ```
 
-The command must print `probe-reply`.
+The command must print `probe-reply`. Finally, capture ESP packets on the worker node with a debugging pod in the network namespace of the node, send the request again while the capture runs, and read the capture:
+
+```sh
+WORKER_NODE=$(kubectl -n starfleet-034-040-03-02 get pod probe -o jsonpath='{.spec.nodeName}')
+kubectl -n starfleet-034-040-03-02 debug node/$WORKER_NODE --profile=sysadmin --image=docker.io/nicolaka/netshoot:v0.14 -- timeout 20 tcpdump -ni eth0 -c 10 esp
+kubectl -n starfleet-034-040-03-02 logs <node-debugger-pod>
+```
+
+Every `ESP(spi=...)` line must show the new SPI.
