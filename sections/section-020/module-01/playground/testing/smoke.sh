@@ -110,6 +110,36 @@ expect 'Secret practice-token exists' "$start_state" 'secret/practice-token'
 expect 'drifter runs in outpost' "$(kubectl -n outpost get pod drifter)" Running
 expect 'practice-token holds disposable-v1' "$(test "$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}' | base64 -d)" = disposable-v1 && echo match || echo different)" match
 
+# Playground guide: rotate the value and refresh the consumer
+guide=playground/docs/overview.md
+save_from_page "$guide" pod-rotated-reader.yaml
+kubectl -n starfleet wait --for=condition=Ready pod/rotated-reader --timeout=180s
+expect 'guide: Secret update prints configured' "$(save_from_page "$guide" secret-practice-token.yaml)" 'secret/practice-token configured'
+guide_file_after_sync="$(wait_for_output file-new kubectl -n starfleet exec rotated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v2 && echo file-new || echo file-old')"
+expect 'guide: kubelet refreshes the file to file-new' "$guide_file_after_sync" file-new
+expect 'guide: environment variable stays env-old' "$(kubectl -n starfleet exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && echo env-new || echo env-old')" env-old
+kubectl -n starfleet delete pod rotated-reader --wait=true
+kubectl apply -f "$work_directory/pod-rotated-reader.yaml"
+kubectl -n starfleet wait --for=condition=Ready pod/rotated-reader --timeout=180s
+expect 'guide: new Pod has env-new' "$(kubectl -n starfleet exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && echo env-new || echo env-old')" env-new
+# The pages start from the playground state again: practice-token holds
+# disposable-v1, as the bootstrap applied it, and rotated-reader is gone. The
+# rotation page then applies the same secret-practice-token.yaml and expects
+# "configured" and an old environment variable, which only holds after this
+# reset.
+kubectl -n starfleet delete pod rotated-reader --wait=true
+kubectl apply -f - <<'YAML'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: practice-token
+  namespace: starfleet
+type: Opaque
+stringData:
+  token: disposable-v1
+YAML
+expect 'practice-token holds disposable-v1 again' "$(test "$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}' | base64 -d)" = disposable-v1 && echo match || echo different)" match
+
 # What a Secret is and who can read it
 page=course-01-what-a-secret-is-and-who-can-read-it.md
 stored_token="$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}')"
