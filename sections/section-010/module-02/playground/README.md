@@ -1,5 +1,5 @@
 # Harden Container Privileges Playground
 
-This ungraded `kind` cluster (Kubernetes v1.35, one control-plane node and one worker) is the playground for this module. It has a private context, `kind-astro-ats-034-playground-010-02`, and a pinned node image. `bootstrap/setup.sh` creates the starting namespaces and workloads, and `docs/overview.md` is the guide the learner sees.
+This ungraded playground is a qemu VM (`ghcr.io/astrona-io/ubuntu-qcow2-image:24.04-cks`) with a one-node kubeadm cluster. `bootstrap/setup.sh` runs inside the VM: it initialises the cluster, gives the `student` user the admin kubeconfig, places the seccomp profile `block-mkdir.json` and the AppArmor profile `k8s-deny-tmp-write` in `/opt/profiles`, and creates the `starfleet`, `outpost` and `hardened` namespaces with their workloads. `docs/overview.md` is the guide the learner sees.
 
-`testing/smoke.sh` runs the commands the guide teaches and fails when one of them does not give the expected result. Run the whole check with `scripts/ci/test-playground.sh sections/section-010/module-02/playground`; it starts the playground, runs the smoke test and always destroys the playground. The configuration has no submission or grading fields.
+A VM is used because the seccomp and AppArmor reading installs `Localhost` profiles on the node, and a kind node uses the kernel of the machine that runs Podman, which often has no AppArmor. The configuration has no submission or grading fields. Test the start with `scripts/ci/test-playground.sh sections/section-010/module-02/playground`.

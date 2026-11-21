@@ -24,7 +24,7 @@ AUTHORING.yaml records measurable goals and adaptation sources. Every objective 
 
 ## Hands-On Coverage
 
-This course has 12 ungraded module playgrounds and 36 graded labs (30 on kind, 6 on a qemu VM). Each lab sits right after the reading it practises, with its task before and its solution after. Every lab passed `astrona validate` and `astrona test` on its own runtime, and every playground started with `scripts/ci/test-playground.sh`. The Cilium labs and playground in section 040 need Docker or rootful Podman, because Cilium cannot mount `/sys/fs/bpf` under rootless Podman.
+This course has 12 ungraded module playgrounds (8 on kind, 4 on a qemu VM) and 38 graded labs (32 on kind, 6 on a qemu VM). Each lab sits right after the reading it practises, with its task before and its solution after. Every lab passed `astrona validate` and `astrona test` on its own runtime, and every playground started with `scripts/ci/test-playground.sh`. The Cilium labs and playground in section 040 need Docker or rootful Podman, because Cilium cannot mount `/sys/fs/bpf` under rootless Podman. The qemu VM network plugin does not enforce NetworkPolicy, so the section 030 module 01 playground stays on kind with Calico, and its gVisor reading shows the missing-handler failure. A real gVisor Pod runs in the qemu lab after that reading and in the section 030 module 02 playground.
 
 | Module | Labs in teaching order |
 | --- | --- |
@@ -38,5 +38,5 @@ This course has 12 ungraded module playgrounds and 36 graded labs (30 on kind, 6
 | 030/02 | Register The gVisor Handler In containerd; Schedule Pods With A RuntimeClass Overhead And Node Selector; Require A RuntimeClass With A ValidatingAdmissionPolicy |
 | 030/03 | Dedicate A Node To One Tenant With Taints And Tolerations; Use A NodeRestriction Label For Tenant Placement; Require A Tenant Node Selector With A ValidatingAdmissionPolicy |
 | 040/01 | Require Mutual TLS With PeerAuthentication; Allow One Workload Identity With AuthorizationPolicy |
-| 040/02 | Override Mesh-Wide STRICT For One Namespace; Migrate A Namespace To STRICT With One Exception; Fix A Client TLS Setting That Breaks STRICT |
-| 040/03 | Enable WireGuard Encryption In Cilium; Rotate The Cilium IPsec Key |
+| 040/02 | Override Mesh-Wide STRICT For One Namespace; Migrate A Namespace To STRICT With One Exception; Fix A Wrong Principal In An AuthorizationPolicy; Fix A Client TLS Setting That Breaks STRICT |
+| 040/03 | Enable WireGuard Encryption In Cilium; Rotate The Cilium IPsec Key; Fix A Cilium Agent That Did Not Load WireGuard |
