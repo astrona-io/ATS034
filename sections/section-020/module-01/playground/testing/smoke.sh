@@ -260,11 +260,20 @@ expect 'API server still decrypts the old Secret' "$(kubectl -n starfleet get se
 # Starts from the state the encryption at rest block leaves: key1 in enc.yaml
 # and every Secret stored with key1. $key holds the value of key1.
 page=course-05-rotating-the-encryption-key.md
+# etcd_get passes only one argument, so these helpers run etcdctl themselves
+# with --prefix. They print the count in brackets, so expect matches it exactly.
+rotation_etcd() {
+  sudo crictl exec "$(sudo crictl ps --name etcd -q)" etcdctl \
+    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    --cert=/etc/kubernetes/pki/etcd/server.crt \
+    --key=/etc/kubernetes/pki/etcd/server.key \
+    "$@"
+}
 rotation_prefix_count() {
-  etcd_get /registry/secrets/ --prefix | grep -a -c "$1" || true
+  printf '[%s]' "$(rotation_etcd get /registry/secrets/ --prefix | grep -a -c "$1" || true)"
 }
 rotation_secret_count() {
-  etcd_get /registry/secrets/ --prefix --keys-only | grep -c . || true
+  printf '[%s]' "$(rotation_etcd get /registry/secrets/ --prefix --keys-only | grep -c . || true)"
 }
 # Stop the kube-apiserver container and wait until the kubelet started a new
 # one and the API answers again (about 5 minutes at most).
@@ -294,6 +303,7 @@ rotation_wait_ready() {
 expect 'enc.yaml starts with only key1' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" '      - name: key1'
 expect_absent 'enc.yaml has no key2 yet' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" key2
 secrets_before="$(rotation_secret_count)"
+expect_absent 'etcd holds Secrets at the start' "$secrets_before" '[0]'
 expect 'every Secret uses key1 at the start' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" "$secrets_before"
 expect 'grep prints the line with the key1 value' "$(sudo grep 'secret:' /etc/kubernetes/enc/enc.yaml)" "secret: $key"
 new_key="$(head -c 32 /dev/urandom | base64)"
@@ -314,7 +324,7 @@ expect 'kubectl creates after-rotation' "$(kubectl -n starfleet create secret ge
 expect 'hexdump shows the key2 prefix' "$(etcd_get /registry/secrets/starfleet/after-rotation | hexdump -C | head -5)" '|nc:aescbc:v1:key|'
 expect 'after-rotation starts with k8s:enc:aescbc:v1:key2:' "$(stored_prefix /registry/secrets/starfleet/after-rotation 23)" 'k8s:enc:aescbc:v1:key2:'
 expect 'old Secrets still use key1' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" "$secrets_before"
-expect 'one Secret uses key2' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key2:')" 1
+expect 'one Secret uses key2' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key2:')" '[1]'
 # The failure case the page describes: key1 removed before the rewrite.
 sudo cp -p /etc/kubernetes/enc/enc.yaml /root/enc-two-keys.yaml
 save_yaml_from_page "$page" encryptionconfiguration-key2-only.yaml
@@ -345,7 +355,7 @@ for name in after-encryption after-rotation api-key before-encryption practice-t
 done
 expect 'replace writes the bootstrap token again' "$rotation_replaced" 'secret/bootstrap-token-'
 secrets_after="$(rotation_secret_count)"
-expect 'no Secret uses key1 after the rewrite' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" 0
+expect 'no Secret uses key1 after the rewrite' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" '[0]'
 expect 'every Secret uses key2 after the rewrite' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key2:')" "$secrets_after"
 sudo cp "$work_directory/encryptionconfiguration-key2-only.yaml" /etc/kubernetes/enc/enc.yaml
 sudo chmod 600 /etc/kubernetes/enc/enc.yaml
