@@ -205,11 +205,7 @@ disposable-before
 
 `before-encryption` now has the same `k8s:enc:aescbc:v1:key1:` prefix, and its plain text is gone from `etcd`. The last line shows that the API still returns the value, because the kube-apiserver decrypts it for an authorized user. Encryption at rest protects copies of `etcd`; it does not protect a Secret from a user that RBAC (role-based access control) allows to read it.
 
-## Rotate the encryption key
-
-A key rotation follows the same rule of writes and reads. Add the new key as the first key of `aescbc` and keep the old key after it, then restart the API server. New writes now use the new key, and old data is still readable with the old key. Rewrite all Secrets with the `kubectl replace` command, then remove the old key and restart the API server again.
-
-If you remove the old key before the rewrite, Secrets that are still encrypted with it can no longer be read. You now know how to enable encryption at rest, how to prove it in `etcd`, and why the rewrite step matters. The open question is where the key lives: with `aescbc` it is in a file next to the data, and only a KMS provider moves it off the node.
+You now know how to enable encryption at rest, how to prove it in `etcd`, and why the rewrite step matters. Every Secret in the cluster is now stored with `key1`. The open question is what happens when that key must be replaced: the kube-apiserver needs `key1` to read every stored Secret, so a new key cannot simply take its place in the file.
 
 ## Common pitfalls
 
