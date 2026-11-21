@@ -51,7 +51,7 @@ questions:
         explanation: "Plain text in `stringData` is accepted and converted."
       - id: c
         text: "A `stringData` field with the value `abc`."
-        explanation: "`stringData` is write-only. The API server never stores or returns it."
+        explanation: "`stringData` is write-only. The API server stores the value in `data` and returns no `stringData` field."
     correct_option: a
     explanation: "`stringData` is a write-only convenience. The API server stores the value as base64 in `data`."
 

@@ -9,7 +9,7 @@
 #    the playground cluster. The smoke test runs the commands the pages teach
 #    and exits non-zero when one of them does not give the expected result.
 #    A qemu playground has no kubeconfig on the host: its cluster lives inside
-#    the VM. The script copies the module pages and testing/ into the VM over
+#    the VM. The script copies the module pages, docs/ and testing/ into the VM over
 #    SSH, with the key and port of this playground, and runs smoke.sh there as
 #    the student user, the user the learner logs in as.
 #
@@ -52,7 +52,7 @@ if [ "$runtime" = qemu ]; then
   vm_ssh=(ssh -q -i "$ssh_key" -p "$ssh_port" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes student@127.0.0.1)
   module=$(dirname "$dir")
   echo "::group::smoke test $name (inside the VM)"
-  (cd "$module" && COPYFILE_DISABLE=1 tar -cf - --exclude labs ./*.md playground/testing) | "${vm_ssh[@]}" 'rm -rf smoke && mkdir smoke && tar -xf - -C smoke'
+  (cd "$module" && COPYFILE_DISABLE=1 tar -cf - --exclude labs ./*.md playground/docs playground/testing) | "${vm_ssh[@]}" 'rm -rf smoke && mkdir smoke && tar -xf - -C smoke'
   "${vm_ssh[@]}" 'bash smoke/playground/testing/smoke.sh' </dev/null
   echo "::endgroup::"
   echo "PASS $name"
