@@ -36,7 +36,7 @@ cleanup() {
 trap cleanup EXIT
 
 echo "::group::astrona run $name"
-(cd "$dir" && astrona run -c . --headless --accept-terms --trust --keep-context --yes) | tee "$work/run.log"
+(cd "$dir" && astrona run -c . --headless --accept-terms --trust --keep-context --yes) 2>&1 | tee "$work/run.log"
 echo "::endgroup::"
 
 runtime=$(python3 -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["runtime"]["type"])' "$dir/config.yaml")
