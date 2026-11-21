@@ -111,22 +111,18 @@ expect_equal 'guide: ConfigMap holds a credential key' "$(kubectl -n starfleet g
 pods="$(kubectl -n starfleet get pods -o wide)"
 printf '%s\n' "$pods"
 expect 'shuttle is Running' "$(printf '%s\n' "$pods" | grep -E '^shuttle ')" Running
-# test-playground.sh copies only the module pages and testing/ into the VM,
-# not docs/, so the YAML block of the guide is used only when the guide is
-# there.
 guide=playground/docs/overview.md
-if [[ -f "$module_directory/$guide" ]]; then
-  save_from_page "$guide" secret-migrated-credentials.yaml
-  kubectl -n starfleet wait --for=condition=Ready pod/migrated-reader --timeout=180s
-  expect 'migrated Secret file holds the value' "$(kubectl -n starfleet exec migrated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v1' && echo passed)" passed
-fi
+save_from_page "$guide" secret-migrated-credentials.yaml
+kubectl -n starfleet wait --for=condition=Ready pod/migrated-reader --timeout=180s
+expect 'migrated Secret file holds the value' "$(kubectl -n starfleet exec migrated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v1' && echo passed)" passed
 expect 'deleting the ConfigMap succeeds' "$(kubectl -n starfleet delete configmap legacy-settings)" 'configmap "legacy-settings" deleted'
-if [[ -f "$module_directory/$guide" ]]; then
-  expect 'no environment variable holds the credential' "$(kubectl -n starfleet exec migrated-reader -- sh -c 'test -z "$(env | grep disposable)"' && echo passed)" passed
-else
-  printf 'skip: %s is not in the VM, so the migrated-reader steps of the guide did not run\n' "$guide"
-fi
+expect 'no environment variable holds the credential' "$(kubectl -n starfleet exec migrated-reader -- sh -c 'test -z "$(env | grep disposable)"' && echo passed)" passed
 expect 'ConfigMap is gone' "$(kubectl -n starfleet get configmap legacy-settings 2>&1 || true)" 'Error from server (NotFound): configmaps "legacy-settings" not found'
+# The first page says that after the guide deleted legacy-settings, its first
+# command shows a NotFound error and prints 0. Run that exact command again.
+deleted_count="$(kubectl -n starfleet get configmap legacy-settings -o jsonpath='{.data}' 2>"$work_directory/deleted-stderr" | grep -c credential || true)"
+expect_equal 'first page command prints 0 after the guide deleted the ConfigMap' "$deleted_count" 0
+expect 'first page command shows a NotFound error after the guide deleted the ConfigMap' "$(cat "$work_directory/deleted-stderr")" NotFound
 
 # Auditing Secret access
 page=course-04-auditing-secret-access.md
