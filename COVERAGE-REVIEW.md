@@ -12,7 +12,7 @@ New QEMU labs run a workload under the actual gVisor runtime and observe Cilium 
 
 - The original RuntimeClass lab demonstrates handler selection. The separate gVisor VM provides runtime execution evidence; its diagnostic banner is not a security attestation.
 - WireGuard tests cover cross-node Pod traffic, not same-node traffic, external endpoints or node encryption. Live IPsec key rotation remains ungraded.
-- Encryption-at-rest rotation, external secret services and encrypted Git workflows remain reference or playground material.
+- External secret services and encrypted Git workflows remain reference or playground material.
 
 ## Runtime choice
 

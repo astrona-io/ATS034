@@ -45,6 +45,9 @@ labs:
   sections/section-020/module-01/labs/lab-03:
     preparation:
     - sections/section-020/module-01/course-04-encryption-at-rest.md
+  sections/section-020/module-01/labs/lab-04:
+    preparation:
+    - sections/section-020/module-01/course-05-rotating-the-encryption-key.md
   sections/section-020/module-02/labs/lab-01:
     preparation:
     - sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
