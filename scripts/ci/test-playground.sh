@@ -9,7 +9,9 @@
 #    the playground cluster. The smoke test runs the commands the pages teach
 #    and exits non-zero when one of them does not give the expected result.
 #    A qemu playground has no kubeconfig on the host: its cluster lives inside
-#    the VM, and its bootstrap already checked it there, so step 2 is skipped.
+#    the VM. The script copies the module pages, docs/ and testing/ into the VM over
+#    SSH, with the key and port of this playground, and runs smoke.sh there as
+#    the student user, the user the learner logs in as.
 #
 # The script uses its own kubeconfig file, so it never changes the current
 # context of the machine it runs on.
@@ -34,12 +36,25 @@ cleanup() {
 trap cleanup EXIT
 
 echo "::group::astrona run $name"
-(cd "$dir" && astrona run -c . --headless --accept-terms --trust --keep-context --yes)
+(cd "$dir" && astrona run -c . --headless --accept-terms --trust --keep-context --yes) 2>&1 | tee "$work/run.log"
 echo "::endgroup::"
 
 runtime=$(python3 -c 'import sys, yaml; print(yaml.safe_load(open(sys.argv[1]))["runtime"]["type"])' "$dir/config.yaml")
 if [ "$runtime" = qemu ]; then
-  echo "qemu playground: the bootstrap checked the cluster inside the VM"
+  if [ ! -x "$dir/testing/smoke.sh" ]; then
+    echo "no testing/smoke.sh: only the start and the readiness checks were tested"
+    echo "PASS $name"
+    exit 0
+  fi
+  ssh_port=$(grep -o 'ssh-port=[0-9]*' "$work/run.log" | head -1 | cut -d= -f2)
+  ssh_key="$HOME/.astrona/qemu/astro-$name/id_ed25519"
+  [ -n "$ssh_port" ] && [ -f "$ssh_key" ] || { echo "no SSH port or key for $name" >&2; exit 1; }
+  vm_ssh=(ssh -q -i "$ssh_key" -p "$ssh_port" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes student@127.0.0.1)
+  module=$(dirname "$dir")
+  echo "::group::smoke test $name (inside the VM)"
+  (cd "$module" && COPYFILE_DISABLE=1 tar -cf - --exclude labs ./*.md playground/docs playground/testing) | "${vm_ssh[@]}" 'rm -rf smoke && mkdir smoke && tar -xf - -C smoke'
+  "${vm_ssh[@]}" 'bash smoke/playground/testing/smoke.sh' </dev/null
+  echo "::endgroup::"
   echo "PASS $name"
   exit 0
 fi

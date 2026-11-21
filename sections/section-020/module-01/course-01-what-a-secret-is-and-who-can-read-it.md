@@ -61,7 +61,7 @@ Then check the result:
 kubectl -n starfleet get secret api-key -o yaml
 ```
 
-The output has a `data` field with the key `key` and a base64 value, and it has no `stringData` field. The API server converted the plain text on write and never stores `stringData`. The command `kubectl describe secret api-key` goes the other way: it shows the key names and the size of each value in bytes, but not the values.
+The output has a `data` field with the key `key` and a base64 value, and it has no `stringData` field. The API server converted the plain text on write and stored only `data`. The plain text can still be in the object: `kubectl apply` saves the whole file it sent in the annotation `kubectl.kubernetes.io/last-applied-configuration`, and that annotation includes the `stringData` value. Anyone who can read the Secret can read the annotation too, so check `metadata.annotations` in the same output. The command `kubectl describe secret api-key` goes the other way: it shows the key names and the size of each value in bytes, but not the values.
 
 ## What protects a Secret
 
