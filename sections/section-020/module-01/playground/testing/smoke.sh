@@ -110,6 +110,36 @@ expect 'Secret practice-token exists' "$start_state" 'secret/practice-token'
 expect 'drifter runs in outpost' "$(kubectl -n outpost get pod drifter)" Running
 expect 'practice-token holds disposable-v1' "$(test "$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}' | base64 -d)" = disposable-v1 && echo match || echo different)" match
 
+# Playground guide: rotate the value and refresh the consumer
+guide=playground/docs/overview.md
+save_from_page "$guide" pod-rotated-reader.yaml
+kubectl -n starfleet wait --for=condition=Ready pod/rotated-reader --timeout=180s
+expect 'guide: Secret update prints configured' "$(save_from_page "$guide" secret-practice-token.yaml)" 'secret/practice-token configured'
+guide_file_after_sync="$(wait_for_output file-new kubectl -n starfleet exec rotated-reader -- sh -c 'test "$(cat /credentials/token)" = disposable-v2 && echo file-new || echo file-old')"
+expect 'guide: kubelet refreshes the file to file-new' "$guide_file_after_sync" file-new
+expect 'guide: environment variable stays env-old' "$(kubectl -n starfleet exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && echo env-new || echo env-old')" env-old
+kubectl -n starfleet delete pod rotated-reader --wait=true
+kubectl apply -f "$work_directory/pod-rotated-reader.yaml"
+kubectl -n starfleet wait --for=condition=Ready pod/rotated-reader --timeout=180s
+expect 'guide: new Pod has env-new' "$(kubectl -n starfleet exec rotated-reader -- sh -c 'test "$PRACTICE_TOKEN" = disposable-v2 && echo env-new || echo env-old')" env-new
+# The pages start from the playground state again: practice-token holds
+# disposable-v1, as the bootstrap applied it, and rotated-reader is gone. The
+# rotation page then applies the same secret-practice-token.yaml and expects
+# "configured" and an old environment variable, which only holds after this
+# reset.
+kubectl -n starfleet delete pod rotated-reader --wait=true
+kubectl apply -f - <<'YAML'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: practice-token
+  namespace: starfleet
+type: Opaque
+stringData:
+  token: disposable-v1
+YAML
+expect 'practice-token holds disposable-v1 again' "$(test "$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}' | base64 -d)" = disposable-v1 && echo match || echo different)" match
+
 # What a Secret is and who can read it
 page=course-01-what-a-secret-is-and-who-can-read-it.md
 stored_token="$(kubectl -n starfleet get secret practice-token -o jsonpath='{.data.token}')"
@@ -225,4 +255,118 @@ expect 'replace writes practice-token again' "$replaced" 'secret/practice-token 
 expect 'old Secret now starts with k8s:enc:aescbc:v1:key1:' "$(stored_prefix /registry/secrets/starfleet/before-encryption 23)" 'k8s:enc:aescbc:v1:key1:'
 expect 'old Secret is no longer readable in etcd' "$(count_in_etcd /registry/secrets/starfleet/before-encryption disposable)" 0
 expect 'API server still decrypts the old Secret' "$(kubectl -n starfleet get secret before-encryption -o jsonpath='{.data.token}' | base64 -d; echo)" disposable-before
+
+# ==== BEGIN: Rotating the encryption key (course-05) ====
+# Starts from the state the encryption at rest block leaves: key1 in enc.yaml
+# and every Secret stored with key1. $key holds the value of key1.
+page=course-05-rotating-the-encryption-key.md
+# etcd_get passes only one argument, so these helpers run etcdctl themselves
+# with --prefix. They print the count in brackets, so expect matches it exactly.
+rotation_etcd() {
+  sudo crictl exec "$(sudo crictl ps --name etcd -q)" etcdctl \
+    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    --cert=/etc/kubernetes/pki/etcd/server.crt \
+    --key=/etc/kubernetes/pki/etcd/server.key \
+    "$@"
+}
+rotation_prefix_count() {
+  printf '[%s]' "$(rotation_etcd get /registry/secrets/ --prefix | grep -a -c "$1" || true)"
+}
+rotation_secret_count() {
+  printf '[%s]' "$(rotation_etcd get /registry/secrets/ --prefix --keys-only | grep -c . || true)"
+}
+# Stop the kube-apiserver container and wait until the kubelet started a new
+# one and the API answers again (about 5 minutes at most).
+rotation_restart_apiserver() {
+  local old_container new_container=''
+  old_container="$(sudo crictl ps --name kube-apiserver -q)"
+  sudo crictl stop "$old_container" >/dev/null
+  for attempt in $(seq 1 60); do
+    new_container="$(sudo crictl ps --name kube-apiserver -q)"
+    [[ -n "$new_container" && "$new_container" != "$old_container" ]] && break
+    sleep 5
+  done
+  for attempt in $(seq 1 60); do
+    kubectl --request-timeout=5s get --raw=/livez >/dev/null 2>&1 && break
+    sleep 5
+  done
+}
+rotation_wait_ready() {
+  local ready=''
+  for attempt in $(seq 1 60); do
+    ready="$(kubectl --request-timeout=5s get --raw=/readyz 2>/dev/null || true)"
+    [[ "$ready" == ok ]] && break
+    sleep 5
+  done
+  printf '%s\n' "$ready"
+}
+expect 'enc.yaml starts with only key1' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" '      - name: key1'
+expect_absent 'enc.yaml has no key2 yet' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" key2
+secrets_before="$(rotation_secret_count)"
+expect_absent 'etcd holds Secrets at the start' "$secrets_before" '[0]'
+expect 'every Secret uses key1 at the start' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" "$secrets_before"
+expect 'grep prints the line with the key1 value' "$(sudo grep 'secret:' /etc/kubernetes/enc/enc.yaml)" "secret: $key"
+new_key="$(head -c 32 /dev/urandom | base64)"
+expect 'new key is 32 bytes' "$(printf '%s' "$new_key" | base64 -d | wc -c | tr -d ' ')" 32
+save_yaml_from_page "$page" encryptionconfiguration-key2.yaml
+sed -i -e "s|<NEW_KEY>|$new_key|" -e "s|<OLD_KEY>|$key|" "$work_directory/encryptionconfiguration-key2.yaml"
+sudo cp "$work_directory/encryptionconfiguration-key2.yaml" /etc/kubernetes/enc/enc.yaml
+sudo chmod 600 /etc/kubernetes/enc/enc.yaml
+rm "$work_directory/encryptionconfiguration-key2.yaml"
+expect 'enc.yaml lists key2 first and key1 second' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)"$'\n' "$(text_from_page "$page" 'Then check the key names in the new file:')"
+expect 'enc.yaml keeps mode 600' "$(sudo ls -l /etc/kubernetes/enc/enc.yaml)" '-rw------- 1 root root'
+rotation_restart_apiserver
+expect 'API server is ready with key2 and key1' "$(rotation_wait_ready)" ok
+rotation_container="$(sudo crictl ps --name kube-apiserver)"
+printf '%s\n' "$rotation_container"
+expect 'the kubelet started the kube-apiserver again' "$rotation_container" Running
+expect 'kubectl creates after-rotation' "$(kubectl -n starfleet create secret generic after-rotation --from-literal=token=disposable-rotation)" 'secret/after-rotation created'
+expect 'hexdump shows the key2 prefix' "$(etcd_get /registry/secrets/starfleet/after-rotation | hexdump -C | head -5)" '|nc:aescbc:v1:key|'
+expect 'after-rotation starts with k8s:enc:aescbc:v1:key2:' "$(stored_prefix /registry/secrets/starfleet/after-rotation 23)" 'k8s:enc:aescbc:v1:key2:'
+expect 'old Secrets still use key1' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" "$secrets_before"
+expect 'one Secret uses key2' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key2:')" '[1]'
+# The failure case the page describes: key1 removed before the rewrite.
+sudo cp -p /etc/kubernetes/enc/enc.yaml /root/enc-two-keys.yaml
+save_yaml_from_page "$page" encryptionconfiguration-key2-only.yaml
+sed -i "s|<NEW_KEY>|$new_key|" "$work_directory/encryptionconfiguration-key2-only.yaml"
+sudo cp "$work_directory/encryptionconfiguration-key2-only.yaml" /etc/kubernetes/enc/enc.yaml
+sudo chmod 600 /etc/kubernetes/enc/enc.yaml
+rotation_restart_apiserver
+early_read=''
+for attempt in $(seq 1 30); do
+  early_read="$(kubectl --request-timeout=5s -n starfleet get secret before-encryption 2>&1 || true)"
+  [[ "$early_read" == *'no matching key'* ]] && break
+  sleep 5
+done
+expect 'early removal: an old Secret is unreadable' "$early_read" "$(text_from_page "$page" 'Reading one of them failed:' | head -n 1)"
+expect 'early removal: listing fails on a key1 Secret' "$(kubectl --request-timeout=5s -n starfleet get secrets 2>&1 || true)" 'no matching key was found for the provided AES transformer'
+expect 'early removal: list names an etcd key' "$(kubectl --request-timeout=5s -n starfleet get secrets 2>&1 || true)" 'unable to transform key "/registry/secrets/starfleet/'
+expect 'early removal: a key2 Secret is still readable' "$(kubectl --request-timeout=5s -n starfleet get secret after-rotation -o jsonpath='{.data.token}' | base64 -d)" disposable-rotation
+expect 'early removal: readyz fails on informer-sync' "$(kubectl --request-timeout=5s get --raw=/readyz 2>&1 || true)" '[-]informer-sync failed: reason withheld'
+sudo cp -p /root/enc-two-keys.yaml /etc/kubernetes/enc/enc.yaml
+sudo rm /root/enc-two-keys.yaml
+rotation_restart_apiserver
+expect 'API server is ready again with key1 back' "$(rotation_wait_ready)" ok
+# Back on the page: rewrite every Secret with key2.
+rotation_replaced="$(kubectl get secrets --all-namespaces -o json | kubectl replace -f -)"
+printf '%s\n' "$rotation_replaced"
+for name in after-encryption after-rotation api-key before-encryption practice-token; do
+  expect "replace writes $name again" "$rotation_replaced" "secret/$name replaced"
+done
+expect 'replace writes the bootstrap token again' "$rotation_replaced" 'secret/bootstrap-token-'
+secrets_after="$(rotation_secret_count)"
+expect 'no Secret uses key1 after the rewrite' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key1:')" '[0]'
+expect 'every Secret uses key2 after the rewrite' "$(rotation_prefix_count 'k8s:enc:aescbc:v1:key2:')" "$secrets_after"
+sudo cp "$work_directory/encryptionconfiguration-key2-only.yaml" /etc/kubernetes/enc/enc.yaml
+sudo chmod 600 /etc/kubernetes/enc/enc.yaml
+rm "$work_directory/encryptionconfiguration-key2-only.yaml"
+expect 'enc.yaml lists only key2' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" '      - name: key2'
+expect_absent 'enc.yaml no longer lists key1' "$(sudo grep 'name: key' /etc/kubernetes/enc/enc.yaml)" key1
+rotation_restart_apiserver
+expect 'API server is ready with only key2' "$(rotation_wait_ready)" ok
+expect 'API server still reads before-encryption' "$(kubectl -n starfleet get secret before-encryption -o jsonpath='{.data.token}' | base64 -d; echo)" disposable-before
+expect 'API server still reads after-rotation' "$(kubectl -n starfleet get secret after-rotation -o jsonpath='{.data.token}' | base64 -d; echo)" disposable-rotation
+expect 'before-encryption now starts with k8s:enc:aescbc:v1:key2:' "$(stored_prefix /registry/secrets/starfleet/before-encryption 23)" 'k8s:enc:aescbc:v1:key2:'
+# ==== END: Rotating the encryption key (course-05) ====
+
 printf 'PASS: every page command gave the expected result (%s checks)\n' "$checks"

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet-034-020-01-04
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: probe-credentials
+  namespace: starfleet-034-020-01-04
+type: Opaque
+stringData:
+  password: disposable-probe-password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scout-token
+  namespace: starfleet-034-020-01-04
+type: Opaque
+stringData:
+  token: disposable-scout-token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bridge-api-key
+  namespace: starfleet-034-020-01-04
+type: Opaque
+stringData:
+  key: disposable-bridge-key

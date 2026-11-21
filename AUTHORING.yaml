@@ -163,6 +163,7 @@ sections:
     - Delivering Secrets To Pods
     - Rotating A Secret
     - Encryption At Rest
+    - Rotating The Encryption Key
     playground: true
     module_lab: true
     sources:
@@ -173,6 +174,8 @@ sections:
     - reading: sections/section-020/module-01/course-03-rotating-a-secret.md
       adapted_from: null
     - reading: sections/section-020/module-01/course-04-encryption-at-rest.md
+      adapted_from: null
+    - reading: sections/section-020/module-01/course-05-rotating-the-encryption-key.md
       adapted_from: null
     labs:
     - id: lab-01
@@ -186,6 +189,7 @@ sections:
     - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
     - sections/section-020/module-01/course-03-rotating-a-secret.md
     - sections/section-020/module-01/course-04-encryption-at-rest.md
+    - sections/section-020/module-01/course-05-rotating-the-encryption-key.md
     quiz: sections/section-020/module-01/quiz.yaml
   - id: module-02
     title: Secret Types, Pull Credentials And Access Control

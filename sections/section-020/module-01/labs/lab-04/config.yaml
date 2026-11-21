@@ -1,0 +1,57 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-020-01-04
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  # The task restarts the kube-apiserver with a new encryption key and reads
+  # etcd on the node, so the lab runs a real one-node kubeadm cluster in a VM.
+  type: qemu
+  qemu:
+  - image:
+      type: oci
+      source: ghcr.io/astrona-io/ubuntu-qcow2-image:24.04-cks
+    cpus: 2
+    memoryMB: 4096
+    diskSizeGB: 25
+    display: false
+bootstrap:
+  init:
+  - name: seed-private-environment
+    type: file
+    source: vm/install.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: vm/verify-start.sh
+  - name: reference-result
+    type: file
+    source: vm/apply-solution.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: vm/wait-solved.sh
+validation:
+  scripts:
+  - name: key2-first
+    description: The kube-apiserver runs with an EncryptionConfiguration whose first aescbc key is a new key named key2, and a new Secret is stored with key2 in etcd
+    type: file
+    source: vm/validate-key2-first.sh
+    points: 2
+  - name: secrets-use-key2
+    description: Every Secret in etcd, including probe-credentials, scout-token and bridge-api-key, is stored with key2
+    type: file
+    source: vm/validate-secrets-use-key2.sh
+    points: 2
+  - name: key1-removed
+    description: key1 is gone from the EncryptionConfiguration, the kube-apiserver was restarted after the change, and the Secrets still return their values through the API
+    type: file
+    source: vm/validate-key1-removed.sh
+    points: 2
