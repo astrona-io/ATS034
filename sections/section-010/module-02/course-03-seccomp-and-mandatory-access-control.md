@@ -93,7 +93,7 @@ Both modules need support on the node. A Pod that asks for a `Localhost` AppArmo
 
 ## Install Localhost profiles on the node
 
-The `Localhost` type moves work from the Pod to the node. An administrator places the seccomp file and loads the AppArmor profile on every node that may run the Pod, and only then does the Pod start. The kind playground hides its node inside a container, so the commands below are not meant for the playground. They show the steps on a one-node cluster built with kubeadm, the standard tool that installs Kubernetes on a Linux machine, and the task on the next page gives you such a node.
+The `Localhost` type moves work from the Pod to the node. An administrator places the seccomp file and loads the AppArmor profile on every node that may run the Pod, and only then does the Pod start. The playground node is the VM you are logged in to, so you run these steps there with `sudo`. The setup placed both profile files in `/opt/profiles`.
 
 ### Place a seccomp file
 
@@ -106,7 +106,7 @@ sudo ls -l /var/lib/kubelet/seccomp/profiles
 
 ```text
 total 4
--rw-r--r-- 1 root root 143 Nov 18 12:02 block-mkdir.json
+-rw-r--r-- 1 root root 143 Nov 18 13:20 block-mkdir.json
 ```
 
 The Pod then sets `localhostProfile: profiles/block-mkdir.json`, the path relative to `/var/lib/kubelet/seccomp`. If the path is wrong, the kubelet cannot find the file, and the container stays in `CreateContainerError` with the event `cannot load seccomp profile "/var/lib/kubelet/seccomp/block-mkdir.json": open /var/lib/kubelet/seccomp/block-mkdir.json: no such file or directory`.

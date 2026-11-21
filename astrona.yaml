@@ -915,6 +915,24 @@ modules:
     title: Certificates And Workload Identity
     path: sections/section-040/module-02/course-03-certificates-and-workload-identity.md
   - type: reading
+    title: Fix A Wrong Principal In An AuthorizationPolicy — Task
+    path: sections/section-040/module-02/labs/lab-04/question.md
+  - type: lab
+    title: Fix A Wrong Principal In An AuthorizationPolicy
+    path: sections/section-040/module-02/labs/lab-04
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: workload-identity
+    task_kind: build
+    learning_goals:
+    - Read the SPIFFE ID from a sidecar certificate and fix an AuthorizationPolicy principal that names the wrong ServiceAccount.
+    tags:
+    - cks
+    - workload-identity
+  - type: reading
+    title: Fix A Wrong Principal In An AuthorizationPolicy — Solution
+    path: sections/section-040/module-02/labs/lab-04/solution.md
+  - type: reading
     title: Verifying And Troubleshooting mTLS
     path: sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
   - type: reading
@@ -994,6 +1012,24 @@ modules:
   - type: reading
     title: Verifying Cilium Encryption And Its Limits
     path: sections/section-040/module-03/course-04-verifying-and-limits.md
+  - type: reading
+    title: Fix A Cilium Agent That Did Not Load WireGuard — Task
+    path: sections/section-040/module-03/labs/lab-03/question.md
+  - type: lab
+    title: Fix A Cilium Agent That Did Not Load WireGuard
+    path: sections/section-040/module-03/labs/lab-03
+    difficulty: intermediate
+    estimated_duration: 10m
+    topic: cilium-ipsec
+    task_kind: troubleshooting
+    learning_goals:
+    - Check the encryption status of every Cilium agent, find the agent that did not load WireGuard and restart it.
+    tags:
+    - cks
+    - cilium-ipsec
+  - type: reading
+    title: Fix A Cilium Agent That Did Not Load WireGuard — Solution
+    path: sections/section-040/module-03/labs/lab-03/solution.md
   - type: reading
     title: Summary
     path: sections/section-040/module-03/course-05-summary.md

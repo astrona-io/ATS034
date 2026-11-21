@@ -22,7 +22,7 @@ After this module you can:
 
 You need Pods, namespaces, Deployments and the commands `kubectl apply`, `kubectl exec` and `kubectl describe`. You should know that a Pod Security Admission label on a namespace selects a profile, and that the Restricted profile needs a non-root user, a seccomp profile, dropped capabilities and no privilege escalation.
 
-Your playground is a `kind` cluster running Kubernetes 1.35 with one control-plane node and one worker node. These namespaces and workloads exist when it starts:
+Your playground is a VM (virtual machine) with a one-node Kubernetes 1.35 cluster built with kubeadm. The node runs the control plane and the Pods, and it has AppArmor enabled. The profile files `block-mkdir.json` and `k8s-deny-tmp-write` wait in `/opt/profiles` on the node. These namespaces and workloads exist when it starts:
 
 | Namespace | What is in it |
 | --- | --- |
@@ -30,6 +30,6 @@ Your playground is a `kind` cluster running Kubernetes 1.35 with one control-pla
 | `outpost` | `drifter`, a `busybox` client pod |
 | `hardened` | Enforces Restricted. The `scanner` Deployment runs as root and has no Ready Pods |
 
-`kubectl` in the playground terminal already points at this cluster. Every file you save is a file on the playground machine, in the folder you are working in. Launch your playground now, and keep it running next to you while you read the parts:
+Open a shell on the VM with `astrona ssh astro-ats-034-playground-010-02`. `kubectl` in that shell already points at the cluster. Every file you save is a file on the VM, in the folder you are working in. Launch your playground now, and keep it running next to you while you read the parts:
 
 <!-- astrona:playground -->

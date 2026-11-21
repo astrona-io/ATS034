@@ -1,0 +1,56 @@
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-034-lab-040-02-04
+  docs:
+    prerequisites: docs/prerequisites.md
+    examQuestion: question.md
+    caseStudy: docs/case-study.md
+    guide: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    preloadImages:
+    - docker.io/library/python:3.13-alpine
+    - docker.io/library/busybox:1.37.0
+    - registry.istio.io/release/pilot:1.30.5
+    - registry.istio.io/release/proxyv2:1.30.5
+    nodes:
+      workers: 1
+bootstrap:
+  init:
+  - name: install-istio-and-workloads
+    type: file
+    source: bootstrap/setup.sh
+teardown:
+  keepCluster: false
+testing:
+  init:
+  - name: verify-start
+    description: Verify the starting state and reject the unfinished lab
+    type: file
+    source: testing/verify-start.sh
+  - name: reference-result
+    type: file
+    source: solution/apply.sh
+  - name: wait-solved
+    description: Wait until the reference solution settles and every outcome passes
+    type: file
+    source: testing/wait-solved.sh
+validation:
+  scripts:
+  - name: shuttle-allowed
+    description: The AuthorizationPolicy probe-allow-shuttle in starfleet-034-040-02-04 still selects the probe pods with action ALLOW, and the shuttle pod gets a reply from the probe Service
+    type: file
+    source: validation/validate-shuttle-allowed.sh
+    points: 1
+  - name: drifter-denied
+    description: While the shuttle pod gets a reply, the drifter pod (ServiceAccount default) still gets HTTP 403 from the probe sidecar
+    type: file
+    source: validation/validate-drifter-denied.sh
+    points: 1
+  - name: principal-exact
+    description: Every source in probe-allow-shuttle lists only the principal cluster.local/ns/starfleet-034-040-02-04/sa/shuttle, with no namespace, IP address or wildcard match
+    type: file
+    source: validation/validate-principal-exact.sh
+    points: 1
