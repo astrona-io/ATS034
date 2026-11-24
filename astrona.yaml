@@ -386,12 +386,33 @@ modules:
     title: "Encrypt Secrets At Rest In etcd \u2014 Solution"
     path: sections/section-020/module-01/labs/lab-03/solution.md
   - type: reading
+    title: Rotating The Encryption Key
+    path: sections/section-020/module-01/course-05-rotating-the-encryption-key.md
+  - type: reading
+    title: "Rotate The Encryption-At-Rest Key — Task"
+    path: sections/section-020/module-01/labs/lab-04/question.md
+  - type: lab
+    title: Rotate The Encryption-At-Rest Key
+    path: sections/section-020/module-01/labs/lab-04
+    difficulty: advanced
+    estimated_duration: 15m
+    topic: encryption-at-rest
+    task_kind: build
+    learning_goals:
+    - Rotate the encryption-at-rest key from key1 to key2 and prove from raw etcd data that no Secret still needs key1.
+    tags:
+    - cks
+    - encryption-at-rest
+  - type: reading
+    title: "Rotate The Encryption-At-Rest Key — Solution"
+    path: sections/section-020/module-01/labs/lab-04/solution.md
+  - type: reading
     title: Summary
-    path: sections/section-020/module-01/course-05-summary.md
+    path: sections/section-020/module-01/course-06-summary.md
   - type: quiz
     title: 'Knowledge Check: Secret Delivery And Rotation'
     path: sections/section-020/module-01/quiz.yaml
-    question_count: 10
+    question_count: 11
     pass_score: 70
   - type: reading
     title: Secret Types, Pull Credentials And Access Control
@@ -1003,6 +1024,7 @@ modules:
     task_kind: build
     learning_goals:
     - Rotate the Cilium IPsec key to a higher SPI and confirm that every agent loaded it.
+    - Prove with a packet capture on the node interface that ESP traffic between the nodes uses the new SPI.
     tags:
     - cks
     - cilium-ipsec-rotation

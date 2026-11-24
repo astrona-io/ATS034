@@ -54,10 +54,30 @@ sections:
     labs:
     - id: lab-01
       path: sections/section-010/module-01/labs/lab-01
-      after_reading: sections/section-010/module-01/course-03-pod-security-admission-modes.md
-      objective: Admit a compliant Pod and reject a privileged Pod through the API server.
+      after_reading: sections/section-010/module-01/course-01-the-three-pod-security-standards.md
+      objective: Enforce Baseline and Restricted pinned to v1.35 with namespace labels and prove each
+        with a server-side dry run.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-010/module-01/labs/lab-02
+      after_reading: sections/section-010/module-01/course-02-security-context-fields.md
+      objective: Run a Pod that meets Restricted with a non-root user, RuntimeDefault seccomp and a read-only
+        root filesystem.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-010/module-01/labs/lab-03
+      after_reading: sections/section-010/module-01/course-03-pod-security-admission-modes.md
+      objective: Enforce Baseline while warn and audit preview Restricted on the same namespace.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-04
+      path: sections/section-010/module-01/labs/lab-04
+      after_reading: sections/section-010/module-01/course-04-admission-for-workloads-and-troubleshooting.md
+      objective: Find a FailedCreate event from Pod Security Admission and repair the Deployment template.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-010/module-01/course-01-the-three-pod-security-standards.md
     - sections/section-010/module-01/course-02-security-context-fields.md
@@ -74,7 +94,7 @@ sections:
     outline:
     - Run As A Non-Root User
     - Capabilities And Privilege Escalation
-    - Seccomp And Mandatory Access Control
+    - Seccomp, AppArmor And SELinux Settings
     - Host Namespaces And Host Paths
     playground: true
     module_lab: true
@@ -90,11 +110,29 @@ sections:
     labs:
     - id: lab-01
       path: sections/section-010/module-02/labs/lab-01
-      after_reading: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
-      objective: Repair a Deployment so its Pod meets Restricted and runs as non-root with a read-only
-        root filesystem.
+      after_reading: sections/section-010/module-02/course-01-run-as-a-non-root-user.md
+      objective: Run a Deployment as a non-root user and prove it with id and a working Service.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-010/module-02/labs/lab-02
+      after_reading: sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
+      objective: Drop all capabilities and set no_new_privs on a container that still runs as root.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-010/module-02/labs/lab-03
+      after_reading: sections/section-010/module-02/course-03-seccomp-and-mandatory-access-control.md
+      objective: Install a Localhost seccomp profile and an AppArmor profile on a node and attach both
+        to a Pod.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-04
+      path: sections/section-010/module-02/labs/lab-04
+      after_reading: sections/section-010/module-02/course-04-host-namespaces-and-host-paths.md
+      objective: Remove host networking and a hostPath volume so a Deployment passes Baseline.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-010/module-02/course-01-run-as-a-non-root-user.md
     - sections/section-010/module-02/course-02-capabilities-and-privilege-escalation.md
@@ -128,10 +166,24 @@ sections:
     - id: lab-01
       path: sections/section-010/module-03/labs/lab-01
       after_reading: sections/section-010/module-03/course-02-stage-a-label-change.md
-      objective: Label two namespaces with different profiles and prove the effect with server-side dry
-        runs.
+      objective: Use a server-side dry run of the enforce label as an inventory and roll out Restricted
+        only where Pods comply.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-010/module-03/labs/lab-02
+      after_reading: sections/section-010/module-03/course-03-cluster-wide-defaults-and-exemptions.md
+      objective: Set cluster-wide Pod Security defaults and a namespace exemption with an AdmissionConfiguration
+        file.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-010/module-03/labs/lab-03
+      after_reading: sections/section-010/module-03/course-04-exceptions-upgrades-and-ongoing-checks.md
+      objective: Exempt a node agent with Privileged plus Baseline warn and audit, and remove RBAC that
+        can change namespace labels.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-010/module-03/course-01-inventory-before-you-label.md
     - sections/section-010/module-03/course-02-stage-a-label-change.md
@@ -163,6 +215,7 @@ sections:
     - Delivering Secrets To Pods
     - Rotating A Secret
     - Encryption At Rest
+    - Rotating The Encryption Key
     playground: true
     module_lab: true
     sources:
@@ -174,18 +227,41 @@ sections:
       adapted_from: null
     - reading: sections/section-020/module-01/course-04-encryption-at-rest.md
       adapted_from: null
+    - reading: sections/section-020/module-01/course-05-rotating-the-encryption-key.md
+      adapted_from: null
     labs:
     - id: lab-01
       path: sections/section-020/module-01/labs/lab-01
+      after_reading: sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
+      objective: Deliver one Secret key to a container as an environment variable and as a read-only file.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-020/module-01/labs/lab-02
       after_reading: sections/section-020/module-01/course-03-rotating-a-secret.md
       objective: Replace a disposable credential and verify both delivery paths use the new value.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-020/module-01/labs/lab-03
+      after_reading: sections/section-020/module-01/course-04-encryption-at-rest.md
+      objective: Turn on encryption at rest for Secrets and prove from raw etcd data that new and existing
+        Secrets are encrypted.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-04
+      path: sections/section-020/module-01/labs/lab-04
+      after_reading: sections/section-020/module-01/course-05-rotating-the-encryption-key.md
+      objective: Rotate the encryption-at-rest key from key1 to key2 and prove from raw etcd data that
+        no Secret still needs key1.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-020/module-01/course-01-what-a-secret-is-and-who-can-read-it.md
     - sections/section-020/module-01/course-02-delivering-secrets-to-pods.md
     - sections/section-020/module-01/course-03-rotating-a-secret.md
     - sections/section-020/module-01/course-04-encryption-at-rest.md
+    - sections/section-020/module-01/course-05-rotating-the-encryption-key.md
     quiz: sections/section-020/module-01/quiz.yaml
   - id: module-02
     title: Secret Types, Pull Credentials And Access Control
@@ -215,11 +291,25 @@ sections:
     labs:
     - id: lab-01
       path: sections/section-020/module-02/labs/lab-01
+      after_reading: sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
+      objective: Create a dockerconfigjson Secret, attach it to a ServiceAccount and confirm that new
+        pods receive it.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-020/module-02/labs/lab-02
       after_reading: sections/section-020/module-02/course-03-immutable-secrets.md
       objective: Create a typed, immutable Secret, mount it read-only and show that its data cannot be
         changed.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-020/module-02/labs/lab-03
+      after_reading: sections/section-020/module-02/course-04-least-privilege-access-to-secrets.md
+      objective: Grant get on one named Secret and prove with kubectl auth can-i that list, watch and
+        other Secrets stay denied.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-020/module-02/course-01-secret-types-and-how-to-create-them.md
     - sections/section-020/module-02/course-02-image-pull-secrets-and-service-account-tokens.md
@@ -253,9 +343,17 @@ sections:
     - id: lab-01
       path: sections/section-020/module-03/labs/lab-01
       after_reading: sections/section-020/module-03/course-01-where-credentials-leak.md
-      objective: Replace a credential stored in a ConfigMap with a mounted Secret and remove the ConfigMap.
+      objective: Replace a literal credential in a Deployment and a ConfigMap with a Secret reference
+        and remove the leaked copy.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-020/module-03/labs/lab-02
+      after_reading: sections/section-020/module-03/course-04-auditing-secret-access.md
+      objective: Write an audit policy that logs Secrets at Metadata level, turn on the audit log and
+        find a Secret read in it.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-020/module-03/course-01-where-credentials-leak.md
     - sections/section-020/module-03/course-02-external-secret-stores.md
@@ -295,12 +393,36 @@ sections:
     labs:
     - id: lab-01
       path: sections/section-030/module-01/labs/lab-01
-      after_reading: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
-      objective: Combine admission, a resource budget, token minimization and network isolation for one
-        tenant.
+      after_reading: sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+      objective: Bind a namespaced Role to a tenant user and prove its access with kubectl auth can-i.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-030/module-01/labs/lab-02
+      after_reading: sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+      objective: Cap a tenant namespace with a ResourceQuota and give containers default requests and
+        limits with a LimitRange.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-030/module-01/labs/lab-03
+      after_reading: sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+      objective: Isolate a tenant namespace with NetworkPolicy and stop the API token mount for its workload.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-04
+      path: sections/section-030/module-01/labs/lab-04
+      after_reading: sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
+      objective: Create a RuntimeClass for the runsc handler and prove that a Pod runs inside the gVisor
+        kernel.
+      status: alpha
+      runtime_verification: passed
     quiz: sections/section-030/module-01/quiz.yaml
+    practice_readings:
+    - sections/section-030/module-01/course-01-namespaces-and-rbac-as-a-tenant-boundary.md
+    - sections/section-030/module-01/course-02-resource-isolation-with-resourcequota-and-limitrange.md
+    - sections/section-030/module-01/course-03-network-isolation-and-token-minimization.md
+    - sections/section-030/module-01/course-04-sandboxed-containers-with-runtimeclass.md
   - id: module-02
     title: Sandboxed Runtimes, Scheduling And Enforcement
     objectives:
@@ -316,7 +438,6 @@ sections:
     - gVisor And Kata Compared
     - RuntimeClass Scheduling And Overhead
     - Requiring The Sandbox With Admission Policy
-    - Start And Verify A Real gVisor Sandbox
     playground: true
     module_lab: true
     sources:
@@ -328,23 +449,32 @@ sections:
       adapted_from: null
     - reading: sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
       adapted_from: null
-    - reading: sections/section-030/module-02/course-04a-run-a-real-gvisor-sandbox.md
-      adapted_from: null
     labs:
     - id: lab-01
       path: sections/section-030/module-02/labs/lab-01
+      after_reading: sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+      objective: Register the runsc handler in containerd, restart containerd and prove the sandbox with
+        crictl and dmesg.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-030/module-02/labs/lab-02
       after_reading: sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
       objective: Create a RuntimeClass with scheduling and overhead, and run a Pod that uses it.
       status: alpha
-      runtime_verification: pending
-    - id: lab-02
-      path: sections/section-030/module-02/labs/lab-02
-      after_reading: sections/section-030/module-02/course-04a-run-a-real-gvisor-sandbox.md
-      objective: Docker launches a fresh container through the installed gVisor runtime; The running scout
-        container uses gVisor and serves the expected response
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-030/module-02/labs/lab-03
+      after_reading: sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
+      objective: Reject Pods without the sandbox RuntimeClass in one namespace with a ValidatingAdmissionPolicy.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
     quiz: sections/section-030/module-02/quiz.yaml
+    practice_readings:
+    - sections/section-030/module-02/course-01-the-runtime-handler-chain.md
+    - sections/section-030/module-02/course-02-gvisor-and-kata-compared.md
+    - sections/section-030/module-02/course-03-runtimeclass-scheduling-and-overhead.md
+    - sections/section-030/module-02/course-04-requiring-the-sandbox-with-admission-policy.md
   - id: module-03
     title: Node And Workload Separation For Tenants
     objectives:
@@ -375,8 +505,26 @@ sections:
       after_reading: sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
       objective: Reserve the worker node for one tenant with a label, a taint, a selector and a toleration.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-030/module-03/labs/lab-02
+      after_reading: sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+      objective: Place tenant Pods with a node-restriction.kubernetes.io label that the kubelet cannot
+        change.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-030/module-03/labs/lab-03
+      after_reading: sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+      objective: Reject tenant Pods without the protected node selector with a ValidatingAdmissionPolicy.
+      status: alpha
+      runtime_verification: passed
     quiz: sections/section-030/module-03/quiz.yaml
+    practice_readings:
+    - sections/section-030/module-03/course-01-dedicated-nodes-with-taints-and-tolerations.md
+    - sections/section-030/module-03/course-02-node-labels-you-can-trust.md
+    - sections/section-030/module-03/course-03-forcing-placement-at-admission.md
+    - sections/section-030/module-03/course-04-choosing-a-tenant-boundary.md
 - id: section-040
   title: Implement Pod-to-Pod encryption (Cilium, Istio)
   curriculum_item: Implement Pod-to-Pod encryption (Cilium, Istio)
@@ -410,10 +558,16 @@ sections:
     - id: lab-01
       path: sections/section-040/module-01/labs/lab-01
       after_reading: sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
-      objective: Require mesh-authenticated traffic while keeping the injected client able to reach the
-        application.
+      objective: Require STRICT mTLS for a namespace so that meshed clients keep working and a client
+        without a sidecar is rejected.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-040/module-01/labs/lab-02
+      after_reading: sections/section-040/module-01/course-03-authorizing-workloads-with-authorizationpolicy.md
+      objective: Allow requests to a workload only from one ServiceAccount principal with an Istio AuthorizationPolicy.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-040/module-01/course-01-pod-traffic-and-encryption-options.md
     - sections/section-040/module-01/course-02-istio-mutual-tls-with-peerauthentication.md
@@ -448,11 +602,31 @@ sections:
     labs:
     - id: lab-01
       path: sections/section-040/module-02/labs/lab-01
+      after_reading: sections/section-040/module-02/course-01-modes-scope-and-precedence.md
+      objective: Predict and set the effective mTLS mode with mesh-wide and namespace PeerAuthentication
+        precedence.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-02
+      path: sections/section-040/module-02/labs/lab-02
       after_reading: sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
       objective: Require STRICT mTLS for a namespace and keep one legacy workload reachable with a workload-level
         exception.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-04
+      path: sections/section-040/module-02/labs/lab-04
+      after_reading: sections/section-040/module-02/course-03-certificates-and-workload-identity.md
+      objective: Read the SPIFFE ID from a sidecar certificate and fix an AuthorizationPolicy principal
+        that names the wrong ServiceAccount.
+      status: alpha
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-040/module-02/labs/lab-03
+      after_reading: sections/section-040/module-02/course-04-verifying-and-troubleshooting-mtls.md
+      objective: Find and fix a DestinationRule that sends plain text to a STRICT destination.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-040/module-02/course-01-modes-scope-and-precedence.md
     - sections/section-040/module-02/course-02-migrating-from-permissive-to-strict.md
@@ -473,7 +647,6 @@ sections:
     - Enabling WireGuard
     - IPsec Keys And Rotation
     - Verifying Cilium Encryption And Its Limits
-    - Prove Cilium Encrypts A Cross-Node Request
     playground: true
     module_lab: true
     sources:
@@ -485,22 +658,26 @@ sections:
       adapted_from: null
     - reading: sections/section-040/module-03/course-04-verifying-and-limits.md
       adapted_from: null
-    - reading: sections/section-040/module-03/course-03a-observe-encrypted-cross-node-traffic.md
-      adapted_from: null
     labs:
     - id: lab-01
       path: sections/section-040/module-03/labs/lab-01
-      after_reading: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
-      objective: Create the IPsec key Secret and set the Helm values that enable Cilium IPsec encryption.
+      after_reading: sections/section-040/module-03/course-02-enabling-wireguard.md
+      objective: Turn on Cilium WireGuard encryption with Helm and confirm a peer on every agent.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
     - id: lab-02
       path: sections/section-040/module-03/labs/lab-02
-      after_reading: sections/section-040/module-03/course-03a-observe-encrypted-cross-node-traffic.md
-      objective: Both real Cilium agents have active WireGuard peers; Cross-node HTTP succeeds, appears
-        inside WireGuard and is absent in plaintext on the node interface
+      after_reading: sections/section-040/module-03/course-03-ipsec-keys-and-rotation.md
+      objective: Rotate the Cilium IPsec key to a higher SPI and confirm that every agent loaded it.
       status: alpha
-      runtime_verification: pending
+      runtime_verification: passed
+    - id: lab-03
+      path: sections/section-040/module-03/labs/lab-03
+      after_reading: sections/section-040/module-03/course-04-verifying-and-limits.md
+      objective: Check the encryption status of every Cilium agent, find the agent that did not load WireGuard
+        and restart it.
+      status: alpha
+      runtime_verification: passed
     practice_readings:
     - sections/section-040/module-03/course-01-what-cilium-encrypts.md
     - sections/section-040/module-03/course-02-enabling-wireguard.md

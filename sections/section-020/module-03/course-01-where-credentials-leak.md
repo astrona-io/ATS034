@@ -18,6 +18,8 @@ kubectl -n starfleet get configmap legacy-settings -o jsonpath='{.data}' | grep 
 
 The command prints `1`, so the key `credential` is in the ConfigMap. Any identity with `get` on ConfigMaps in `starfleet` reads it. The value also appears in `kubectl describe configmap` and in every backup of the cluster state.
 
+If you already moved the credential to a Secret with the playground guide, the guide deleted `legacy-settings`. The command then shows a `NotFound` error and prints `0`. Start the playground again to get the ConfigMap back.
+
 ## Environment variables written in a manifest
 
 An environment variable with a literal `value` is stored in the Pod specification. It is visible in the Deployment, in every Pod that the Deployment creates and in the output of `kubectl describe pod`. Save this as `pod-leaky.yaml`:

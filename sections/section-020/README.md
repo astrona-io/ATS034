@@ -8,7 +8,7 @@ A database stops accepting its old password before every consumer adopts the rep
 
 The explanations identify the responsible components, compare intended and observed state, and work through the decisions needed to preserve the requirement. Each module has a playground for practice. A graded lab follows each part that teaches a skill the grader can check.
 
-Read the module goals, teaching and closing summary in order. The section has three modules. The first covers how a Secret is stored, delivered to Pods and rotated. The second covers Secret types, image pull credentials, immutable Secrets and least-privilege access. The third covers where credentials leak, external secret stores, encrypting Secrets for Git and auditing Secret access. A knowledge check follows each module summary.
+Read the module goals, teaching and closing summary in order. The section has three modules. The first covers how a Secret is stored, delivered to Pods and rotated, and how its encryption key in `etcd` is rotated. The second covers Secret types, image pull credentials, immutable Secrets and least-privilege access. The third covers where credentials leak, external secret stores, encrypting Secrets for Git and auditing Secret access. A knowledge check follows each module summary.
 
 ## Learning Outcomes
 
@@ -16,6 +16,7 @@ Read the module goals, teaching and closing summary in order. The section has th
 - Compare environment and mounted-file update behavior.
 - Identify authorization and diagnostic exposure risks.
 - Describe rotation that updates consumers and revokes old authority.
+- Rotate the encryption-at-rest key and prove in `etcd` that no Secret still needs the old key.
 - Choose the Secret type for a login, a TLS key pair and a registry credential.
 - Create an immutable Secret and roll out a new value with a new name.
 - Write a Role that reads one named Secret and check it with `kubectl auth can-i`.

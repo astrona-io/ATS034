@@ -13,7 +13,7 @@ scope:
   title: "Manage Kubernetes secrets"
 placement:
   position: after
-  reading: sections/section-020/module-01/course-05-summary.md
+  reading: sections/section-020/module-01/course-06-summary.md
 questions:
   - id: ats034-020-01-q01
     type: single_choice
@@ -51,7 +51,7 @@ questions:
         explanation: "Plain text in `stringData` is accepted and converted."
       - id: c
         text: "A `stringData` field with the value `abc`."
-        explanation: "`stringData` is write-only. The API server never stores or returns it."
+        explanation: "`stringData` is write-only. The API server stores the value in `data` and returns no `stringData` field."
     correct_option: a
     explanation: "`stringData` is a write-only convenience. The API server stores the value as base64 in `data`."
 
@@ -215,3 +215,23 @@ questions:
         explanation: "A valid key length does not cause this. The old objects were never rewritten."
     correct_option: b
     explanation: "Enabling encryption does not rewrite existing data. Replace every Secret once, and again after a key rotation."
+
+  - id: ats034-020-01-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Order the steps of an encryption key rotation."
+    source_readings:
+      - sections/section-020/module-01/course-05-rotating-the-encryption-key.md
+    prompt: "Every Secret in `etcd` is encrypted with the `aescbc` key `key1`. An administrator must replace it with a new key `key2`. Which order keeps every Secret readable?"
+    options:
+      - id: a
+        text: "Replace `key1` with `key2` in the file, restart the kube-apiserver, then run `kubectl replace` on all Secrets."
+        explanation: "Without `key1`, the kube-apiserver cannot decrypt the old Secrets, so the reads before the rewrite fail with `no matching key was found`."
+      - id: b
+        text: "Add `key2` first and keep `key1` below it, restart, rewrite all Secrets, check that no value in `etcd` uses `key1`, then remove `key1` and restart."
+        explanation: "Correct. The first key encrypts writes, and `key1` stays available for reads until no stored value needs it."
+      - id: c
+        text: "Add `key2` after `key1`, restart, and remove `key1` a week later."
+        explanation: "The first key encrypts writes, so `key2` at the end is never used and every Secret still depends on `key1`."
+    correct_option: b
+    explanation: "Add the new key first, restart, rewrite, prove in `etcd` that the old key is unused, then remove it and restart again."
